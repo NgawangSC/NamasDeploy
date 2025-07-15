@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useBlogs } from '../hooks/useApi';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5000/api';
+
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('process.env.REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 
 class ApiService {
   // Helper method for making HTTP requests
