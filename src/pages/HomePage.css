@@ -542,3 +542,29 @@
     gap: 20px;
   }
 }
+
+/* Projects loading and empty states */
+.projects-loading,
+.no-projects {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.projects-loading p,
+.no-projects p {
+  font-size: 18px;
+  color: #666;
+  margin: 0;
+}
+
+.projects-loading p {
+  color: #007bff;
+}
+
+.no-projects p {
+  font-style: italic;
+}

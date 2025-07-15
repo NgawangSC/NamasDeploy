@@ -188,7 +188,7 @@ const BlogDetailPage = () => {
           <div className="blog-images-gallery">
             <h3>Project Images</h3>
             <div className="blog-images-grid">
-              {blog.images.map((image, index) => (
+              {blog.images?.map((image, index) => (
                 <div key={index} className="blog-image-item">
                   <img src={image || "/placeholder.svg"} alt={`${blog.title} - Image ${index + 1}`} />
                 </div>

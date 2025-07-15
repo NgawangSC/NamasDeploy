@@ -5,7 +5,7 @@ import { useData } from "../contexts/DataContext"
 import "./MediaManager.css"
 
 const MediaManager = () => {
-  const { images, addImage, deleteImage } = useData()
+  const { data, addMedia, deleteMedia } = useData()
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [uploadData, setUploadData] = useState({
     url: "",
@@ -23,7 +23,7 @@ const MediaManager = () => {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    addImage(uploadData)
+    addMedia(uploadData)
 
     setUploadData({
       url: "",
@@ -34,7 +34,7 @@ const MediaManager = () => {
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this image?")) {
-      deleteImage(id)
+      deleteMedia(id)
     }
   }
 
@@ -101,7 +101,7 @@ const MediaManager = () => {
       )}
 
       <div className="images-grid">
-        {images.map((image) => (
+        {data?.media?.map((image) => (
           <div key={image.id} className="image-card">
             <div className="image-preview">
               <img src={image.url || "/placeholder.svg"} alt={image.name} />
@@ -122,7 +122,7 @@ const MediaManager = () => {
         ))}
       </div>
 
-      {images.length === 0 && (
+      {(!data?.media || data.media.length === 0) && (
         <div className="empty-state">
           <h3>No images yet</h3>
           <p>Add your first image to get started</p>

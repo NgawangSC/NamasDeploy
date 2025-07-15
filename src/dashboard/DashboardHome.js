@@ -77,13 +77,15 @@ const DashboardHome = () => {
             {recentProjects.length > 0 ? (
               recentProjects.map((project) => (
                 <div key={project.id} className="recent-item">
-                  <img src={project.image || "/placeholder.svg"} alt={project.title} />
+                  <img src={project.image || "/placeholder.svg"} alt={project.title || "Project"} />
                   <div className="item-info">
-                    <h4>{project.title}</h4>
+                    <h4>{project.title || "Untitled Project"}</h4>
                     <p>
-                      {project.location} • {project.year}
+                      {project.location || "Unknown Location"} • {project.year || "Unknown Year"}
                     </p>
-                    <span className={`status ${project.status.toLowerCase().replace(" ", "-")}`}>{project.status}</span>
+                    <span className={`status ${project.status ? project.status.toLowerCase().replace(" ", "-") : "unknown"}`}>
+                      {project.status || "Unknown"}
+                    </span>
                   </div>
                 </div>
               ))
@@ -106,13 +108,13 @@ const DashboardHome = () => {
             {recentBlogs.length > 0 ? (
               recentBlogs.map((blog) => (
                 <div key={blog.id} className="recent-item">
-                  <img src={blog.image || "/placeholder.svg"} alt={blog.title} />
+                  <img src={blog.image || "/placeholder.svg"} alt={blog.title || "Blog Post"} />
                   <div className="item-info">
-                    <h4>{blog.title}</h4>
+                    <h4>{blog.title || "Untitled Blog Post"}</h4>
                     <p>
-                      By {blog.author} • {blog.category}
+                      By {blog.author || "Unknown Author"} • {blog.category || "Uncategorized"}
                     </p>
-                    <span className={`status ${blog.status}`}>{blog.status}</span>
+                    <span className={`status ${blog.status || "unknown"}`}>{blog.status || "Unknown"}</span>
                   </div>
                 </div>
               ))

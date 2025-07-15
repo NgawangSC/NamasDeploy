@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useData } from "../contexts/DataContext"
 import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
+  const { getRecentProjects, loading } = useData()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
@@ -14,78 +16,15 @@ function HomePage() {
   const totalSlides = 5
   const totalClientSlides = 3
 
-  // Projects data - sorted by year/date to get most recent first
-  const allProjects = [
-    {
-      id: 1,
-      name: "Poolscape Villa",
-      year: 2024,
-      image: "/images/project1.png",
-      alt: "Modern villa with swimming pool",
-      date: "2024-06-15" // Add actual dates for proper sorting
-    },
-    {
-      id: 2,
-      name: "Modern Residence",
-      year: 2024,
-      image: "/images/project2.png",
-      alt: "Modern residence",
-      date: "2024-05-20"
-    },
-    {
-      id: 3,
-      name: "Urban Loft",
-      year: 2024,
-      image: "/images/project3.png",
-      alt: "Urban loft design",
-      date: "2024-04-10"
-    },
-    {
-      id: 4,
-      name: "Garden House",
-      year: 2023,
-      image: "/images/project4.png",
-      alt: "Garden house with natural elements",
-      date: "2023-12-05"
-    },
-    {
-      id: 5,
-      name: "Minimalist Studio",
-      year: 2023,
-      image: "/images/project5.png",
-      alt: "Minimalist studio apartment",
-      date: "2023-11-18"
-    },
-    {
-      id: 6,
-      name: "Eco Villa",
-      year: 2023,
-      image: "/images/project6.png",
-      alt: "Sustainable eco villa",
-      date: "2023-10-22"
-    },
-    {
-      id: 7,
-      name: "City Penthouse",
-      year: 2023,
-      image: "/images/project7.png",
-      alt: "Luxury city penthouse",
-      date: "2023-09-15"
-    },
-    {
-      id: 8,
-      name: "Coastal Retreat",
-      year: 2023,
-      image: "/images/project8.png",
-      alt: "Coastal retreat house",
-      date: "2023-08-30"
-    }
-  ]
-
-  // Get the 6 most recent projects
-  const recentProjects = allProjects
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 6)
+  // Get the 6 most recent projects from the dashboard
+  const recentProjects = getRecentProjects(6).map(project => ({
+    id: project.id,
+    name: project.title,
+    year: project.year,
+    image: project.image,
+    alt: project.title,
+    date: project.createdAt || project.date
+  }))
 
   const testimonials = [
     {
@@ -207,40 +146,58 @@ function HomePage() {
             <h2 className="projects-title">Make it with passion.</h2>
           </div>
           <div className="projects-grid">
-            {recentProjects.map((project, index) => (
-              <div 
-                key={project.id} 
-                className={`project-card ${index % 2 === 1 ? "project-card-reverse" : ""}`}
-              >
-                {index % 2 === 0 ? (
-                  <>
-                    <div className="project-image">
-                      <img src={project.image} alt={project.alt} className="project-img" />
-                    </div>
-                    <div className="project-details">
-                      <div className="project-year">{project.year}</div>
-                      <h3 className="project-name">{project.name}</h3>
-                      <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
-                        Read <ChevronRight size={16} />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="project-details">
-                      <div className="project-year">{project.year}</div>
-                      <h3 className="project-name">{project.name}</h3>
-                      <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
-                        Read <ChevronRight size={16} />
-                      </button>
-                    </div>
-                    <div className="project-image">
-                      <img src={project.image} alt={project.alt} className="project-img" />
-                    </div>
-                  </>
-                )}
+            {loading.projects ? (
+              <div className="projects-loading">
+                <p>Loading projects...</p>
               </div>
-            ))}
+            ) : recentProjects.length > 0 ? (
+              recentProjects.map((project, index) => (
+                <div 
+                  key={project.id} 
+                  className={`project-card ${index % 2 === 1 ? "project-card-reverse" : ""}`}
+                >
+                  {index % 2 === 0 ? (
+                    <>
+                      <div className="project-image">
+                        <img 
+                          src={project.image || "/images/placeholder.png"} 
+                          alt={project.alt || project.name} 
+                          className="project-img" 
+                        />
+                      </div>
+                      <div className="project-details">
+                        <div className="project-year">{project.year}</div>
+                        <h3 className="project-name">{project.name}</h3>
+                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                          Read <ChevronRight size={16} />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="project-details">
+                        <div className="project-year">{project.year}</div>
+                        <h3 className="project-name">{project.name}</h3>
+                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                          Read <ChevronRight size={16} />
+                        </button>
+                      </div>
+                      <div className="project-image">
+                        <img 
+                          src={project.image || "/images/placeholder.png"} 
+                          alt={project.alt || project.name} 
+                          className="project-img" 
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="no-projects">
+                <p>No projects available. Add some projects in the dashboard to see them here!</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

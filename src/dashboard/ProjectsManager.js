@@ -28,16 +28,20 @@ const ProjectsManager = () => {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (editingProject) {
-      updateProject(editingProject.id, formData)
-    } else {
-      addProject(formData)
+    try {
+      if (editingProject) {
+        await updateProject(editingProject.id, formData)
+      } else {
+        await addProject(formData)
+      }
+      resetForm()
+    } catch (error) {
+      console.error('Error saving project:', error)
+      alert('Error saving project: ' + error.message)
     }
-
-    resetForm()
   }
 
   const resetForm = () => {
@@ -62,9 +66,14 @@ const ProjectsManager = () => {
     setShowForm(true)
   }
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this project?")) {
-      deleteProject(id)
+      try {
+        await deleteProject(id)
+      } catch (error) {
+        console.error('Error deleting project:', error)
+        alert('Error deleting project: ' + error.message)
+      }
     }
   }
 

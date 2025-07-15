@@ -1,5 +1,6 @@
 // Create this file: src/contexts/DataContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import ApiService from '../services/api';
 
 const DataContext = createContext();
 
@@ -33,29 +34,10 @@ export const DataProvider = ({ children }) => {
         image: "/about-image.jpg"
       }
     },
-    // Projects data
-    projects: [
-      {
-        id: 1,
-        title: "Sample Project",
-        description: "Project description",
-        image: "/project1.jpg",
-        category: "architecture",
-        date: "2024-01-01"
-      }
-    ],
-    // Blog posts
-    blogs: [
-      {
-        id: 1,
-        title: "Sample Blog Post",
-        excerpt: "Blog post excerpt",
-        content: "Full blog content here...",
-        image: "/blog1.jpg",
-        date: "2024-01-01",
-        author: "Admin"
-      }
-    ],
+    // Projects data - will be fetched from API
+    projects: [],
+    // Blog posts - will be fetched from API  
+    blogs: [],
     // Media files
     media: [
       {
@@ -69,22 +51,85 @@ export const DataProvider = ({ children }) => {
     ]
   });
 
+  const [loading, setLoading] = useState({
+    projects: false,
+    blogs: false
+  });
+
+  const [error, setError] = useState({
+    projects: null,
+    blogs: null
+  });
+
   // Load data from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem('websiteData');
     if (savedData) {
       try {
-        setData(JSON.parse(savedData));
+        const parsed = JSON.parse(savedData);
+        setData(prev => ({
+          ...prev,
+          ...parsed,
+          // Don't restore projects and blogs from localStorage, fetch from API instead
+          projects: [],
+          blogs: []
+        }));
       } catch (error) {
         console.error('Error loading saved data:', error);
       }
     }
   }, []);
 
-  // Save data to localStorage whenever data changes
+  // Save data to localStorage whenever data changes (excluding projects and blogs)
   useEffect(() => {
-    localStorage.setItem('websiteData', JSON.stringify(data));
+    const { projects, blogs, ...dataToSave } = data;
+    localStorage.setItem('websiteData', JSON.stringify(dataToSave));
   }, [data]);
+
+  // Fetch projects from API on mount
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(prev => ({ ...prev, projects: true }));
+      setError(prev => ({ ...prev, projects: null }));
+      
+      const response = await ApiService.getProjects();
+      const apiProjects = response.data || [];
+      
+      setData(prev => ({
+        ...prev,
+        projects: apiProjects
+      }));
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+      setError(prev => ({ ...prev, projects: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, projects: false }));
+    }
+  };
+
+  const fetchBlogs = async () => {
+    try {
+      setLoading(prev => ({ ...prev, blogs: true }));
+      setError(prev => ({ ...prev, blogs: null }));
+      
+      const response = await ApiService.getBlogs();
+      const apiBlogs = response.data || [];
+      
+      setData(prev => ({
+        ...prev,
+        blogs: apiBlogs
+      }));
+    } catch (err) {
+      console.error('Error fetching blogs:', err);
+      setError(prev => ({ ...prev, blogs: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, blogs: false }));
+    }
+  };
 
   // Helper functions
   const updateSiteSettings = (newSettings) => {
@@ -104,46 +149,100 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
-  const addProject = (project) => {
-    setData(prev => ({
-      ...prev,
-      projects: [...prev.projects, { ...project, id: Date.now() }]
-    }));
+  const addProject = async (project, files = []) => {
+    try {
+      const response = await ApiService.createProject(project, files);
+      const newProject = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        projects: [...prev.projects, newProject]
+      }));
+      
+      return newProject;
+    } catch (err) {
+      console.error('Error creating project:', err);
+      throw err;
+    }
   };
 
-  const updateProject = (id, updates) => {
-    setData(prev => ({
-      ...prev,
-      projects: prev.projects.map(p => p.id === id ? { ...p, ...updates } : p)
-    }));
+  const updateProject = async (id, updates, files = []) => {
+    try {
+      const response = await ApiService.updateProject(id, updates, files);
+      const updatedProject = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        projects: prev.projects.map(p => p.id === id ? updatedProject : p)
+      }));
+      
+      return updatedProject;
+    } catch (err) {
+      console.error('Error updating project:', err);
+      throw err;
+    }
   };
 
-  const deleteProject = (id) => {
-    setData(prev => ({
-      ...prev,
-      projects: prev.projects.filter(p => p.id !== id)
-    }));
+  const deleteProject = async (id) => {
+    try {
+      await ApiService.deleteProject(id);
+      
+      setData(prev => ({
+        ...prev,
+        projects: prev.projects.filter(p => p.id !== id)
+      }));
+    } catch (err) {
+      console.error('Error deleting project:', err);
+      throw err;
+    }
   };
 
-  const addBlog = (blog) => {
-    setData(prev => ({
-      ...prev,
-      blogs: [...prev.blogs, { ...blog, id: Date.now() }]
-    }));
+  const addBlog = async (blog) => {
+    try {
+      const response = await ApiService.createBlog(blog);
+      const newBlog = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        blogs: [...prev.blogs, newBlog]
+      }));
+      
+      return newBlog;
+    } catch (err) {
+      console.error('Error creating blog:', err);
+      throw err;
+    }
   };
 
-  const updateBlog = (id, updates) => {
-    setData(prev => ({
-      ...prev,
-      blogs: prev.blogs.map(b => b.id === id ? { ...b, ...updates } : b)
-    }));
+  const updateBlog = async (id, updates) => {
+    try {
+      const response = await ApiService.updateBlog(id, updates);
+      const updatedBlog = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        blogs: prev.blogs.map(b => b.id === id ? updatedBlog : b)
+      }));
+      
+      return updatedBlog;
+    } catch (err) {
+      console.error('Error updating blog:', err);
+      throw err;
+    }
   };
 
-  const deleteBlog = (id) => {
-    setData(prev => ({
-      ...prev,
-      blogs: prev.blogs.filter(b => b.id !== id)
-    }));
+  const deleteBlog = async (id) => {
+    try {
+      await ApiService.deleteBlog(id);
+      
+      setData(prev => ({
+        ...prev,
+        blogs: prev.blogs.filter(b => b.id !== id)
+      }));
+    } catch (err) {
+      console.error('Error deleting blog:', err);
+      throw err;
+    }
   };
 
   const addMedia = (media) => {
@@ -160,8 +259,17 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  // Get recent projects (sorted by creation date)
+  const getRecentProjects = (limit = 6) => {
+    return data.projects
+      .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
+      .slice(0, limit);
+  };
+
   const contextValue = {
     data,
+    loading,
+    error,
     setData,
     updateSiteSettings,
     updatePageContent,
@@ -172,7 +280,14 @@ export const DataProvider = ({ children }) => {
     updateBlog,
     deleteBlog,
     addMedia,
-    deleteMedia
+    deleteMedia,
+    fetchProjects,
+    fetchBlogs,
+    getRecentProjects,
+    // Export individual data for easier access
+    projects: data.projects,
+    blogs: data.blogs,
+    media: data.media
   };
 
   return (

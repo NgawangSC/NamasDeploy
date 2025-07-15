@@ -133,7 +133,7 @@ const ProjectDetailPage = () => {
         </div>
 
         <div className="gallery-indicators">
-          {project.images.map((_, index) => (
+          {project.images?.map((_, index) => (
             <button
               key={index}
               className={`indicator ${index === currentImageIndex ? "active" : ""}`}
