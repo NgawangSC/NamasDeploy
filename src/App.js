@@ -30,6 +30,7 @@ import DashboardLayout from "./dashboard/DashboardLayout"
 import DashboardHome from "./dashboard/DashboardHome"
 import ProjectsManager from "./dashboard/ProjectsManager"
 import BlogsManager from "./dashboard/BlogsManager"
+import ClientsManager from "./dashboard/ClientsManager"
 import MediaManager from "./dashboard/MediaManager"
 import DashboardLogin from "./dashboard/DashboardLogin"
 import "./App.css"
@@ -70,6 +71,7 @@ function App() {
                     <Route path="/" element={<DashboardHome />} />
                     <Route path="/projects" element={<ProjectsManager />} />
                     <Route path="/blogs" element={<BlogsManager />} />
+                    <Route path="/clients" element={<ClientsManager />} />
                     <Route path="/media" element={<MediaManager />} />
                   </Routes>
                 </DashboardLayout>

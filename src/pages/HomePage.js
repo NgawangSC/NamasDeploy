@@ -1,20 +1,46 @@
 "use client"
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
-  const { getRecentProjects, loading } = useData()
+  const location = useLocation()
+  const { getRecentProjects, clients, loading, fetchClients } = useData()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
   const totalSlides = 5
-  const totalClientSlides = 3
+  const totalClientSlides = Math.max(1, Math.ceil(clients.length / 3))
+
+  // Fetch clients on component mount
+  useEffect(() => {
+    fetchClients()
+  }, [])
+
+  // Also fetch clients when the window gains focus (user returns from dashboard)
+  useEffect(() => {
+    let timeoutId
+    
+    const handleFocus = () => {
+      // Debounce to prevent multiple rapid calls
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        fetchClients()
+      }, 300)
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      clearTimeout(timeoutId)
+    }
+  }, [fetchClients])
 
   // Get the 6 most recent projects from the dashboard
   const recentProjects = getRecentProjects(6).map(project => ({
@@ -237,35 +263,42 @@ function HomePage() {
             <img src="/images/people-clients.png" alt="People Clients" className="clients-title-image" />
           </div>
           <div className="clients-carousel">
-            <button onClick={prevClientSlide} className="clients-arrow clients-arrow-left">
-              <ChevronLeft size={24} />
-            </button>
-            <div className="clients-grid">
-              <div className="client-card">
-                <div className="client-logo">
-                  <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </div>
+            {loading.clients ? (
+              <div className="clients-loading">
+                <p>Loading clients...</p>
               </div>
-              <div className="client-card">
-                <div className="client-logo">
-                  <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
+            ) : clients.length > 0 ? (
+              <>
+                <button onClick={prevClientSlide} className="clients-arrow clients-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <div className="clients-grid">
+                  {clients
+                    .slice(currentClientSlide * 3, (currentClientSlide + 1) * 3)
+                    .map((client) => (
+                      <div key={client.id} className="client-card">
+                        <div className="client-logo">
+                          <img 
+                            src={getImageUrl(client.logo)} 
+                            alt={client.name}
+                            onError={(e) => {
+                              e.target.src = "/images/placeholder-logo.png"
+                            }}
+                          />
+                        </div>
+                        <div className="client-name">{client.name}</div>
+                      </div>
+                    ))}
                 </div>
+                <button onClick={nextClientSlide} className="clients-arrow clients-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            ) : (
+              <div className="no-clients">
+                <p>No clients available. Add some clients in the dashboard to see them here!</p>
               </div>
-              <div className="client-card">
-                <div className="client-logo">
-                  <svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <button onClick={nextClientSlide} className="clients-arrow clients-arrow-right">
-              <ChevronRight size={24} />
-            </button>
+            )}
           </div>
         </div>
       </section>

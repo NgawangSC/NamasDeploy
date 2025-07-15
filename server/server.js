@@ -84,6 +84,8 @@ const blogPosts = [
 
 const contacts = []
 
+const clients = []
+
 // ROOT ROUTE - Fix for "Cannot GET /"
 app.get("/", (req, res) => {
   res.json({
@@ -475,6 +477,132 @@ app.put("/api/contacts/:id", (req, res) => {
   }
 })
 
+// CLIENT ROUTES
+
+// GET all clients
+app.get("/api/clients", (req, res) => {
+  res.json({
+    success: true,
+    data: clients,
+    count: clients.length,
+  })
+})
+
+// GET single client
+app.get("/api/clients/:id", (req, res) => {
+  const client = clients.find((c) => c.id === Number.parseInt(req.params.id))
+  if (!client) {
+    return res.status(404).json({
+      success: false,
+      error: "Client not found",
+    })
+  }
+  res.json({
+    success: true,
+    data: client,
+  })
+})
+
+// POST create new client
+app.post("/api/clients", upload.single("logo"), (req, res) => {
+  try {
+    const { name, description, website, category, status } = req.body
+
+    // Validation
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required field: name",
+      })
+    }
+
+    const newClient = {
+      id: clients.length > 0 ? Math.max(...clients.map((c) => c.id)) + 1 : 1,
+      name,
+      description: description || "",
+      website: website || "",
+      category: category || "General",
+      status: status || "Active",
+      logo: req.file ? `/uploads/${req.file.filename}` : "/images/placeholder-logo.png",
+      createdAt: new Date().toISOString(),
+    }
+
+    clients.push(newClient)
+    res.status(201).json({
+      success: true,
+      data: newClient,
+      message: "Client created successfully",
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to create client",
+      details: error.message,
+    })
+  }
+})
+
+// PUT update client
+app.put("/api/clients/:id", upload.single("logo"), (req, res) => {
+  try {
+    const clientId = Number.parseInt(req.params.id)
+    const clientIndex = clients.findIndex((c) => c.id === clientId)
+
+    if (clientIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Client not found",
+      })
+    }
+
+    const updatedClient = {
+      ...clients[clientIndex],
+      ...req.body,
+      id: clientId,
+      updatedAt: new Date().toISOString(),
+    }
+
+    // Handle new logo if uploaded
+    if (req.file) {
+      updatedClient.logo = `/uploads/${req.file.filename}`
+    }
+
+    clients[clientIndex] = updatedClient
+    res.json({
+      success: true,
+      data: updatedClient,
+      message: "Client updated successfully",
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to update client",
+      details: error.message,
+    })
+  }
+})
+
+// DELETE client
+app.delete("/api/clients/:id", (req, res) => {
+  const clientId = Number.parseInt(req.params.id)
+  const clientIndex = clients.findIndex((c) => c.id === clientId)
+
+  if (clientIndex === -1) {
+    return res.status(404).json({
+      success: false,
+      error: "Client not found",
+    })
+  }
+
+  const deletedClient = clients[clientIndex]
+  clients.splice(clientIndex, 1)
+  res.json({
+    success: true,
+    message: "Client deleted successfully",
+    data: deletedClient,
+  })
+})
+
 // SEARCH ROUTES
 
 // POST search projects and blogs
@@ -564,6 +692,8 @@ app.use("*", (req, res) => {
       "POST /api/projects",
       "GET /api/blogs",
       "POST /api/blogs",
+      "GET /api/clients",
+      "POST /api/clients",
       "POST /api/contact",
       "POST /api/search",
     ],

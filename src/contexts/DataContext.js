@@ -38,6 +38,8 @@ export const DataProvider = ({ children }) => {
     projects: [],
     // Blog posts - will be fetched from API  
     blogs: [],
+    // Clients data - will be fetched from API
+    clients: [],
     // Media files
     media: [
       {
@@ -53,12 +55,14 @@ export const DataProvider = ({ children }) => {
 
   const [loading, setLoading] = useState({
     projects: false,
-    blogs: false
+    blogs: false,
+    clients: false
   });
 
   const [error, setError] = useState({
     projects: null,
-    blogs: null
+    blogs: null,
+    clients: null
   });
 
   // Load data from localStorage on component mount
@@ -70,9 +74,10 @@ export const DataProvider = ({ children }) => {
         setData(prev => ({
           ...prev,
           ...parsed,
-          // Don't restore projects and blogs from localStorage, fetch from API instead
+          // Don't restore projects, blogs, and clients from localStorage, fetch from API instead
           projects: [],
-          blogs: []
+          blogs: [],
+          clients: []
         }));
       } catch (error) {
         console.error('Error loading saved data:', error);
@@ -80,9 +85,9 @@ export const DataProvider = ({ children }) => {
     }
   }, []);
 
-  // Save data to localStorage whenever data changes (excluding projects and blogs)
+  // Save data to localStorage whenever data changes (excluding projects, blogs, and clients)
   useEffect(() => {
-    const { projects, blogs, ...dataToSave } = data;
+    const { projects, blogs, clients, ...dataToSave } = data;
     localStorage.setItem('websiteData', JSON.stringify(dataToSave));
   }, [data]);
 
@@ -128,6 +133,26 @@ export const DataProvider = ({ children }) => {
       setError(prev => ({ ...prev, blogs: err.message }));
     } finally {
       setLoading(prev => ({ ...prev, blogs: false }));
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      setLoading(prev => ({ ...prev, clients: true }));
+      setError(prev => ({ ...prev, clients: null }));
+      
+      const response = await ApiService.getClients();
+      const apiClients = response.data || [];
+      
+      setData(prev => ({
+        ...prev,
+        clients: apiClients
+      }));
+    } catch (err) {
+      console.error('Error fetching clients:', err);
+      setError(prev => ({ ...prev, clients: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, clients: false }));
     }
   };
 
@@ -245,6 +270,54 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  const addClient = async (client) => {
+    try {
+      const response = await ApiService.createClient(client);
+      const newClient = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        clients: [...prev.clients, newClient]
+      }));
+      
+      return newClient;
+    } catch (err) {
+      console.error('Error creating client:', err);
+      throw err;
+    }
+  };
+
+  const updateClient = async (id, updates) => {
+    try {
+      const response = await ApiService.updateClient(id, updates);
+      const updatedClient = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        clients: prev.clients.map(c => c.id === id ? updatedClient : c)
+      }));
+      
+      return updatedClient;
+    } catch (err) {
+      console.error('Error updating client:', err);
+      throw err;
+    }
+  };
+
+  const deleteClient = async (id) => {
+    try {
+      await ApiService.deleteClient(id);
+      
+      setData(prev => ({
+        ...prev,
+        clients: prev.clients.filter(c => c.id !== id)
+      }));
+    } catch (err) {
+      console.error('Error deleting client:', err);
+      throw err;
+    }
+  };
+
   const addMedia = (media) => {
     setData(prev => ({
       ...prev,
@@ -279,14 +352,19 @@ export const DataProvider = ({ children }) => {
     addBlog,
     updateBlog,
     deleteBlog,
+    addClient,
+    updateClient,
+    deleteClient,
     addMedia,
     deleteMedia,
     fetchProjects,
     fetchBlogs,
+    fetchClients,
     getRecentProjects,
     // Export individual data for easier access
     projects: data.projects,
     blogs: data.blogs,
+    clients: data.clients,
     media: data.media
   };
 
