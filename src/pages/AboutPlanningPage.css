@@ -1,0 +1,794 @@
+/* About Planning Page Styles */
+.about-planning-page {
+  padding-top: 0;
+}
+
+/* Hero Section */
+.planning-hero {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  z-index: 10;
+}
+
+.back-button {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 300;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  font-weight: 300;
+  opacity: 0.9;
+  max-width: 600px;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* Introduction Section */
+.planning-intro {
+  padding: 120px 0;
+  background: white;
+}
+
+.intro-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.intro-title {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 40px;
+  line-height: 1.2;
+}
+
+.intro-description {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #666;
+  margin-bottom: 32px;
+}
+
+.intro-description:last-child {
+  margin-bottom: 0;
+}
+
+/* Planning Types Section */
+.planning-types {
+  padding: 120px 0;
+  background: #f8f9fa;
+}
+
+.types-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.types-title {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.types-subtitle {
+  font-size: 18px;
+  color: #666;
+  font-weight: 300;
+}
+
+.types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 40px;
+}
+
+.type-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  text-align: center;
+  border-top: 4px solid #333;
+}
+
+.type-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.type-icon {
+  font-size: 3rem;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.type-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.type-description {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* Planning Process Section */
+.planning-process {
+  padding: 120px 0;
+  background: white;
+}
+
+.process-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.process-title {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.process-subtitle {
+  font-size: 18px;
+  color: #666;
+  font-weight: 300;
+}
+
+.process-timeline {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e0e0e0;
+  transform: translateX(-50%);
+}
+
+.process-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 80px;
+}
+
+.process-step:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+.process-step:nth-child(even) .step-content {
+  text-align: right;
+}
+
+.step-number {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  background: #333;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 300;
+  z-index: 10;
+}
+
+.step-content {
+  flex: 1;
+  padding: 0 80px;
+}
+
+.step-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.step-description {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.step-features {
+  margin-top: 20px;
+}
+
+.step-features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.step-features li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.step-features li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #333;
+}
+
+/* Services Section */
+.planning-services {
+  padding: 120px 0;
+  background: #f8f9fa;
+}
+
+.services-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.services-title {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.services-subtitle {
+  font-size: 18px;
+  color: #666;
+  font-weight: 300;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 40px;
+}
+
+.about-planning-page .service-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid #333;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.about-planning-page .service-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.about-planning-page .service-description {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.service-list {
+  list-style: none;
+  padding: 0;
+}
+
+.service-list li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.service-list li:before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Regulations Section */
+.planning-regulations {
+  padding: 120px 0;
+  background: white;
+}
+
+.regulations-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.regulations-title {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.regulations-subtitle {
+  font-size: 18px;
+  color: #666;
+  font-weight: 300;
+}
+
+.regulations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+}
+
+.regulation-card {
+  background: #f8f9fa;
+  padding: 40px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.regulation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.regulation-icon {
+  font-size: 3rem;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.regulation-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.regulation-description {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* Benefits Section */
+.planning-benefits {
+  padding: 120px 0;
+  background: #333;
+  color: white;
+}
+
+.benefits-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.benefits-title {
+  font-size: 3rem;
+  font-weight: 300;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.benefits-subtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  font-weight: 300;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+}
+
+.benefit-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.benefit-icon {
+  font-size: 3rem;
+  margin-bottom: 24px;
+  opacity: 0.9;
+}
+
+.benefit-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.benefit-description {
+  opacity: 0.9;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* CTA Section */
+.planning-cta {
+  padding: 120px 0;
+  background: #f8f9fa;
+}
+
+.cta-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cta-title {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.cta-description {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-button {
+  background: #333;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.cta-button:hover {
+  background: #555;
+  transform: translateY(-2px);
+}
+
+.cta-button.secondary {
+  background: transparent;
+  border: 2px solid #333;
+  color: #333;
+}
+
+.cta-button.secondary:hover {
+  background: #333;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .intro-title,
+  .types-title,
+  .process-title,
+  .services-title,
+  .regulations-title,
+  .benefits-title,
+  .cta-title {
+    font-size: 2.5rem;
+  }
+
+  .types-grid,
+  .services-grid,
+  .regulations-grid,
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-line {
+    left: 30px;
+  }
+
+  .step-number {
+    left: 30px;
+  }
+
+  .process-step {
+    flex-direction: row !important;
+  }
+
+  .process-step .step-content {
+    text-align: left !important;
+    padding-left: 100px;
+    padding-right: 0;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cta-button {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 20px;
+  }
+
+  .back-button {
+    top: 20px;
+    left: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .intro-title,
+  .types-title,
+  .process-title,
+  .services-title,
+  .regulations-title,
+  .benefits-title,
+  .cta-title {
+    font-size: 2rem;
+  }
+
+  .planning-intro,
+  .planning-types,
+  .planning-process,
+  .planning-services,
+  .planning-regulations,
+  .planning-benefits,
+  .planning-cta {
+    padding: 80px 0;
+  }
+
+  .types-grid,
+  .services-grid,
+  .regulations-grid,
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .type-card,
+  .service-card,
+  .regulation-card,
+  .benefit-card {
+    padding: 30px;
+  }
+
+  .timeline-line {
+    left: 20px;
+  }
+
+  .step-number {
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .process-step .step-content {
+    padding-left: 80px;
+    padding-right: 0;
+  }
+
+  .intro-description,
+  .cta-description {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .intro-title,
+  .types-title,
+  .process-title,
+  .services-title,
+  .regulations-title,
+  .benefits-title,
+  .cta-title {
+    font-size: 1.8rem;
+  }
+
+  .type-card,
+  .service-card,
+  .regulation-card,
+  .benefit-card {
+    padding: 20px;
+  }
+
+  .cta-button {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+
+  .step-content {
+    padding-left: 60px;
+  }
+
+  .planning-intro,
+  .planning-types,
+  .planning-process,
+  .planning-services,
+  .planning-regulations,
+  .planning-benefits,
+  .planning-cta {
+    padding: 60px 0;
+  }
+}
+
+/* Animation Classes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus states for accessibility */
+.back-button:focus,
+.cta-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .planning-hero,
+  .back-button,
+  .cta-buttons {
+    display: none;
+  }
+  
+  .planning-intro,
+  .planning-types,
+  .planning-process,
+  .planning-services,
+  .planning-regulations,
+  .planning-benefits,
+  .planning-cta {
+    padding: 40px 0;
+  }
+  
+  .type-card,
+  .service-card,
+  .regulation-card,
+  .benefit-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}

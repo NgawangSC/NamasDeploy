@@ -1,0 +1,544 @@
+/* Homepage Styles */
+.homepage {
+  padding-top: 0;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hero-image {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-arrow-left {
+  left: 24px;
+}
+
+.nav-arrow-right {
+  right: 24px;
+}
+
+.slide-indicators {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 12px;
+}
+
+.slide-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.slide-dot:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.slide-dot.active {
+  background: white;
+  transform: scale(1.25);
+}
+
+/* About Section */
+.about-section {
+  padding: 80px 40px;
+  background: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 120px;
+  align-items: center;
+}
+
+.experience-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cutout-image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.about-text-side {
+  padding: 40px 0;
+}
+
+.about-header {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #999;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.about-title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 32px;
+  line-height: 1.2;
+}
+
+.about-description {
+  color: #666;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.about-description p {
+  margin-bottom: 24px;
+}
+
+/* Projects Section */
+.projects-section {
+  padding: 100px 40px;
+  background: white;
+}
+
+.projects-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.projects-header {
+  text-align: left;
+  margin-bottom: 80px;
+}
+
+.projects-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #999;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.projects-title {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #333;
+  line-height: 1.2;
+}
+
+.projects-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.project-card {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 60px;
+  align-items: stretch;
+  min-height: 500px;
+  position: relative;
+}
+
+.project-card-reverse {
+  grid-template-columns: 1fr 2fr;
+}
+
+.project-image {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
+  height: 500px;
+  width: 100%;
+}
+
+.project-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.project-details {
+  padding: 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.project-card-reverse .project-details {
+  order: -1;
+}
+
+.project-year {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.project-name {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 32px;
+  line-height: 1.2;
+}
+
+.project-read-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 100px 40px;
+  background: #f8f9fa;
+}
+
+.testimonials-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.testimonials-header {
+  text-align: left;
+  margin-bottom: 60px;
+}
+
+.testimonials-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #999;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.testimonials-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+  line-height: 1.2;
+}
+
+.testimonials-content {
+  display: grid;
+  grid-template-columns: 0.8fr 2.5fr;
+  gap: 80px;
+  align-items: stretch;
+}
+
+.testimonials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 2px solid #333;
+  background: transparent;
+  position: relative;
+  height: 100%;
+  min-height: 400px;
+  padding-bottom: 40px;
+  margin-left: 20px;
+}
+
+.testimonial-name-btn {
+  background: #f8f9fa;
+  border: none;
+  padding: 12px 24px;
+  text-align: left;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  font-weight: normal;
+  transform: translateX(-50%);
+  width: calc(100% + 50%);
+  padding-left: calc(50% + 24px);
+  flex: 0 0 auto;
+}
+
+.testimonial-name-btn:hover {
+  color: #666;
+}
+
+.testimonial-name-btn.active {
+  color: #333;
+  font-weight: bold;
+}
+
+.testimonial-quote-container {
+  background: white;
+  padding: 50px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.quote-mark {
+  font-size: 4rem;
+  color: #333;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 30px;
+  font-family: serif;
+}
+
+.testimonial-quote {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 40px;
+  font-style: normal;
+}
+
+.testimonial-author {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Clients Section */
+.clients-section {
+  padding: 100px 40px;
+  background: white;
+}
+
+.clients-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.clients-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.clients-title-image {
+  max-width: 100%;
+  height: auto;
+  max-height: 120px;
+  object-fit: contain;
+}
+
+.clients-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+.clients-arrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.3s ease;
+  padding: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clients-arrow:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: scale(1.1);
+}
+
+.clients-grid {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  justify-content: center;
+}
+
+.client-card {
+  width: 350px;
+  height: 250px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.client-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.client-logo {
+  color: #333;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.client-card:hover .client-logo {
+  opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .about-content {
+    grid-template-columns: 1fr;
+    gap: 80px;
+    text-align: center;
+  }
+
+  .project-card,
+  .project-card-reverse {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    min-height: auto;
+  }
+
+  .project-card-reverse .project-details {
+    order: 0;
+  }
+
+  .project-image {
+    min-height: 300px;
+    height: 300px;
+  }
+
+  .testimonials-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .testimonials-list {
+    min-height: auto;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav-arrow-left {
+    left: 16px;
+  }
+
+  .nav-arrow-right {
+    right: 16px;
+  }
+
+  .about-title {
+    font-size: 2rem;
+  }
+
+  .projects-title {
+    font-size: 2rem;
+  }
+
+  .project-name {
+    font-size: 1.75rem;
+  }
+
+  .testimonials-title {
+    font-size: 2rem;
+  }
+
+  .clients-carousel {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .clients-grid {
+    flex-direction: column;
+    gap: 20px;
+  }
+}

@@ -1,0 +1,526 @@
+.planning-page {
+  min-height: 100vh;
+  background-color: #000;
+  color: white;
+  padding-top: 80px;
+}
+
+.planning-hero {
+  height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), "/images/about-hero-bg.jpg";
+  text-align: center;
+}
+
+.planning-hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.planning-hero-content p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  color: white;
+}
+
+.planning-content {
+  padding: 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Slider Styles */
+.planning-slider-container {
+  width: 100%;
+  height: 79vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.planning-projects-slider {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.planning-projects-display {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.planning-projects-display:not(:last-child) {
+  margin-right: 10px; /* Add gap after each pair of projects */
+}
+
+.planning-project-half {
+  width: calc(50% - 5px);
+  height: 100%;
+  position: relative;
+}
+
+.planning-project-background {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.planning-project-overlay-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  z-index: 999;
+}
+
+.planning-project-text-content {
+  text-align: left;
+  color: white;
+  z-index: 1000;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  padding: 2rem;
+}
+
+.planning-project-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: white;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  margin: 0 0 1rem 0;
+}
+
+.planning-read-link {
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  visibility: visible;
+  opacity: 1;
+}
+
+.planning-read-link:hover {
+  text-decoration: underline;
+}
+
+/* Filter Section */
+.planning-filter-section {
+  margin-bottom: 0rem;
+  text-align: center;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  padding: 1rem;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.planning-filter-controls {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.planning-filter-item {
+  position: relative;
+}
+
+.planning-filter-dropdown-trigger {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.planning-filter-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.planning-dropdown-arrow {
+  transition: transform 0.2s ease;
+}
+
+.planning-dropdown-arrow.planning-rotated {
+  transform: rotate(180deg);
+}
+
+.planning-dropup {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: max-content;
+  width: 100%;
+  z-index: 1000;
+}
+
+.planning-dropup-item {
+  padding: 8px 12px;
+  color: #000000;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background-color: #ffffff;
+}
+
+.planning-dropup-item:hover {
+  color: white;
+  background-color: #000000;
+  opacity: 1;
+}
+
+.planning-dropup-item:last-child {
+  border-bottom: none;
+}
+
+/* Social Icons */
+.planning-social-icons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.planning-social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.planning-social-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+.planning-social-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Original styles below this line */
+.planning-filter-section h2 {
+  font-size: 2rem;
+  font-weight: 300;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.planning-filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.planning-filter-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.planning-filter-btn:hover,
+.planning-filter-btn.planning-active {
+  background: white;
+  color: black;
+  border-color: white;
+}
+
+.planning-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.planning-project-card {
+  position: relative;
+  height: 500px;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.planning-project-card:hover {
+  transform: translateY(-5px);
+}
+
+.planning-project-image {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.planning-project-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.planning-project-card:hover .planning-project-image img {
+  transform: scale(1.05);
+}
+
+.planning-project-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+  padding: 3rem 2rem 2rem;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.planning-project-card:hover .planning-project-overlay {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.planning-project-info {
+  margin-bottom: 1.5rem;
+}
+
+.planning-project-info h3 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.planning-project-info p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.planning-category-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: white;
+  border-radius: 4px;
+}
+
+.planning-read-btn {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 0.75rem 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.planning-read-btn:hover {
+  background: white;
+  color: black;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .planning-page {
+    padding-top: 60px;
+  }
+
+  .planning-hero {
+    height: 30vh;
+  }
+
+  .planning-hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .planning-hero-content p {
+    font-size: 1rem;
+  }
+
+  .planning-content {
+    padding: 2rem 1rem;
+  }
+
+  .planning-filter-section {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+  }
+
+  .planning-filter-controls {
+    gap: 1rem;
+  }
+
+  .planning-filter-dropdown-trigger {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .planning-social-icons {
+    gap: 0.75rem;
+  }
+
+  .planning-social-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .planning-social-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .planning-project-text-content {
+    padding: 1.5rem;
+  }
+
+  .planning-project-title {
+    font-size: 1.5rem;
+  }
+
+  .planning-filter-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .planning-filter-buttons {
+    gap: 0.5rem;
+  }
+
+  .planning-filter-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .planning-projects-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .planning-project-card {
+    height: 400px;
+  }
+
+  .planning-project-overlay {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+
+  .planning-project-info h3 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .planning-hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .planning-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .planning-filter-section {
+    padding: 1rem;
+  }
+
+  .planning-filter-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .planning-filter-dropdown-trigger {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .planning-social-icons {
+    gap: 0.5rem;
+  }
+
+  .planning-social-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .planning-social-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .planning-project-text-content {
+    padding: 1rem;
+  }
+
+  .planning-project-title {
+    font-size: 1.2rem;
+  }
+
+  .planning-project-card {
+    height: 350px;
+  }
+
+  .planning-project-overlay {
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .planning-project-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .planning-read-btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.8rem;
+  }
+}
