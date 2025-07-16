@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./ClientsManager.css"
 
 const ClientsManager = () => {
@@ -210,7 +211,7 @@ const ClientsManager = () => {
               <div key={client.id} className="client-card">
                 <div className="client-logo">
                   <img 
-                    src={client.logo || "/images/placeholder-logo.png"} 
+                    src={getImageUrl(client.logo) || "/images/placeholder-logo.png"} 
                     alt={client.name}
                     onError={(e) => {
                       e.target.src = "/images/placeholder-logo.png"

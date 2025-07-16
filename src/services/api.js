@@ -124,6 +124,10 @@ class ApiService {
     return this.request('/projects');
   }
 
+  static async getFeaturedProjects() {
+    return this.request('/projects/featured');
+  }
+
   static async createProject(projectData, files = []) {
     const formData = new FormData();
     

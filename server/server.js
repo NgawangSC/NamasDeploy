@@ -64,6 +64,8 @@ const projects = [
     client: "Private Client",
     designTeam: "NAMAS Architecture",
     description: "A traditional Bhutanese residential project combining modern amenities with cultural heritage.",
+    featured: true,
+    createdAt: new Date().toISOString(),
   },
 ]
 
@@ -136,6 +138,16 @@ app.get("/api/projects", (req, res) => {
   })
 })
 
+// GET featured projects (for hero banner) - MUST come before /:id route
+app.get("/api/projects/featured", (req, res) => {
+  const featuredProjects = projects.filter(project => project.featured === true).slice(0, 8)
+  res.json({
+    success: true,
+    data: featuredProjects,
+    count: featuredProjects.length,
+  })
+})
+
 // GET single project
 app.get("/api/projects/:id", (req, res) => {
   const project = projects.find((p) => p.id === Number.parseInt(req.params.id))
@@ -154,7 +166,7 @@ app.get("/api/projects/:id", (req, res) => {
 // POST create new project
 app.post("/api/projects", upload.array("images", 10), (req, res) => {
   try {
-    const { title, category, location, year, status, client, designTeam, description } = req.body
+    const { title, category, location, year, status, client, designTeam, description, featured } = req.body
 
     // Validation
     if (!title || !category || !location || !year) {
@@ -174,6 +186,7 @@ app.post("/api/projects", upload.array("images", 10), (req, res) => {
       client: client || "",
       designTeam: designTeam || "NAMAS Architecture",
       description: description || "",
+      featured: featured === 'true' || featured === true || false,
       image: req.files && req.files.length > 0 ? `/uploads/${req.files[0].filename}` : "/images/placeholder.png",
       images: req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [],
       createdAt: new Date().toISOString(),

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./BlogsManager.css"
 
 const BlogsManager = () => {
@@ -186,7 +187,7 @@ const BlogsManager = () => {
         {blogs.map((blog) => (
           <div key={blog.id} className="blog-card">
             <div className="blog-image">
-              <img src={blog.image || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={blog.title} />
+              <img src={getImageUrl(blog.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={blog.title} />
             </div>
             <div className="blog-info">
               <h3>{blog.title}</h3>

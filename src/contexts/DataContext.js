@@ -36,6 +36,8 @@ export const DataProvider = ({ children }) => {
     },
     // Projects data - will be fetched from API
     projects: [],
+    // Featured projects - will be fetched from API
+    featuredProjects: [],
     // Blog posts - will be fetched from API  
     blogs: [],
     // Clients data - will be fetched from API
@@ -55,12 +57,14 @@ export const DataProvider = ({ children }) => {
 
   const [loading, setLoading] = useState({
     projects: false,
+    featuredProjects: false,
     blogs: false,
     clients: false
   });
 
   const [error, setError] = useState({
     projects: null,
+    featuredProjects: null,
     blogs: null,
     clients: null
   });
@@ -153,6 +157,32 @@ export const DataProvider = ({ children }) => {
       setError(prev => ({ ...prev, clients: err.message }));
     } finally {
       setLoading(prev => ({ ...prev, clients: false }));
+    }
+  };
+
+  const fetchFeaturedProjects = async () => {
+    try {
+      setLoading(prev => ({ ...prev, featuredProjects: true }));
+      setError(prev => ({ ...prev, featuredProjects: null }));
+      
+          // For now, just get the recent projects and filter to featured ones
+    // You can later add a specific API endpoint for featured projects
+    const response = await ApiService.getProjects();
+    const apiProjects = response.data || [];
+    
+    // For now, we'll just take the first 8 projects as featured
+    // Later you can add a 'featured' flag to projects
+    const featured = apiProjects.slice(0, 8);
+      
+      setData(prev => ({
+        ...prev,
+        featuredProjects: featured
+      }));
+    } catch (err) {
+      console.error('Error fetching featured projects:', err);
+      setError(prev => ({ ...prev, featuredProjects: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, featuredProjects: false }));
     }
   };
 
@@ -358,11 +388,13 @@ export const DataProvider = ({ children }) => {
     addMedia,
     deleteMedia,
     fetchProjects,
+    fetchFeaturedProjects,
     fetchBlogs,
     fetchClients,
     getRecentProjects,
     // Export individual data for easier access
     projects: data.projects,
+    featuredProjects: data.featuredProjects,
     blogs: data.blogs,
     clients: data.clients,
     media: data.media

@@ -45,11 +45,24 @@
   color: white;
   transition: all 0.3s ease;
   backdrop-filter: blur(4px);
+  /* Always visible as requested */
+  opacity: 1;
 }
 
 .nav-arrow:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-50%) scale(1.1);
+}
+
+/* Ensure arrows are always visible even on single slides */
+.nav-arrow:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.nav-arrow:disabled:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%);
 }
 
 .nav-arrow-left {

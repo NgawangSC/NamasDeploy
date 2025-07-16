@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./ProjectsManager.css"
 
 const ProjectsManager = () => {
@@ -187,7 +188,7 @@ const ProjectsManager = () => {
         {projects.map((project) => (
           <div key={project.id} className="project-card">
             <div className="project-image">
-              <img src={project.image || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
+              <img src={getImageUrl(project.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
             </div>
             <div className="project-info">
               <h3>{project.title}</h3>

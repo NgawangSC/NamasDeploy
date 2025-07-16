@@ -5,25 +5,25 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import HeroBanner from "../components/HeroBanner"
 import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { getRecentProjects, clients, loading, fetchClients } = useData()
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const { getRecentProjects, clients, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
-  const totalSlides = 5
   const totalClientSlides = Math.max(1, Math.ceil(clients.length / 3))
 
-  // Fetch clients on component mount
+  // Fetch data on component mount
   useEffect(() => {
     fetchClients()
+    fetchFeaturedProjects()
   }, [])
 
-  // Also fetch clients when the window gains focus (user returns from dashboard)
+  // Also fetch data when the window gains focus (user returns from dashboard)
   useEffect(() => {
     let timeoutId
     
@@ -32,6 +32,8 @@ function HomePage() {
       clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
         fetchClients()
+        fetchFeaturedProjects()
+        fetchProjects()
       }, 300)
     }
 
@@ -40,17 +42,19 @@ function HomePage() {
       window.removeEventListener('focus', handleFocus)
       clearTimeout(timeoutId)
     }
-  }, [fetchClients])
+  }, [fetchClients, fetchFeaturedProjects, fetchProjects])
 
   // Get the 6 most recent projects from the dashboard
-  const recentProjects = getRecentProjects(6).map(project => ({
-    id: project.id,
-    name: project.title,
-    year: project.year,
-    image: project.image,
-    alt: project.title,
-    date: project.createdAt || project.date
-  }))
+  const recentProjects = getRecentProjects(6).map(project => {
+    return {
+      id: project.id,
+      name: project.title,
+      year: project.year,
+      image: project.image,
+      alt: project.title,
+      date: project.createdAt || project.date
+    };
+  })
 
   const testimonials = [
     {
@@ -83,17 +87,7 @@ function HomePage() {
     },
   ]
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % totalSlides)
-  }
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
-  }
-
-  const goToSlide = (index) => {
-    setCurrentSlide(index)
-  }
 
   const nextClientSlide = () => {
     setCurrentClientSlide((prev) => (prev + 1) % totalClientSlides)
@@ -109,34 +103,8 @@ function HomePage() {
 
   return (
     <div className="homepage">
-      {/* Hero Carousel Section */}
-      <section className="hero-section">
-        <div className="hero-image">
-          <img
-            src="/images/hero-banner.png"
-            alt="Traditional temple architecture with reflection"
-            className="hero-img"
-          />
-          <div className="hero-overlay"></div>
-        </div>
-
-        <button onClick={prevSlide} className="nav-arrow nav-arrow-left">
-          <ChevronLeft size={24} />
-        </button>
-        <button onClick={nextSlide} className="nav-arrow nav-arrow-right">
-          <ChevronRight size={24} />
-        </button>
-
-        <div className="slide-indicators">
-          {Array.from({ length: totalSlides }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`slide-dot ${index === currentSlide ? "active" : ""}`}
-            />
-          ))}
-        </div>
-      </section>
+      {/* Hero Banner Section with Featured Projects */}
+      <HeroBanner featuredProjects={featuredProjects} />
 
       {/* About Us Section */}
       <section className="about-section">
@@ -186,7 +154,7 @@ function HomePage() {
                     <>
                       <div className="project-image">
                         <img 
-                          src={project.image || "/images/placeholder.png"} 
+                          src={getImageUrl(project.image) || "/images/placeholder.png"} 
                           alt={project.alt || project.name} 
                           className="project-img" 
                         />
@@ -210,7 +178,7 @@ function HomePage() {
                       </div>
                       <div className="project-image">
                         <img 
-                          src={project.image || "/images/placeholder.png"} 
+                          src={getImageUrl(project.image) || "/images/placeholder.png"} 
                           alt={project.alt || project.name} 
                           className="project-img" 
                         />

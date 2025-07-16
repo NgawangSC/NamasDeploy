@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./DashboardHome.css"
 
 const DashboardHome = () => {
@@ -77,7 +78,7 @@ const DashboardHome = () => {
             {recentProjects.length > 0 ? (
               recentProjects.map((project) => (
                 <div key={project.id} className="recent-item">
-                  <img src={project.image || "/placeholder.svg"} alt={project.title || "Project"} />
+                  <img src={getImageUrl(project.image) || "/placeholder.svg"} alt={project.title || "Project"} />
                   <div className="item-info">
                     <h4>{project.title || "Untitled Project"}</h4>
                     <p>
@@ -108,7 +109,7 @@ const DashboardHome = () => {
             {recentBlogs.length > 0 ? (
               recentBlogs.map((blog) => (
                 <div key={blog.id} className="recent-item">
-                  <img src={blog.image || "/placeholder.svg"} alt={blog.title || "Blog Post"} />
+                  <img src={getImageUrl(blog.image) || "/placeholder.svg"} alt={blog.title || "Blog Post"} />
                   <div className="item-info">
                     <h4>{blog.title || "Untitled Blog Post"}</h4>
                     <p>
