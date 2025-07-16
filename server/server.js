@@ -276,6 +276,160 @@ app.delete("/api/projects/:id", (req, res) => {
   })
 })
 
+// POST add images to existing project
+app.post("/api/projects/:id/images", upload.array("images", 10), (req, res) => {
+  try {
+    const projectId = Number.parseInt(req.params.id)
+    const projectIndex = projects.findIndex((p) => p.id === projectId)
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found",
+      })
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No images uploaded",
+      })
+    }
+
+    const project = projects[projectIndex]
+    const newImages = req.files.map((file) => `/uploads/${file.filename}`)
+    
+    // Add new images to existing images array
+    project.images = [...(project.images || []), ...newImages]
+    
+    // If project doesn't have a cover image, set the first uploaded image as cover
+    if (!project.image || project.image === "/images/placeholder.png") {
+      project.image = newImages[0]
+    }
+    
+    project.updatedAt = new Date().toISOString()
+
+    res.json({
+      success: true,
+      data: {
+        project: project,
+        newImages: newImages
+      },
+      message: `${newImages.length} image(s) added successfully`,
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to add images",
+      details: error.message,
+    })
+  }
+})
+
+// PUT set cover image for project
+app.put("/api/projects/:id/cover", (req, res) => {
+  try {
+    const projectId = Number.parseInt(req.params.id)
+    const { imageUrl } = req.body
+
+    const projectIndex = projects.findIndex((p) => p.id === projectId)
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found",
+      })
+    }
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Image URL is required",
+      })
+    }
+
+    const project = projects[projectIndex]
+    
+    // Verify that the image exists in the project's images array
+    if (!project.images || !project.images.includes(imageUrl)) {
+      return res.status(400).json({
+        success: false,
+        error: "Image not found in project images",
+      })
+    }
+
+    project.image = imageUrl
+    project.updatedAt = new Date().toISOString()
+
+    res.json({
+      success: true,
+      data: project,
+      message: "Cover image updated successfully",
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to update cover image",
+      details: error.message,
+    })
+  }
+})
+
+// DELETE remove image from project
+app.delete("/api/projects/:id/images", (req, res) => {
+  try {
+    const projectId = Number.parseInt(req.params.id)
+    const { imageUrl } = req.body
+
+    const projectIndex = projects.findIndex((p) => p.id === projectId)
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found",
+      })
+    }
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Image URL is required",
+      })
+    }
+
+    const project = projects[projectIndex]
+    
+    if (!project.images || !project.images.includes(imageUrl)) {
+      return res.status(400).json({
+        success: false,
+        error: "Image not found in project",
+      })
+    }
+
+    // Remove image from images array
+    project.images = project.images.filter(img => img !== imageUrl)
+    
+    // If the removed image was the cover image, set a new cover image
+    if (project.image === imageUrl) {
+      project.image = project.images.length > 0 ? project.images[0] : "/images/placeholder.png"
+    }
+    
+    project.updatedAt = new Date().toISOString()
+
+    res.json({
+      success: true,
+      data: project,
+      message: "Image removed successfully",
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to remove image",
+      details: error.message,
+    })
+  }
+})
+
 // BLOG ROUTES
 
 // GET all blog posts
