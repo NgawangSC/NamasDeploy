@@ -78,6 +78,16 @@ const ProjectsManager = () => {
     }
   }
 
+  const toggleFeatured = async (project) => {
+    try {
+      const updatedProject = { ...project, featured: !project.featured }
+      await updateProject(project.id, updatedProject)
+    } catch (error) {
+      console.error('Error updating featured status:', error)
+      alert('Error updating featured status: ' + error.message)
+    }
+  }
+
   return (
     <div className="projects-manager">
       <div className="manager-header">
@@ -189,6 +199,7 @@ const ProjectsManager = () => {
           <div key={project.id} className="project-card">
             <div className="project-image">
               <img src={getImageUrl(project.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
+              {project.featured && <span className="featured-badge">Featured</span>}
             </div>
             <div className="project-info">
               <h3>{project.title}</h3>
@@ -205,6 +216,12 @@ const ProjectsManager = () => {
                 </button>
                 <button onClick={() => handleDelete(project.id)} className="delete-btn">
                   Delete
+                </button>
+                <button 
+                  onClick={() => toggleFeatured(project)} 
+                  className={`featured-btn ${project.featured ? 'remove' : 'add'}`}
+                >
+                  {project.featured ? 'Remove from Hero' : 'Add to Hero'}
                 </button>
               </div>
             </div>

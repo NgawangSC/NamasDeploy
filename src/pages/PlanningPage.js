@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useData } from "../contexts/DataContext"
 import "./PlanningPage.css"
 
 const PlanningPage = () => {
   const navigate = useNavigate()
+  const { projects, loading, fetchProjects } = useData()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
@@ -21,62 +23,30 @@ const PlanningPage = () => {
   })
   const [openDropdown, setOpenDropdown] = useState(null)
 
-  const projects = [
-    {
-      id: 1,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project1.png",
-      category: "Residential",
-      location: "Bhutan",
-      year: "2023",
-      status: "Completed"
-    },
-    {
-      id: 2,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project2.png",
-      category: "Cultural",
-      location: "Bhutan",
-      year: "2023",
-      status: "Ongoing"
-    },
-    {
-      id: 3,
-      title: "Modern Villa Complex",
-      image: "/images/project3.png",
-      category: "Residential",
-      location: "Thimphu",
-      year: "2022",
-      status: "Completed"
-    },
-    {
-      id: 4,
-      title: "Traditional Heritage Center",
-      image: "/images/project4.png",
-      category: "Cultural",
-      location: "Paro",
-      year: "2022",
-      status: "Ongoing"
-    },
-    {
-      id: 5,
-      title: "Contemporary Office Building",
-      image: "/images/project5.png",
-      category: "Commercial",
-      location: "Thimphu",
-      year: "2021",
-      status: "Completed"
-    },
-    {
-      id: 6,
-      title: "Monastery Restoration",
-      image: "/images/project6.png",
-      category: "Religious",
-      location: "Punakha",
-      year: "2021",
-      status: "Ongoing"
-    },
+  // Planning page categories - projects that fall under planning services
+  const planningCategories = [
+    "Planning",
+    "Real Estate",
+    "Management", 
+    "Architecture",
+    "Residential",
+    "Commercial",
+    "Cultural",
+    "Educational",
+    "Healthcare"
   ]
+
+  useEffect(() => {
+    // Fetch projects if not already loaded
+    if (projects.length === 0 && !loading.projects) {
+      fetchProjects()
+    }
+  }, [projects, loading.projects, fetchProjects])
+
+  // Filter projects to show only planning-related categories and then apply additional filters
+  const planningProjects = projects.filter(project => 
+    planningCategories.includes(project.category)
+  )
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -90,10 +60,10 @@ const PlanningPage = () => {
   }, [openDropdown])
 
   const getUniqueValues = (key) => {
-    return [...new Set(projects.map(project => project[key]))].sort()
+    return [...new Set(planningProjects.map(project => project[key]))].sort()
   }
 
-  const filteredProjects = projects.filter(project => {
+  const filteredProjects = planningProjects.filter(project => {
     return (
       (!filters.year || project.year === filters.year) &&
       (!filters.location || project.location === filters.location) &&

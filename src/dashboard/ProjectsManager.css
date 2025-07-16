@@ -194,6 +194,7 @@
 .project-image {
   height: 200px;
   overflow: hidden;
+  position: relative;
 }
 
 .project-image img {
@@ -308,7 +309,43 @@
   margin-left: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Featured button styling */
+.featured-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.featured-btn.add {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #1a1a1a;
+}
+
+.featured-btn.add:hover {
+  background: linear-gradient(135deg, #ffed4e, #ffd700);
+  transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+.featured-btn.remove {
+  background: #6c757d;
+  color: white;
+}
+
+.featured-btn.remove:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {

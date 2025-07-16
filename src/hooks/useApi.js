@@ -154,12 +154,12 @@ export const useProjectOperations = () => {
     }
   }
 
-  const updateProject = async (id, projectData) => {
+  const updateProject = async (id, projectData, files = []) => {
     try {
       setLoading(true)
       setError(null)
       setSuccess(false)
-      const result = await ApiService.updateProject(id, projectData)
+      const result = await ApiService.updateProject(id, projectData, files)
       setSuccess(true)
       return result
     } catch (err) {

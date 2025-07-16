@@ -165,14 +165,9 @@ export const DataProvider = ({ children }) => {
       setLoading(prev => ({ ...prev, featuredProjects: true }));
       setError(prev => ({ ...prev, featuredProjects: null }));
       
-          // For now, just get the recent projects and filter to featured ones
-    // You can later add a specific API endpoint for featured projects
-    const response = await ApiService.getProjects();
-    const apiProjects = response.data || [];
-    
-    // For now, we'll just take the first 8 projects as featured
-    // Later you can add a 'featured' flag to projects
-    const featured = apiProjects.slice(0, 8);
+      // Fetch featured projects from the API
+      const response = await ApiService.getFeaturedProjects();
+      const featured = response.data || [];
       
       setData(prev => ({
         ...prev,
@@ -230,6 +225,11 @@ export const DataProvider = ({ children }) => {
         ...prev,
         projects: prev.projects.map(p => p.id === id ? updatedProject : p)
       }));
+      
+      // Refresh featured projects if featured status might have changed
+      if (updates.hasOwnProperty('featured')) {
+        fetchFeaturedProjects();
+      }
       
       return updatedProject;
     } catch (err) {

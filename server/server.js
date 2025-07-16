@@ -220,11 +220,18 @@ app.put("/api/projects/:id", upload.array("images", 10), (req, res) => {
       })
     }
 
+    const { featured, ...otherUpdates } = req.body;
+
     const updatedProject = {
       ...projects[projectIndex],
-      ...req.body,
+      ...otherUpdates,
       id: projectId,
       updatedAt: new Date().toISOString(),
+    }
+
+    // Handle featured field properly (convert string to boolean)
+    if (featured !== undefined) {
+      updatedProject.featured = featured === 'true' || featured === true;
     }
 
     // Handle new images if uploaded

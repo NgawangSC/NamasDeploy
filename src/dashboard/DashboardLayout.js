@@ -15,6 +15,8 @@ const DashboardLayout = ({ children, setIsAuthenticated }) => {
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: "📊" },
     { path: "/dashboard/projects", label: "Projects", icon: "🏗️" },
+    { path: "/dashboard/hero-banner", label: "Hero Banner", icon: "🎭" },
+    { path: "/dashboard/recent-projects", label: "Recent Projects", icon: "⭐" },
     { path: "/dashboard/blogs", label: "Blogs", icon: "📝" },
     { path: "/dashboard/clients", label: "Clients", icon: "🏢" },
     { path: "/dashboard/media", label: "Media", icon: "🖼️" },

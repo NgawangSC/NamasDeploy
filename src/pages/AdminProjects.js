@@ -2,11 +2,13 @@
 
 import { useState } from "react"
 import { useProjects, useProjectOperations } from "../hooks/useApi"
+import { useData } from "../contexts/DataContext"
 import "./AdminProjects.css"
 
 const AdminProjects = () => {
   const { data: projects, loading, error, refetch } = useProjects()
-  const { createProject, updateProject, deleteProject, loading: operationLoading } = useProjectOperations()
+  const { createProject, updateProject: updateProjectApi, deleteProject, loading: operationLoading } = useProjectOperations()
+  const { updateProject: updateProjectContext } = useData()
 
   const [showForm, setShowForm] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
@@ -38,7 +40,7 @@ const AdminProjects = () => {
 
     try {
       if (editingProject) {
-        await updateProject(editingProject.id, formData, selectedImages)
+        await updateProjectApi(editingProject.id, formData, selectedImages)
       } else {
         await createProject(formData, selectedImages)
       }
@@ -86,6 +88,17 @@ const AdminProjects = () => {
       } catch (error) {
         console.error("Error deleting project:", error)
       }
+    }
+  }
+
+  const toggleFeatured = async (project) => {
+    try {
+      const updatedProject = { ...project, featured: !project.featured }
+      await updateProjectContext(project.id, updatedProject)
+      refetch()
+    } catch (error) {
+      console.error('Error updating featured status:', error)
+      alert('Error updating featured status: ' + error.message)
     }
   }
 
@@ -141,8 +154,9 @@ const AdminProjects = () => {
                     <option value="Residential">Residential</option>
                     <option value="Commercial">Commercial</option>
                     <option value="Cultural">Cultural</option>
-                    <option value="Religious">Religious</option>
-                    <option value="Institutional">Institutional</option>
+                    <option value="Educational">Educational</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Hospitality">Hospitality</option>
                   </select>
                 </div>
 
@@ -213,6 +227,7 @@ const AdminProjects = () => {
           <div key={project.id} className="project-card">
             <div className="project-image">
               <img src={project.image || "/placeholder.svg"} alt={project.title} />
+              {project.featured && <span className="featured-badge">Featured</span>}
             </div>
             <div className="project-content">
               <h3>{project.title}</h3>
@@ -229,6 +244,13 @@ const AdminProjects = () => {
                 </button>
                 <button className="btn-delete" onClick={() => handleDelete(project.id)} disabled={operationLoading}>
                   Delete
+                </button>
+                <button 
+                  className={`btn-featured ${project.featured ? 'remove' : 'add'}`}
+                  onClick={() => toggleFeatured(project)} 
+                  disabled={operationLoading}
+                >
+                  {project.featured ? 'Remove from Hero' : 'Add to Hero'}
                 </button>
               </div>
             </div>

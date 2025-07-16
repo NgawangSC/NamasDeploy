@@ -1,69 +1,43 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useData } from "../contexts/DataContext"
 import "./DesignPage.css"
 
 const DesignPage = () => {
   const navigate = useNavigate()
+  const { projects, loading, fetchProjects } = useData()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [translateX, setTranslateX] = useState(0)
   const sliderRef = useRef(null)
 
-  const projects = [
-    {
-      id: 1,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project1.png",
-      category: "Residential",
-      location: "Bhutan",
-      year: "2023",
-    },
-    {
-      id: 2,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project2.png",
-      category: "Cultural",
-      location: "Bhutan",
-      year: "2023",
-    },
-    {
-      id: 3,
-      title: "Modern Villa Complex",
-      image: "/images/project3.png",
-      category: "Residential",
-      location: "Thimphu",
-      year: "2022",
-    },
-    {
-      id: 4,
-      title: "Traditional Heritage Center",
-      image: "/images/project4.png",
-      category: "Cultural",
-      location: "Paro",
-      year: "2022",
-    },
-    {
-      id: 5,
-      title: "Contemporary Office Building",
-      image: "/images/project5.png",
-      category: "Commercial",
-      location: "Thimphu",
-      year: "2021",
-    },
-    {
-      id: 6,
-      title: "Monastery Restoration",
-      image: "/images/project6.png",
-      category: "Religious",
-      location: "Punakha",
-      year: "2021",
-    },
+  // Design page categories - projects that fall under design services
+  const designCategories = [
+    "Architecture",
+    "Interior Design", 
+    "Landscape",
+    "Planning",
+    "Residential",
+    "Cultural",
+    "Educational"
   ]
 
-  const totalSlides = Math.ceil(projects.length / 2)
+  useEffect(() => {
+    // Fetch projects if not already loaded
+    if (projects.length === 0 && !loading.projects) {
+      fetchProjects()
+    }
+  }, [projects, loading.projects, fetchProjects])
+
+  // Filter projects to show only design-related categories
+  const designProjects = projects.filter(project => 
+    designCategories.includes(project.category)
+  )
+
+  const totalSlides = Math.ceil(designProjects.length / 2)
 
   const handleMouseDown = (e) => {
     setIsDragging(true)
@@ -141,11 +115,11 @@ const DesignPage = () => {
     const pairs = []
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
-      const pair = projects.slice(startIndex, startIndex + 2)
+              const pair = designProjects.slice(startIndex, startIndex + 2)
 
       // Ensure we always have exactly 2 projects
       if (pair.length === 1) {
-        pair.push(projects[0]) // Add first project as second if only one left
+        pair.push(designProjects[0]) // Add first project as second if only one left
       }
 
       pairs.push(pair)

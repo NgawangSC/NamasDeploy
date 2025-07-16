@@ -29,6 +29,8 @@ import AboutPlanningPage from "./pages/AboutPlanningPage"
 import DashboardLayout from "./dashboard/DashboardLayout"
 import DashboardHome from "./dashboard/DashboardHome"
 import ProjectsManager from "./dashboard/ProjectsManager"
+import HeroBannerManager from "./dashboard/HeroBannerManager"
+import RecentProjectsManager from "./dashboard/RecentProjectsManager"
 import BlogsManager from "./dashboard/BlogsManager"
 import ClientsManager from "./dashboard/ClientsManager"
 import MediaManager from "./dashboard/MediaManager"
@@ -70,6 +72,8 @@ function App() {
                   <Routes>
                     <Route path="/" element={<DashboardHome />} />
                     <Route path="/projects" element={<ProjectsManager />} />
+                    <Route path="/hero-banner" element={<HeroBannerManager />} />
+                    <Route path="/recent-projects" element={<RecentProjectsManager />} />
                     <Route path="/blogs" element={<BlogsManager />} />
                     <Route path="/clients" element={<ClientsManager />} />
                     <Route path="/media" element={<MediaManager />} />
