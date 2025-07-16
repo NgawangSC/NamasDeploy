@@ -115,13 +115,7 @@ const DesignPage = () => {
     const pairs = []
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
-              const pair = designProjects.slice(startIndex, startIndex + 2)
-
-      // Ensure we always have exactly 2 projects
-      if (pair.length === 1) {
-        pair.push(designProjects[0]) // Add first project as second if only one left
-      }
-
+      const pair = designProjects.slice(startIndex, startIndex + 2)
       pairs.push(pair)
     }
     return pairs

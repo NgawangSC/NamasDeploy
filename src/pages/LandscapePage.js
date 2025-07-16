@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useData } from "../contexts/DataContext"
 import "./LandscapePage.css"
 
 const LandscapePage = () => {
   const navigate = useNavigate()
+  const { projects, loading, fetchProjects } = useData()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
@@ -21,62 +23,28 @@ const LandscapePage = () => {
   })
   const [openDropdown, setOpenDropdown] = useState(null)
 
-  const projects = [
-    {
-      id: 1,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project1.png",
-      category: "Residential",
-      location: "Bhutan",
-      year: "2023",
-      status: "Completed"
-    },
-    {
-      id: 2,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project2.png",
-      category: "Cultural",
-      location: "Bhutan",
-      year: "2023",
-      status: "Ongoing"
-    },
-    {
-      id: 3,
-      title: "Modern Villa Complex",
-      image: "/images/project3.png",
-      category: "Residential",
-      location: "Thimphu",
-      year: "2022",
-      status: "Completed"
-    },
-    {
-      id: 4,
-      title: "Traditional Heritage Center",
-      image: "/images/project4.png",
-      category: "Cultural",
-      location: "Paro",
-      year: "2022",
-      status: "Ongoing"
-    },
-    {
-      id: 5,
-      title: "Contemporary Office Building",
-      image: "/images/project5.png",
-      category: "Commercial",
-      location: "Thimphu",
-      year: "2021",
-      status: "Completed"
-    },
-    {
-      id: 6,
-      title: "Monastery Restoration",
-      image: "/images/project6.png",
-      category: "Religious",
-      location: "Punakha",
-      year: "2021",
-      status: "Ongoing"
-    },
+  // Categories that should appear on the Landscape page
+  const landscapeCategories = [
+    "Landscape",
+    "Residential",
+    "Cultural",
+    "Educational",
+    "Commercial",
+    "Private Homes",
+    "Public Spaces"
   ]
+
+  useEffect(() => {
+    // Fetch projects if not already loaded
+    if (projects.length === 0 && !loading.projects) {
+      fetchProjects()
+    }
+  }, [projects, loading.projects, fetchProjects])
+
+  // Filter projects to show only landscape related categories
+  const landscapeProjects = projects.filter(project => 
+    landscapeCategories.includes(project.category)
+  )
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -90,10 +58,10 @@ const LandscapePage = () => {
   }, [openDropdown])
 
   const getUniqueValues = (key) => {
-    return [...new Set(projects.map(project => project[key]))].sort()
+    return [...new Set(landscapeProjects.map(project => project[key]))].sort()
   }
 
-  const filteredProjects = projects.filter(project => {
+  const filteredProjects = landscapeProjects.filter(project => {
     return (
       (!filters.year || project.year === filters.year) &&
       (!filters.location || project.location === filters.location) &&
@@ -188,7 +156,6 @@ const LandscapePage = () => {
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
       const pair = filteredProjects.slice(startIndex, startIndex + 2)
-      if (pair.length === 1) pair.push(filteredProjects[0] || pair[0])
       pairs.push(pair)
     }
     return pairs

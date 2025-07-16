@@ -14,9 +14,9 @@ const PrivateHomesPage = () => {
   const [translateX, setTranslateX] = useState(0)
   const sliderRef = useRef(null)
 
-  // Filter projects to show only Residential projects for Private Homes page
+  // Filter projects to show only relevant projects for Private Homes page
   const projects = allProjects.filter(project => 
-    project.category === "Residential"
+    project.category === "Residential" || project.category === "Private Homes"
   )
 
   // Filter states
@@ -147,7 +147,6 @@ const PrivateHomesPage = () => {
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
       const pair = filteredProjects.slice(startIndex, startIndex + 2)
-      if (pair.length === 1) pair.push(filteredProjects[0] || pair[0])
       pairs.push(pair)
     }
     return pairs

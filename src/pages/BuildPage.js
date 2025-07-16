@@ -120,12 +120,6 @@ const BuildPage = () => {
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
       const pair = buildProjects.slice(startIndex, startIndex + 2)
-
-      // Ensure we always have exactly 2 projects
-      if (pair.length === 1) {
-        pair.push(buildProjects[0]) // Add first project as second if only one left
-      }
-
       pairs.push(pair)
     }
     return pairs

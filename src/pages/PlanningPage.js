@@ -27,13 +27,7 @@ const PlanningPage = () => {
   const planningCategories = [
     "Planning",
     "Real Estate",
-    "Management", 
-    "Architecture",
-    "Residential",
-    "Commercial",
-    "Cultural",
-    "Educational",
-    "Healthcare"
+    "Management"
   ]
 
   useEffect(() => {
@@ -158,7 +152,6 @@ const PlanningPage = () => {
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
       const pair = filteredProjects.slice(startIndex, startIndex + 2)
-      if (pair.length === 1) pair.push(filteredProjects[0] || pair[0])
       pairs.push(pair)
     }
     return pairs

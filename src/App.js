@@ -9,6 +9,8 @@ import AboutPage from "./pages/AboutPage"
 import ProjectDetailPage from "./pages/ProjectDetailPage"
 import BlogDetailPage from "./pages/BlogDetailPage"
 import BlogPage from "./pages/BlogPage"
+import DesignPage from "./pages/DesignPage"
+import BuildPage from "./pages/BuildPage"
 import PlanningPage from "./pages/PlanningPage"
 import InteriorBuildPage from "./pages/InteriorBuildPage"
 import ArchitecturePage from "./pages/ArchitecturePage"
@@ -96,6 +98,8 @@ function App() {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/design" element={<DesignPage />} />
+                  <Route path="/build" element={<BuildPage />} />
                   <Route path="/architecture" element={<ArchitecturePage />} />
                   <Route path="/planning" element={<PlanningPage />} />
                   <Route path="/interior" element={<InteriorDesignPage />} />

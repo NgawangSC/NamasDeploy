@@ -188,7 +188,6 @@ const RenovationPage = () => {
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
       const pair = filteredProjects.slice(startIndex, startIndex + 2)
-      if (pair.length === 1) pair.push(filteredProjects[0] || pair[0])
       pairs.push(pair)
     }
     return pairs

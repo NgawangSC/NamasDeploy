@@ -23,12 +23,28 @@ const ArchitecturePage = () => {
   })
   const [openDropdown, setOpenDropdown] = useState(null)
 
+  // Categories that should appear on the Architecture page
+  const architectureCategories = [
+    "Architecture",
+    "Planning", 
+    "Commercial Buildings",
+    "Cultural",
+    "Educational",
+    "Religious",
+    "Residential"
+  ]
+
   useEffect(() => {
     // Fetch projects if not already loaded
     if (projects.length === 0 && !loading.projects) {
       fetchProjects()
     }
   }, [projects, loading.projects, fetchProjects])
+
+  // Filter projects to show only architecture related categories
+  const architectureProjects = projects.filter(project => 
+    architectureCategories.includes(project.category)
+  )
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -42,10 +58,10 @@ const ArchitecturePage = () => {
   }, [openDropdown])
 
   const getUniqueValues = (key) => {
-    return [...new Set(projects.map(project => project[key]))].sort()
+    return [...new Set(architectureProjects.map(project => project[key]))].sort()
   }
 
-  const filteredProjects = projects.filter(project => {
+  const filteredProjects = architectureProjects.filter(project => {
     return (
       (!filters.year || project.year === filters.year) &&
       (!filters.location || project.location === filters.location) &&
@@ -140,7 +156,6 @@ const ArchitecturePage = () => {
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
       const pair = filteredProjects.slice(startIndex, startIndex + 2)
-      if (pair.length === 1) pair.push(filteredProjects[0] || pair[0])
       pairs.push(pair)
     }
     return pairs
