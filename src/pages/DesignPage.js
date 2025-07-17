@@ -14,6 +14,14 @@ const DesignPage = () => {
   const [translateX, setTranslateX] = useState(0)
   const sliderRef = useRef(null)
 
+  // Filter state
+  const [selectedYear, setSelectedYear] = useState("")
+  const [selectedLocation, setSelectedLocation] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [showYearDropdown, setShowYearDropdown] = useState(false)
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+
   // Design page categories - projects that fall under design services
   const designCategories = [
     "Architecture",
@@ -33,11 +41,32 @@ const DesignPage = () => {
   }, [projects, loading.projects, fetchProjects])
 
   // Filter projects to show only design-related categories
-  const designProjects = projects.filter(project => 
+  let designProjects = projects.filter(project => 
     designCategories.includes(project.category)
   )
 
+  // Apply additional filters
+  if (selectedYear) {
+    designProjects = designProjects.filter(project => project.year === selectedYear)
+  }
+  if (selectedLocation) {
+    designProjects = designProjects.filter(project => project.location === selectedLocation)
+  }
+  if (selectedCategory) {
+    designProjects = designProjects.filter(project => project.category === selectedCategory)
+  }
+
+  // Get unique values for filter options
+  const availableYears = [...new Set(projects.filter(p => designCategories.includes(p.category)).map(p => p.year))].sort()
+  const availableLocations = [...new Set(projects.filter(p => designCategories.includes(p.category)).map(p => p.location))].sort()
+  const availableCategories = [...new Set(projects.filter(p => designCategories.includes(p.category)).map(p => p.category))].sort()
+
   const totalSlides = Math.ceil(designProjects.length / 2)
+
+  // Reset slide when filters change
+  useEffect(() => {
+    setCurrentSlide(0)
+  }, [selectedYear, selectedLocation, selectedCategory])
 
   const handleMouseDown = (e) => {
     setIsDragging(true)
@@ -123,6 +152,25 @@ const DesignPage = () => {
 
   const projectPairs = getAllProjectPairs()
 
+  // Clear all filters
+  const clearFilters = () => {
+    setSelectedYear("")
+    setSelectedLocation("")
+    setSelectedCategory("")
+  }
+
+  // Close all dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowYearDropdown(false)
+      setShowLocationDropdown(false)
+      setShowCategoryDropdown(false)
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
   return (
     <div className="design-page">
       <div
@@ -166,24 +214,65 @@ const DesignPage = () => {
 
       <div className="filter-section">
         <div className="filter-controls">
-          <div className="filter-item">
-            <span>YEAR</span>
+          <div className="filter-item" onClick={(e) => {e.stopPropagation(); setShowYearDropdown(!showYearDropdown); setShowLocationDropdown(false); setShowCategoryDropdown(false)}}>
+            <span>{selectedYear || "YEAR"}</span>
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+            {showYearDropdown && (
+              <div className="filter-dropdown">
+                <div className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedYear(""); setShowYearDropdown(false)}}>
+                  All Years
+                </div>
+                {availableYears.map(year => (
+                  <div key={year} className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedYear(year); setShowYearDropdown(false)}}>
+                    {year}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="filter-item">
-            <span>LOCATION</span>
+          <div className="filter-item" onClick={(e) => {e.stopPropagation(); setShowLocationDropdown(!showLocationDropdown); setShowYearDropdown(false); setShowCategoryDropdown(false)}}>
+            <span>{selectedLocation || "LOCATION"}</span>
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+            {showLocationDropdown && (
+              <div className="filter-dropdown">
+                <div className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedLocation(""); setShowLocationDropdown(false)}}>
+                  All Locations
+                </div>
+                {availableLocations.map(location => (
+                  <div key={location} className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedLocation(location); setShowLocationDropdown(false)}}>
+                    {location}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="filter-item">
-            <span>CATEGORY</span>
+          <div className="filter-item" onClick={(e) => {e.stopPropagation(); setShowCategoryDropdown(!showCategoryDropdown); setShowYearDropdown(false); setShowLocationDropdown(false)}}>
+            <span>{selectedCategory || "CATEGORY"}</span>
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+            {showCategoryDropdown && (
+              <div className="filter-dropdown">
+                <div className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedCategory(""); setShowCategoryDropdown(false)}}>
+                  All Categories
+                </div>
+                {availableCategories.map(category => (
+                  <div key={category} className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedCategory(category); setShowCategoryDropdown(false)}}>
+                    {category}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+          {(selectedYear || selectedLocation || selectedCategory) && (
+            <div className="clear-filters" onClick={clearFilters}>
+              Clear Filters
+            </div>
+          )}
         </div>
 
         <div className="social-icons">

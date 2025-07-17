@@ -32,7 +32,12 @@ const AdminProjects = () => {
   }
 
   const handleImageChange = (e) => {
-    setSelectedImages(Array.from(e.target.files))
+    // Check if files exist before trying to create an array
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedImages(Array.from(e.target.files))
+    } else {
+      setSelectedImages([])
+    }
   }
 
   const handleSubmit = async (e) => {

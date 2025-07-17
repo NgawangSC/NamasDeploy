@@ -56,7 +56,7 @@ const HeroBannerManager = () => {
       </div>
 
       <div className="featured-summary">
-        <h2>Currently Featured ({featuredProjects.length} projects)</h2>
+        <h2>Hero Banner ({featuredProjects.length} projects)</h2>
         <div className="featured-grid">
           {featuredProjects.map((project) => (
             <div key={project.id} className="featured-project-card">

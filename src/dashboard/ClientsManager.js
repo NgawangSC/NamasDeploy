@@ -29,7 +29,7 @@ const ClientsManager = () => {
   const handleFileChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      logo: e.target.files[0],
+      logo: e.target.files && e.target.files.length > 0 ? e.target.files[0] : null,
     }))
   }
 

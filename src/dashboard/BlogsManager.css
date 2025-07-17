@@ -313,4 +313,149 @@
   .form-actions {
     flex-direction: column;
   }
+
+  .blog-list-item {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .blog-list-image {
+    width: 100%;
+    height: 200px;
+  }
+
+  .blog-list-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .blog-list-sidebar {
+    align-items: stretch;
+    min-width: auto;
+  }
+
+  .blog-list-sidebar .blog-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .blog-list-sidebar .blog-actions button {
+    flex: 1;
+    min-width: 80px;
+  }
+}
+
+/* Blog List View Styles */
+.blogs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.blog-list-item {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  gap: 20px;
+}
+
+.blog-list-item:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.blog-list-image {
+  position: relative;
+  width: 120px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.blog-list-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.blog-list-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.blog-list-main {
+  flex: 1;
+}
+
+.blog-list-main h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.blog-list-main .blog-meta {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.blog-list-main .blog-excerpt {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blog-list-main .blog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.blog-list-main .tag {
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+.tag-more {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.blog-list-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.blog-list-sidebar .blog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.blog-list-sidebar .blog-actions button {
+  padding: 6px 12px;
+  font-size: 12px;
+  width: 100%;
 }

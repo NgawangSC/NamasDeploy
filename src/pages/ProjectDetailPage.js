@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./ProjectDetailPage.css"
 
 const ProjectDetailPage = () => {
@@ -11,13 +12,26 @@ const ProjectDetailPage = () => {
   const { projects, loading, fetchProjects } = useData()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [project, setProject] = useState(null)
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
 
   useEffect(() => {
-    // Fetch projects if not already loaded
-    if (projects.length === 0 && !loading.projects) {
+    // Fetch projects on mount if not already loaded
+    if (projects.length === 0 && !hasAttemptedFetch) {
+      setHasAttemptedFetch(true)
       fetchProjects()
     }
-  }, [projects, loading.projects, fetchProjects])
+  }, [projects.length, hasAttemptedFetch, fetchProjects])
+
+  // Timeout mechanism to handle stuck loading state
+  useEffect(() => {
+    if (loading.projects) {
+      const timeout = setTimeout(() => {
+        fetchProjects()
+      }, 10000) // 10 second timeout
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [loading.projects, fetchProjects])
 
   useEffect(() => {
     const foundProject = projects.find((p) => p.id === Number.parseInt(id))
@@ -45,8 +59,23 @@ const ProjectDetailPage = () => {
     setCurrentImageIndex(index)
   }
   
-  if (loading.projects) {
-    return <div className="project-loading">Loading projects...</div>
+
+
+  // Show loading only if we truly have no data and are actively loading
+  if (loading.projects && projects.length === 0) {
+    return (
+      <div className="project-loading">
+        <div>Loading projects...</div>
+        <button 
+          onClick={() => {
+            fetchProjects()
+          }}
+          style={{ marginTop: '10px', padding: '8px 16px' }}
+        >
+          Retry Loading
+        </button>
+      </div>
+    )
   }
 
   if (!project) {
@@ -62,11 +91,13 @@ const ProjectDetailPage = () => {
   }
 
   // Handle both single image and multiple images
-  const projectImages = project.images && project.images.length > 0 
-    ? project.images 
+  const projectImages = project.images && Array.isArray(project.images) && project.images.length > 0 
+    ? project.images.map(img => getImageUrl(img))
     : project.image 
-      ? [project.image] 
+      ? [getImageUrl(project.image)] 
       : ["/placeholder.svg"]
+
+
 
   return (
     <div className="project-detail-page">
@@ -85,9 +116,53 @@ const ProjectDetailPage = () => {
               src={projectImages[currentImageIndex] || "/placeholder.svg"}
               alt={project.title}
               className="gallery-image"
+              onError={(e) => {
+                console.warn('Project detail image failed to load:', projectImages[currentImageIndex]);
+                e.target.src = "/placeholder.svg?height=400&width=600&text=Image+Not+Found";
+              }}
+
             />
-            <div className="project-title-overlay">
-              <h1>{project.title}</h1>
+                          <div className="project-title-overlay">
+                <h1>{project.title}</h1>
+                {projectImages.length > 1 && (
+                  <div className="image-counter">
+                    {currentImageIndex + 1} / {projectImages.length}
+                  </div>
+                )}
+                              <button 
+                 onClick={async () => {
+                   const btn = document.querySelector('.refresh-btn');
+                   const originalText = btn.textContent;
+                   
+                   try {
+                     btn.textContent = '⟳ Loading...';
+                     btn.disabled = true;
+                     await fetchProjects();
+                     
+                     // Show success indicator
+                     btn.textContent = '✓ Updated';
+                     btn.style.background = 'rgba(40, 167, 69, 0.8)';
+                     setTimeout(() => {
+                       btn.textContent = originalText;
+                       btn.style.background = '';
+                       btn.disabled = false;
+                     }, 2000);
+                   } catch (error) {
+                     console.error('Failed to refresh:', error);
+                     btn.textContent = '✗ Error';
+                     btn.style.background = 'rgba(220, 53, 69, 0.8)';
+                     setTimeout(() => {
+                       btn.textContent = originalText;
+                       btn.style.background = '';
+                       btn.disabled = false;
+                     }, 2000);
+                   }
+                 }}
+                 className="refresh-btn"
+                 title="Refresh project images"
+               >
+                 ↻ Refresh
+               </button>
             </div>
           </div>
 

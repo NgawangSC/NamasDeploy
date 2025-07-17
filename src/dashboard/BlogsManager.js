@@ -1,14 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import ViewFilter from "../components/ViewFilter"
 import "./BlogsManager.css"
 
 const BlogsManager = () => {
   const { blogs, addBlog, updateBlog, deleteBlog } = useData()
   const [showForm, setShowForm] = useState(false)
   const [editingBlog, setEditingBlog] = useState(null)
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [viewMode, setViewMode] = useState("detail") // 'list' or 'detail'
+  
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -19,6 +26,28 @@ const BlogsManager = () => {
     status: "draft",
     image: "",
   })
+
+  // Extract unique categories from blogs
+  const categories = useMemo(() => {
+    const cats = [...new Set(blogs.map(blog => blog.category).filter(Boolean))]
+    return cats.sort()
+  }, [blogs])
+
+  // Filter blogs based on search term and category
+  const filteredBlogs = useMemo(() => {
+    return blogs.filter(blog => {
+      const matchesSearch = !searchTerm || 
+        blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        blog.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        blog.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (blog.tags && blog.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+      
+      const matchesCategory = !selectedCategory || blog.category === selectedCategory
+      
+      return matchesSearch && matchesCategory
+    })
+  }, [blogs, searchTerm, selectedCategory])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -78,6 +107,75 @@ const BlogsManager = () => {
     }
   }
 
+  // List view component
+  const BlogListView = ({ blog }) => (
+    <div className="blog-list-item">
+      <div className="blog-list-image">
+        <img src={getImageUrl(blog.image) || "/placeholder.svg"} alt={blog.title} />
+      </div>
+      <div className="blog-list-content">
+        <div className="blog-list-main">
+          <h3>{blog.title}</h3>
+          <p className="blog-meta">By {blog.author} • {blog.category}</p>
+          <p className="blog-excerpt">{blog.excerpt}</p>
+          <div className="blog-tags">
+            {blog.tags &&
+              blog.tags.slice(0, 3).map((tag) => (
+                <span key={tag} className="tag">
+                  {tag}
+                </span>
+              ))}
+            {blog.tags && blog.tags.length > 3 && (
+              <span className="tag-more">+{blog.tags.length - 3}</span>
+            )}
+          </div>
+        </div>
+        <div className="blog-list-sidebar">
+          <span className={`status ${blog.status}`}>{blog.status}</span>
+          <div className="blog-actions">
+            <button onClick={() => handleEdit(blog)} className="edit-btn">Edit</button>
+            <button onClick={() => handleDelete(blog.id)} className="delete-btn">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Detail view component (existing card view)
+  const BlogDetailView = ({ blog }) => (
+    <div className="blog-card">
+      <div className="blog-image">
+        <img src={getImageUrl(blog.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={blog.title} />
+      </div>
+      <div className="blog-info">
+        <h3>{blog.title}</h3>
+        <p className="blog-meta">
+          By {blog.author} • {blog.category}
+        </p>
+        <p className="blog-excerpt">{blog.excerpt}</p>
+        <div className="blog-tags">
+          {blog.tags &&
+            blog.tags.map((tag) => (
+              <span key={tag} className="tag">
+                {tag}
+              </span>
+            ))}
+        </div>
+        <div className="blog-status">
+          <span className={`status ${blog.status}`}>{blog.status}</span>
+        </div>
+        <div className="blog-actions">
+          <button onClick={() => handleEdit(blog)} className="edit-btn">
+            Edit
+          </button>
+          <button onClick={() => handleDelete(blog.id)} className="delete-btn">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="blogs-manager">
       <div className="manager-header">
@@ -86,6 +184,18 @@ const BlogsManager = () => {
           Add New Blog
         </button>
       </div>
+
+      <ViewFilter
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        categories={categories}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        totalItems={filteredBlogs.length}
+        itemType="Blogs"
+      />
 
       {showForm && (
         <div className="form-overlay">
@@ -183,41 +293,34 @@ const BlogsManager = () => {
         </div>
       )}
 
-      <div className="blogs-grid">
-        {blogs.map((blog) => (
-          <div key={blog.id} className="blog-card">
-            <div className="blog-image">
-              <img src={getImageUrl(blog.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={blog.title} />
-            </div>
-            <div className="blog-info">
-              <h3>{blog.title}</h3>
-              <p className="blog-meta">
-                By {blog.author} • {blog.category}
-              </p>
-              <p className="blog-excerpt">{blog.excerpt}</p>
-              <div className="blog-tags">
-                {blog.tags &&
-                  blog.tags.map((tag) => (
-                    <span key={tag} className="tag">
-                      {tag}
-                    </span>
-                  ))}
-              </div>
-              <div className="blog-status">
-                <span className={`status ${blog.status}`}>{blog.status}</span>
-              </div>
-              <div className="blog-actions">
-                <button onClick={() => handleEdit(blog)} className="edit-btn">
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(blog.id)} className="delete-btn">
-                  Delete
-                </button>
-              </div>
-            </div>
+      <div className={`blogs-container ${viewMode}`}>
+        {viewMode === 'list' ? (
+          <div className="blogs-list">
+            {filteredBlogs.map((blog) => (
+              <BlogListView key={blog.id} blog={blog} />
+            ))}
           </div>
-        ))}
+        ) : (
+          <div className="blogs-grid">
+            {filteredBlogs.map((blog) => (
+              <BlogDetailView key={blog.id} blog={blog} />
+            ))}
+          </div>
+        )}
       </div>
+
+      {filteredBlogs.length === 0 && blogs.length > 0 && (
+        <div className="empty-state">
+          <h3>No blogs found</h3>
+          <p>Try adjusting your search or filter criteria</p>
+          <button onClick={() => {
+            setSearchTerm("")
+            setSelectedCategory("")
+          }} className="clear-filters-btn">
+            Clear Filters
+          </button>
+        </div>
+      )}
 
       {blogs.length === 0 && (
         <div className="empty-state">

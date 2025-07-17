@@ -29,7 +29,7 @@ const AdminBlogs = () => {
   }
 
   const handleImageChange = (e) => {
-    setSelectedImage(e.target.files[0])
+    setSelectedImage(e.target.files && e.target.files.length > 0 ? e.target.files[0] : null)
   }
 
   const handleSubmit = async (e) => {

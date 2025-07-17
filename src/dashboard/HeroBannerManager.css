@@ -217,4 +217,123 @@
   .search-input {
     max-width: 100%;
   }
+
+  .hero-project-list-item {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero-project-list-image {
+    width: 100%;
+    height: 200px;
+  }
+
+  .hero-project-list-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero-project-list-sidebar {
+    align-items: stretch;
+    min-width: auto;
+  }
+}
+
+/* Hero Banner List View Styles */
+.hero-projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-project-list-item {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  gap: 20px;
+}
+
+.hero-project-list-item:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.hero-project-list-image {
+  position: relative;
+  width: 120px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hero-project-list-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-project-list-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.hero-project-list-main {
+  flex: 1;
+}
+
+.hero-project-list-main h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hero-project-list-main .project-meta {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.hero-project-list-main .project-description {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-project-list-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  min-width: 160px;
+}
+
+.clear-filters-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
 }

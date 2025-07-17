@@ -1,64 +1,19 @@
 "use client"
 
 import { useNavigate } from "react-router-dom"
+import { useEffect } from "react"
+import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./BlogPage.css"
 
 const BlogPage = () => {
   const navigate = useNavigate()
+  const { blogs, fetchBlogs, loading } = useData()
 
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Sustainable Architecture in Bhutan",
-      excerpt:
-        "Exploring traditional building techniques and modern sustainable practices in contemporary Bhutanese architecture.",
-      date: "March 15, 2024",
-      category: "Sustainability",
-      image: "/images/project1.png",
-    },
-    {
-      id: 2,
-      title: "The Future of Traditional Design",
-      excerpt: "How we blend traditional Bhutanese architectural elements with modern functionality and aesthetics.",
-      date: "March 10, 2024",
-      category: "Design",
-      image: "/images/project2.png",
-    },
-    {
-      id: 3,
-      title: "Cultural Heritage Preservation",
-      excerpt:
-        "Our approach to preserving and celebrating Bhutanese cultural heritage through thoughtful architectural design.",
-      date: "March 5, 2024",
-      category: "Heritage",
-      image: "/images/project3.png",
-    },
-    {
-      id: 4,
-      title: "Modern Materials, Traditional Forms",
-      excerpt:
-        "Innovative use of contemporary materials while maintaining the essence of traditional Bhutanese architecture.",
-      date: "February 28, 2024",
-      category: "Innovation",
-      image: "/images/project4.png",
-    },
-    {
-      id: 5,
-      title: "Community-Centered Design",
-      excerpt: "Creating spaces that foster community interaction and reflect the values of Bhutanese society.",
-      date: "February 20, 2024",
-      category: "Community",
-      image: "/images/project5.png",
-    },
-    {
-      id: 6,
-      title: "Climate-Responsive Architecture",
-      excerpt: "Designing buildings that respond to Bhutan's unique climate and environmental conditions.",
-      date: "February 15, 2024",
-      category: "Environment",
-      image: "/images/project6.png",
-    },
-  ]
+  // Fetch blogs when component mounts
+  useEffect(() => {
+    fetchBlogs()
+  }, [])
 
   const heroStyle = {
     backgroundImage: `url("/images/about-hero-bg.jpg")`,
@@ -81,24 +36,43 @@ const BlogPage = () => {
       {/* Blog Content */}
       <section className="blog-content">
         <div className="container">
-          <div className="blog-grid">
-            {blogPosts.map((post) => (
-              <article key={post.id} className="blog-card">
-                <div className="blog-card-image">
-                  <img src={post.image || "/placeholder.svg"} alt={post.title} />
-                  <div className="blog-category">{post.category}</div>
-                </div>
-                <div className="blog-card-content">
-                  <div className="blog-date">{post.date}</div>
-                  <h3 className="blog-title">{post.title}</h3>
-                  <p className="blog-excerpt">{post.excerpt}</p>
-                  <button className="read-more-btn" onClick={() => handleReadMore(post.id)}>
-                    Read More
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+          {loading.blogs ? (
+            <div className="loading-state">
+              <p>Loading blog posts...</p>
+            </div>
+          ) : blogs.length === 0 ? (
+            <div className="empty-state">
+              <h3>No blog posts available</h3>
+              <p>Check back soon for new content!</p>
+            </div>
+          ) : (
+            <div className="blog-grid">
+              {blogs
+                .filter(blog => blog.status === 'published') // Only show published blogs
+                .map((post) => (
+                  <article key={post.id} className="blog-card">
+                    <div className="blog-card-image">
+                      <img 
+                        src={getImageUrl(post.image) || "/placeholder.svg"} 
+                        alt={post.title}
+                        onError={(e) => {
+                          e.target.src = "/placeholder.svg?height=200&width=300&text=No+Image"
+                        }}
+                      />
+                      <div className="blog-category">{post.category}</div>
+                    </div>
+                    <div className="blog-card-content">
+                      <div className="blog-date">{post.date}</div>
+                      <h3 className="blog-title">{post.title}</h3>
+                      <p className="blog-excerpt">{post.excerpt}</p>
+                      <button className="read-more-btn" onClick={() => handleReadMore(post.id)}>
+                        Read More
+                      </button>
+                    </div>
+                  </article>
+                ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

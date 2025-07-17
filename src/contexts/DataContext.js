@@ -199,9 +199,30 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
-  const addProject = async (project, files = []) => {
+  const addProject = async (projectData) => {
     try {
-      const response = await ApiService.createProject(project, files);
+      let response;
+      
+      // Check if projectData is FormData (contains files)
+      if (projectData instanceof FormData) {
+        // Handle FormData directly
+        const url = 'http://localhost:5000/api/projects';
+        const fetchResponse = await fetch(url, {
+          method: 'POST',
+          body: projectData,
+        });
+        
+        if (!fetchResponse.ok) {
+          const errorData = await fetchResponse.json();
+          throw new Error(errorData.error || `HTTP error! status: ${fetchResponse.status}`);
+        }
+        
+        response = await fetchResponse.json();
+      } else {
+        // Handle regular object data
+        response = await ApiService.createProject(projectData, []);
+      }
+      
       const newProject = response.data;
       
       setData(prev => ({
@@ -216,10 +237,35 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  const updateProject = async (id, updates, files = []) => {
+  const updateProject = async (id, updates) => {
     try {
-      const response = await ApiService.updateProject(id, updates, files);
-      const updatedProject = response.data;
+      let response;
+      let updatedProject;
+      
+      // Check if updates is FormData (contains files)
+      if (updates instanceof FormData) {
+        // Handle FormData directly
+        const url = `http://localhost:5000/api/projects/${id}`;
+        const fetchResponse = await fetch(url, {
+          method: 'PUT',
+          body: updates,
+        });
+        
+        if (!fetchResponse.ok) {
+          const errorData = await fetchResponse.json();
+          throw new Error(errorData.error || `HTTP error! status: ${fetchResponse.status}`);
+        }
+        
+        response = await fetchResponse.json();
+        updatedProject = response.data;
+      } else if (typeof updates === 'object' && updates.id) {
+        // Handle direct project object update (from image management operations)
+        updatedProject = updates;
+      } else {
+        // Handle regular object data via API
+        response = await ApiService.updateProject(id, updates, []);
+        updatedProject = response.data;
+      }
       
       setData(prev => ({
         ...prev,
@@ -227,7 +273,11 @@ export const DataProvider = ({ children }) => {
       }));
       
       // Refresh featured projects if featured status might have changed
-      if (updates.hasOwnProperty('featured')) {
+      if (updates instanceof FormData && updates.has('featured')) {
+        fetchFeaturedProjects();
+      } else if (updates.hasOwnProperty && updates.hasOwnProperty('featured')) {
+        fetchFeaturedProjects();
+      } else if (updatedProject && updatedProject.featured !== undefined) {
         fetchFeaturedProjects();
       }
       

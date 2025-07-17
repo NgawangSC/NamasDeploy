@@ -853,6 +853,35 @@ app.use((error, req, res, next) => {
   })
 })
 
+// POST upload media files
+app.post("/api/media/upload", upload.array("images", 20), (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No images uploaded",
+      })
+    }
+
+    // Return the file paths for the uploaded images
+    const imagePaths = req.files.map((file) => `/uploads/${file.filename}`)
+    
+    res.json({
+      success: true,
+      message: `Successfully uploaded ${req.files.length} image(s)`,
+      data: imagePaths,
+      count: req.files.length,
+    })
+  } catch (error) {
+    console.error("Error uploading media:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload images",
+      message: error.message,
+    })
+  }
+})
+
 // 404 handler for undefined routes
 app.use("*", (req, res) => {
   res.status(404).json({

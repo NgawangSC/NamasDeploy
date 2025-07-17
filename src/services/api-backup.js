@@ -70,10 +70,12 @@ class ApiService {
       formData.append(key, projectData[key]);
     });
     
-    // Append files
-    files.forEach(file => {
-      formData.append('images', file);
-    });
+    // Append files - check if files array exists and has length
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        formData.append('images', file);
+      });
+    }
     
     return this.requestMultipart('/projects', formData);
   }
@@ -86,10 +88,12 @@ class ApiService {
       formData.append(key, projectData[key]);
     });
     
-    // Append files
-    files.forEach(file => {
-      formData.append('images', file);
-    });
+    // Append files - check if files array exists and has length
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        formData.append('images', file);
+      });
+    }
     
     const url = `${API_BASE_URL}/projects/${id}`;
     

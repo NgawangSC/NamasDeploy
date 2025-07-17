@@ -6,9 +6,14 @@ import { getImageUrl } from "../utils/imageUtils"
 import "./ProjectsManager.css"
 
 const ProjectsManager = () => {
-  const { projects, addProject, updateProject, deleteProject } = useData()
+  const { projects, addProject, updateProject, deleteProject, fetchProjects } = useData()
   const [showForm, setShowForm] = useState(false)
+  const [showImageManager, setShowImageManager] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
+  const [selectedImages, setSelectedImages] = useState([])
+  const [imagePreviews, setImagePreviews] = useState([])
+  const [managingProject, setManagingProject] = useState(null)
+  const [additionalImages, setAdditionalImages] = useState([])
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -29,15 +34,167 @@ const ProjectsManager = () => {
     }))
   }
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files)
+    setSelectedImages(files)
+    
+    // Create preview URLs
+    const previewUrls = files.map(file => URL.createObjectURL(file))
+    setImagePreviews(previewUrls)
+  }
+
+  const handleAdditionalImageChange = (e) => {
+    const files = Array.from(e.target.files)
+    setAdditionalImages(files)
+  }
+
+  const removeImagePreview = (index) => {
+    const newImages = selectedImages.filter((_, i) => i !== index)
+    const newPreviews = imagePreviews.filter((_, i) => i !== index)
+    
+    setSelectedImages(newImages)
+    setImagePreviews(newPreviews)
+    
+    // Update file input
+    const fileInput = document.querySelector('input[type="file"]')
+    if (fileInput) {
+      const dt = new DataTransfer()
+      newImages.forEach(file => dt.items.add(file))
+      fileInput.files = dt.files
+    }
+  }
+
+  const addImagesToProject = async () => {
+    if (!managingProject || additionalImages.length === 0) return
+
+    try {
+      const formData = new FormData()
+      additionalImages.forEach(file => {
+        formData.append('images', file)
+      })
+
+      const response = await fetch(`http://localhost:5000/api/projects/${managingProject.id}/images`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to add images')
+      }
+
+      const result = await response.json()
+      const updatedProject = result.data.project
+
+      // Update the project in the state and also update the managingProject
+      await updateProject(managingProject.id, updatedProject)
+      setManagingProject(updatedProject)
+      
+      // Refresh projects data to ensure we have the latest information
+      fetchProjects();
+      
+      // Reset additional images
+      setAdditionalImages([])
+      const fileInput = document.querySelector('.additional-images-input')
+      if (fileInput) fileInput.value = ''
+      
+      alert(`${result.data.newImages.length} image(s) added successfully!`)
+    } catch (error) {
+      console.error('Error adding images:', error)
+      alert('Error adding images: ' + error.message)
+    }
+  }
+
+  const removeImageFromProject = async (imageUrl) => {
+    if (!managingProject) return
+
+    if (window.confirm('Are you sure you want to remove this image?')) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/projects/${managingProject.id}/images`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageUrl }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to remove image')
+        }
+
+        const result = await response.json()
+        const updatedProject = result.data
+
+        // Update the project in the state and also update the managingProject
+        await updateProject(managingProject.id, updatedProject)
+        setManagingProject(updatedProject)
+        
+        alert('Image removed successfully!')
+      } catch (error) {
+        console.error('Error removing image:', error)
+        alert('Error removing image: ' + error.message)
+      }
+    }
+  }
+
+  const setCoverImage = async (imageUrl) => {
+    if (!managingProject) return
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${managingProject.id}/cover`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to set cover image')
+      }
+
+      const result = await response.json()
+      const updatedProject = result.data
+
+      // Update the project in the state and also update the managingProject
+      await updateProject(managingProject.id, updatedProject)
+      setManagingProject(updatedProject)
+      
+      alert('Cover image updated successfully!')
+    } catch (error) {
+      console.error('Error setting cover image:', error)
+      alert('Error setting cover image: ' + error.message)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     try {
+      const submitData = new FormData()
+      
+      // Append form fields
+      Object.keys(formData).forEach(key => {
+        if (key !== 'image') { // Don't include the old image field
+          submitData.append(key, formData[key])
+        }
+      })
+      
+      // Append images
+      selectedImages.forEach(file => {
+        submitData.append('images', file)
+      })
+
       if (editingProject) {
-        await updateProject(editingProject.id, formData)
+        const updatedProject = await updateProject(editingProject.id, submitData)
       } else {
-        await addProject(formData)
+        const newProject = await addProject(submitData)
       }
+      
+      // Refresh projects to ensure we have the latest data
+      fetchProjects()
       resetForm()
     } catch (error) {
       console.error('Error saving project:', error)
@@ -57,14 +214,40 @@ const ProjectsManager = () => {
       client: "",
       designTeam: "",
     })
+    setSelectedImages([])
+    setImagePreviews([])
     setShowForm(false)
     setEditingProject(null)
+    
+    // Reset file input
+    const fileInput = document.querySelector('input[type="file"]')
+    if (fileInput) {
+      fileInput.value = ''
+    }
   }
 
   const handleEdit = (project) => {
     setFormData(project)
     setEditingProject(project)
+    setSelectedImages([])
+    setImagePreviews([])
     setShowForm(true)
+  }
+
+  const handleManageImages = (project) => {
+    // Ensure the project has an images array, converting from single image if needed
+    const normalizedProject = {
+      ...project,
+      images: project.images && Array.isArray(project.images) 
+        ? project.images 
+        : project.image 
+          ? [project.image] 
+          : []
+    }
+    
+    setManagingProject(normalizedProject)
+    setAdditionalImages([])
+    setShowImageManager(true)
   }
 
   const handleDelete = async (id) => {
@@ -186,14 +369,41 @@ const ProjectsManager = () => {
               </div>
 
               <div className="form-group">
-                <label>Image URL</label>
+                <label>Project Images</label>
                 <input
-                  type="url"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/image.jpg"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  className="file-input"
                 />
+                <p className="file-input-hint">
+                  {editingProject 
+                    ? "Select new images to replace existing ones (optional)" 
+                    : "Select one or more images for this project"
+                  }
+                </p>
+                
+                {imagePreviews.length > 0 && (
+                  <div className="image-previews">
+                    <h4>Selected Images:</h4>
+                    <div className="preview-grid">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="preview-item">
+                          <img src={preview} alt={`Preview ${index + 1}`} />
+                          <button
+                            type="button"
+                            onClick={() => removeImagePreview(index)}
+                            className="remove-preview"
+                          >
+                            ×
+                          </button>
+                          {index === 0 && <span className="cover-badge">Cover</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -220,12 +430,112 @@ const ProjectsManager = () => {
         </div>
       )}
 
+      {showImageManager && managingProject && (
+        <div className="form-overlay">
+          <div className="form-container image-manager-container">
+            <div className="form-header">
+              <h2>Manage Images - {managingProject.title}</h2>
+              <button onClick={() => setShowImageManager(false)} className="close-btn">
+                ×
+              </button>
+            </div>
+
+            <div className="image-manager-content">
+              {/* Current Images */}
+              <div className="current-images-section">
+                <h3>Current Images</h3>
+                {managingProject && managingProject.images && Array.isArray(managingProject.images) && managingProject.images.length > 0 ? (
+                  <div className="current-images-grid">
+                    {managingProject.images.map((imageUrl, index) => (
+                      <div key={index} className="current-image-item">
+                        <img 
+                          src={getImageUrl(imageUrl)} 
+                          alt={`Project image ${index + 1}`} 
+                          onError={(e) => {
+                            console.warn('Image failed to load:', getImageUrl(imageUrl));
+                            e.target.src = "/placeholder.svg?height=150&width=200&text=Image+Not+Found";
+                          }}
+                        />
+                        <div className="image-actions">
+                          <button
+                            onClick={() => setCoverImage(imageUrl)}
+                            className={`set-cover-btn ${managingProject.image === imageUrl ? 'current-cover' : ''}`}
+                          >
+                            {managingProject.image === imageUrl ? 'Cover' : 'Set Cover'}
+                          </button>
+                          <button
+                            onClick={() => removeImageFromProject(imageUrl)}
+                            className="remove-image-btn"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : managingProject && managingProject.image ? (
+                                      <div className="current-images-grid">
+                      <div className="current-image-item">
+                        <img 
+                          src={getImageUrl(managingProject.image)} 
+                          alt="Project cover" 
+                          onError={(e) => {
+                            console.warn('Cover image failed to load:', getImageUrl(managingProject.image));
+                            e.target.src = "/placeholder.svg?height=150&width=200&text=Image+Not+Found";
+                          }}
+                        />
+                        <div className="image-actions">
+                        <button className="set-cover-btn current-cover">
+                          Cover
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p>No images available</p>
+                )}
+              </div>
+
+              {/* Add New Images */}
+              <div className="add-images-section">
+                <h3>Add New Images</h3>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleAdditionalImageChange}
+                  className="file-input additional-images-input"
+                />
+                <p className="file-input-hint">Select additional images to add to this project</p>
+                
+                {additionalImages.length > 0 && (
+                  <div className="add-images-actions">
+                    <p>{additionalImages.length} image(s) selected</p>
+                    <button onClick={addImagesToProject} className="add-images-btn">
+                      Add Images
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="projects-grid">
         {projects.map((project) => (
           <div key={project.id} className="project-card">
             <div className="project-image">
               <img src={getImageUrl(project.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
               {project.featured && <span className="featured-badge">Featured</span>}
+              {(() => {
+                const imageCount = project.images && Array.isArray(project.images) 
+                  ? project.images.length 
+                  : project.image ? 1 : 0;
+                return imageCount > 1 && (
+                  <span className="image-count-badge">{imageCount} images</span>
+                );
+              })()}
             </div>
             <div className="project-info">
               <h3>{project.title}</h3>
@@ -239,6 +549,9 @@ const ProjectsManager = () => {
               <div className="project-actions">
                 <button onClick={() => handleEdit(project)} className="edit-btn">
                   Edit
+                </button>
+                <button onClick={() => handleManageImages(project)} className="manage-images-btn">
+                  Manage Images
                 </button>
                 <button onClick={() => handleDelete(project.id)} className="delete-btn">
                   Delete
