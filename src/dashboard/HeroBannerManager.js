@@ -8,6 +8,7 @@ import "./HeroBannerManager.css"
 const HeroBannerManager = () => {
   const { projects, featuredProjects, loading, updateProject, fetchProjects, fetchFeaturedProjects } = useData()
   const [searchTerm, setSearchTerm] = useState("")
+  const [updatingProject, setUpdatingProject] = useState(null)
 
   useEffect(() => {
     if (projects.length === 0 && !loading.projects) {
@@ -20,13 +21,23 @@ const HeroBannerManager = () => {
 
   const handleToggleFeatured = async (project) => {
     try {
+      setUpdatingProject(project.id)
+      const action = project.featured ? 'removed from' : 'added to'
       await updateProject(project.id, {
         ...project,
         featured: !project.featured
       })
+      // Refresh the featured projects list to ensure UI is updated
+      await fetchFeaturedProjects()
+      // Show success message
+      const message = `"${project.title}" has been ${action} the hero banner!`
+      console.log(message)
+      // You could replace this with a toast notification system
     } catch (error) {
       console.error('Error updating project featured status:', error)
       alert('Error updating project: ' + error.message)
+    } finally {
+      setUpdatingProject(null)
     }
   }
 
@@ -72,8 +83,9 @@ const HeroBannerManager = () => {
                 <button 
                   onClick={() => handleToggleFeatured(project)}
                   className="remove-featured-btn"
+                  disabled={updatingProject === project.id}
                 >
-                  Remove from Hero Banner
+                  {updatingProject === project.id ? 'Removing...' : 'Remove from Hero Banner'}
                 </button>
               </div>
             </div>
@@ -113,8 +125,14 @@ const HeroBannerManager = () => {
                   <button 
                     onClick={() => handleToggleFeatured(project)}
                     className={`toggle-featured-btn ${featuredProjectIds.has(project.id) ? 'featured' : ''}`}
+                    disabled={updatingProject === project.id}
                   >
-                    {featuredProjectIds.has(project.id) ? 'Remove from Hero Banner' : 'Add to Hero Banner'}
+                    {updatingProject === project.id 
+                      ? 'Updating...' 
+                      : featuredProjectIds.has(project.id) 
+                        ? 'Remove from Hero Banner' 
+                        : 'Add to Hero Banner'
+                    }
                   </button>
                 </div>
               </div>

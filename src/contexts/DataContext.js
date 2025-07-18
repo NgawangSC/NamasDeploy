@@ -62,6 +62,8 @@ export const DataProvider = ({ children }) => {
     clients: false
   });
 
+
+
   const [error, setError] = useState({
     projects: null,
     featuredProjects: null,

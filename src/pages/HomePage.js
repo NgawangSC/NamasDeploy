@@ -21,7 +21,7 @@ function HomePage() {
   useEffect(() => {
     fetchClients()
     fetchFeaturedProjects()
-  }, [])
+  }, [fetchClients, fetchFeaturedProjects])
 
   // Also fetch data when the window gains focus (user returns from dashboard)
   useEffect(() => {
@@ -43,6 +43,15 @@ function HomePage() {
       clearTimeout(timeoutId)
     }
   }, [fetchClients, fetchFeaturedProjects, fetchProjects])
+
+  // Refresh featured projects periodically to ensure hero banner is up to date
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchFeaturedProjects()
+    }, 30000) // Refresh every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [fetchFeaturedProjects])
 
   // Get the 6 most recent projects from the dashboard
   const recentProjects = getRecentProjects(6).map(project => {

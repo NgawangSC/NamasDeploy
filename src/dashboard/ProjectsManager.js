@@ -73,7 +73,8 @@ const ProjectsManager = () => {
         formData.append('images', file)
       })
 
-      const response = await fetch(`http://localhost:5000/api/projects/${managingProject.id}/images`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/projects/${managingProject.id}/images`, {
         method: 'POST',
         body: formData,
       })
@@ -101,7 +102,11 @@ const ProjectsManager = () => {
       alert(`${result.data.newImages.length} image(s) added successfully!`)
     } catch (error) {
       console.error('Error adding images:', error)
-      alert('Error adding images: ' + error.message)
+      let errorMessage = error.message;
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+      }
+      alert('Error adding images: ' + errorMessage)
     }
   }
 
@@ -110,7 +115,8 @@ const ProjectsManager = () => {
 
     if (window.confirm('Are you sure you want to remove this image?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/projects/${managingProject.id}/images`, {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/projects/${managingProject.id}/images`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -133,7 +139,11 @@ const ProjectsManager = () => {
         alert('Image removed successfully!')
       } catch (error) {
         console.error('Error removing image:', error)
-        alert('Error removing image: ' + error.message)
+        let errorMessage = error.message;
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+        }
+        alert('Error removing image: ' + errorMessage)
       }
     }
   }
@@ -142,7 +152,8 @@ const ProjectsManager = () => {
     if (!managingProject) return
 
     try {
-      const response = await fetch(`http://localhost:5000/api/projects/${managingProject.id}/cover`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/projects/${managingProject.id}/cover`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +176,11 @@ const ProjectsManager = () => {
       alert('Cover image updated successfully!')
     } catch (error) {
       console.error('Error setting cover image:', error)
-      alert('Error setting cover image: ' + error.message)
+      let errorMessage = error.message;
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+      }
+      alert('Error setting cover image: ' + errorMessage)
     }
   }
 
@@ -181,11 +196,13 @@ const ProjectsManager = () => {
           submitData.append(key, formData[key])
         }
       })
-      
-      // Append images
+
+      // Append selected images
       selectedImages.forEach(file => {
         submitData.append('images', file)
       })
+
+
 
       if (editingProject) {
         const updatedProject = await updateProject(editingProject.id, submitData)
@@ -198,7 +215,11 @@ const ProjectsManager = () => {
       resetForm()
     } catch (error) {
       console.error('Error saving project:', error)
-      alert('Error saving project: ' + error.message)
+      let errorMessage = error.message;
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+      }
+      alert('Error saving project: ' + errorMessage)
     }
   }
 

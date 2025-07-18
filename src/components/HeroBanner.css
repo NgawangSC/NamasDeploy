@@ -45,6 +45,13 @@
   font-size: 1rem;
 }
 
+.hero-empty-subtitle {
+  margin-top: 1rem !important;
+  font-size: 0.9rem !important;
+  opacity: 0.8 !important;
+  font-style: italic;
+}
+
 /* Hero Slider */
 .hero-slider {
   position: relative;

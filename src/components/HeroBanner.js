@@ -45,6 +45,7 @@ const HeroBanner = ({ featuredProjects = [] }) => {
           <p>Creating beautiful and innovative architectural solutions</p>
           <div className="hero-empty-message">
             <p>Add some projects in the dashboard to see them featured here!</p>
+            <p className="hero-empty-subtitle">Projects marked as "featured" will appear in this hero banner carousel.</p>
           </div>
         </div>
       </section>

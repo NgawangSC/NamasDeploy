@@ -337,3 +337,17 @@
   background: #4b5563;
   transform: translateY(-1px);
 }
+
+/* Disabled button styles */
+.toggle-featured-btn:disabled,
+.remove-featured-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.toggle-featured-btn:disabled:hover,
+.remove-featured-btn:disabled:hover {
+  background: #6b7280 !important;
+  transform: none !important;
+}
