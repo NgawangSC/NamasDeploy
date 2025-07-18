@@ -1,5 +1,8 @@
 const SERVER_BASE_URL = 'http://localhost:5000';
 
+// Cache for image URLs to prevent flickering
+const imageUrlCache = new Map();
+
 /**
  * Constructs the full URL for an uploaded image
  * @param {string} imagePath - The image path from the API (e.g., "/uploads/logo-123.png")
@@ -8,6 +11,12 @@ const SERVER_BASE_URL = 'http://localhost:5000';
  */
 export const getImageUrl = (imagePath, bustCache = false) => {
   if (!imagePath) return "/images/placeholder-logo.png";
+  
+  // Check cache first to prevent flickering
+  const cacheKey = `${imagePath}-${bustCache}`;
+  if (!bustCache && imageUrlCache.has(cacheKey)) {
+    return imageUrlCache.get(cacheKey);
+  }
   
   let fullUrl;
   
@@ -24,10 +33,16 @@ export const getImageUrl = (imagePath, bustCache = false) => {
     fullUrl = `${SERVER_BASE_URL}${imagePath}`;
   }
   
-  // Add cache-busting parameter if requested or if image seems new
-  if (bustCache || shouldBustCache(imagePath)) {
+  // Only add cache-busting parameter if explicitly requested
+  // Removed automatic cache busting to prevent image flickering
+  if (bustCache) {
     const separator = fullUrl.includes('?') ? '&' : '?';
     fullUrl += `${separator}v=${Date.now()}`;
+  }
+  
+  // Cache the result for consistent URLs
+  if (!bustCache) {
+    imageUrlCache.set(cacheKey, fullUrl);
   }
   
   return fullUrl;
@@ -41,31 +56,30 @@ export const getImageUrl = (imagePath, bustCache = false) => {
 const shouldBustCache = (imagePath) => {
   if (!imagePath) return false;
   
-  // Always bust cache for server-uploaded images in development
-  if (imagePath.startsWith('/uploads/') || imagePath.includes('localhost')) {
-    return true;
-  }
-  
+  // Reduced aggressive cache busting to prevent flickering
+  // Only bust cache when explicitly needed
   return false;
 };
 
 /**
- * Preloads an image to check if it exists and loads properly
- * @param {string} imagePath - The image path to preload
- * @returns {Promise<boolean>} - Promise that resolves to true if image loads successfully
+ * Preloads an image to prevent flickering on display
+ * @param {string} imageUrl - The URL of the image to preload
+ * @returns {Promise} - Promise that resolves when image is loaded
  */
-export const preloadImage = (imagePath) => {
-  return new Promise((resolve) => {
-    if (!imagePath) {
-      resolve(false);
-      return;
-    }
-    
+export const preloadImage = (imageUrl) => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = getImageUrl(imagePath, true); // Use cache-busting for preload
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = imageUrl;
   });
+};
+
+/**
+ * Clears the image URL cache
+ */
+export const clearImageCache = () => {
+  imageUrlCache.clear();
 };
 
 /**

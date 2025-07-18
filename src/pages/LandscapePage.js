@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./LandscapePage.css"
 
 const LandscapePage = () => {
@@ -25,13 +26,7 @@ const LandscapePage = () => {
 
   // Categories that should appear on the Landscape page
   const landscapeCategories = [
-    "Landscape",
-    "Residential",
-    "Cultural",
-    "Educational",
-    "Commercial",
-    "Private Homes",
-    "Public Spaces"
+    "Landscape"
   ]
 
   useEffect(() => {
@@ -187,7 +182,7 @@ const LandscapePage = () => {
             <div key={slideIndex} className="landscape-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="landscape-project-half">
-                  <div className="landscape-project-background" style={{ backgroundImage: `url(${project.image})` }}>
+                                      <div className="landscape-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
                     <div className="landscape-project-overlay-content">
                       <div className="landscape-project-text-content">
                         <h2 className="landscape-project-title">{project.title}</h2>

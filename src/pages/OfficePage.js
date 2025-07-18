@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./OfficePage.css"
 
 const OfficePage = () => {
@@ -25,11 +26,7 @@ const OfficePage = () => {
 
   // Categories that should appear on the Office page
   const officeCategories = [
-    "Office",
-    "Commercial",
-    "Commercial Buildings",
-    "Interior Build",
-    "Interior Design"
+    "Office"
   ]
 
   useEffect(() => {
@@ -185,7 +182,7 @@ const OfficePage = () => {
             <div key={slideIndex} className="office-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="office-project-half">
-                  <div className="office-project-background" style={{ backgroundImage: `url(${project.image})` }}>
+                                      <div className="office-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
                     <div className="office-project-overlay-content">
                       <div className="office-project-text-content">
                         <h2 className="office-project-title">{project.title}</h2>

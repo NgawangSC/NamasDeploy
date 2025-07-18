@@ -1,5 +1,5 @@
 // Create this file: src/contexts/DataContext.js
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import ApiService from '../services/api';
 
 const DataContext = createContext();
@@ -97,12 +97,9 @@ export const DataProvider = ({ children }) => {
     localStorage.setItem('websiteData', JSON.stringify(dataToSave));
   }, [data]);
 
-  // Fetch projects from API on mount
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
-  const fetchProjects = async () => {
+
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, projects: true }));
       setError(prev => ({ ...prev, projects: null }));
@@ -120,9 +117,9 @@ export const DataProvider = ({ children }) => {
     } finally {
       setLoading(prev => ({ ...prev, projects: false }));
     }
-  };
+  }, []);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, blogs: true }));
       setError(prev => ({ ...prev, blogs: null }));
@@ -140,9 +137,9 @@ export const DataProvider = ({ children }) => {
     } finally {
       setLoading(prev => ({ ...prev, blogs: false }));
     }
-  };
+  }, []);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, clients: true }));
       setError(prev => ({ ...prev, clients: null }));
@@ -160,9 +157,9 @@ export const DataProvider = ({ children }) => {
     } finally {
       setLoading(prev => ({ ...prev, clients: false }));
     }
-  };
+  }, []);
 
-  const fetchFeaturedProjects = async () => {
+  const fetchFeaturedProjects = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, featuredProjects: true }));
       setError(prev => ({ ...prev, featuredProjects: null }));
@@ -181,7 +178,7 @@ export const DataProvider = ({ children }) => {
     } finally {
       setLoading(prev => ({ ...prev, featuredProjects: false }));
     }
-  };
+  }, []);
 
   // Helper functions
   const updateSiteSettings = (newSettings) => {
@@ -420,6 +417,11 @@ export const DataProvider = ({ children }) => {
       .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
       .slice(0, limit);
   };
+
+  // Fetch projects from API on mount (after all functions are defined)
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const contextValue = {
     data,

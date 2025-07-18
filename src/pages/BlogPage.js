@@ -13,7 +13,7 @@ const BlogPage = () => {
   // Fetch blogs when component mounts
   useEffect(() => {
     fetchBlogs()
-  }, [])
+  }, [fetchBlogs])
 
   const heroStyle = {
     backgroundImage: `url("/images/about-hero-bg.jpg")`,

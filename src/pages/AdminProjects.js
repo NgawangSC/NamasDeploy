@@ -156,12 +156,58 @@ const AdminProjects = () => {
                   <label>Category *</label>
                   <select name="category" value={formData.category} onChange={handleInputChange} required>
                     <option value="">Select Category</option>
+                    
+                    {/* Most Common Categories */}
+                    <option value="Architecture">Architecture</option>
+                    <option value="Interior Design">Interior Design</option>
+                    <option value="Construction">Construction</option>
                     <option value="Residential">Residential</option>
                     <option value="Commercial">Commercial</option>
-                    <option value="Cultural">Cultural</option>
+                    <option value="Office">Office</option>
+                    <option value="Hospitality">Hospitality</option>
                     <option value="Educational">Educational</option>
                     <option value="Healthcare">Healthcare</option>
-                    <option value="Hospitality">Hospitality</option>
+                    <option value="Cultural">Cultural</option>
+                    <option value="Religious">Religious</option>
+                    <option value="Landscape">Landscape</option>
+                    <option value="Planning">Planning</option>
+                    <option value="Renovation">Renovation</option>
+                    <option value="Management">Management</option>
+                    <option value="Real Estate">Real Estate</option>
+                    <option value="Supervision">Supervision</option>
+                    
+                    {/* Specific Subcategories */}
+                    <option value="Architectural Design">Architectural Design</option>
+                    <option value="Design Consulting">Design Consulting</option>
+                    <option value="Building Construction">Building Construction</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Interior Build">Interior Build</option>
+                    <option value="Interior Construction">Interior Construction</option>
+                    <option value="Fit-out">Fit-out</option>
+                    <option value="Commercial Buildings">Commercial Buildings</option>
+                    <option value="Corporate Buildings">Corporate Buildings</option>
+                    <option value="Office Interiors">Office Interiors</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Mixed Use">Mixed Use</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Private Homes">Private Homes</option>
+                    <option value="Hotels">Hotels</option>
+                    <option value="Restaurants">Restaurants</option>
+                    <option value="Institute">Institute</option>
+                    <option value="Government">Government</option>
+                    <option value="Community">Community</option>
+                    <option value="Public Buildings">Public Buildings</option>
+                    <option value="Garden Design">Garden Design</option>
+                    <option value="Public Spaces">Public Spaces</option>
+                    <option value="Urban Planning">Urban Planning</option>
+                    <option value="Urban Development">Urban Development</option>
+                    <option value="Master Planning">Master Planning</option>
+                    <option value="Remodeling">Remodeling</option>
+                    <option value="Restoration">Restoration</option>
+                    <option value="Refurbishment">Refurbishment</option>
+                    <option value="Upgrade">Upgrade</option>
+                    <option value="Modernization">Modernization</option>
+                    <option value="Heritage Restoration">Heritage Restoration</option>
                   </select>
                 </div>
 

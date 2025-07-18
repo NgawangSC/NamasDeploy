@@ -337,6 +337,22 @@ button {
   display: block;
   min-height: 500px;
   max-height: 500px;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.optimized-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.optimized-image-container .project-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  min-height: 500px;
+  max-height: 500px;
 }
 
 .project-details {

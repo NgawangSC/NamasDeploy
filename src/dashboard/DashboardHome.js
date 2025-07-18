@@ -4,12 +4,11 @@ import { getImageUrl } from "../utils/imageUtils"
 import "./DashboardHome.css"
 
 const DashboardHome = () => {
-  const { projects, blogs, images } = useData()
+  const { projects, blogs } = useData()
 
   // Add default empty arrays to prevent undefined errors
   const safeProjects = projects || []
   const safeBlogs = blogs || []
-  const safeImages = images || []
 
   const stats = [
     {
@@ -25,13 +24,6 @@ const DashboardHome = () => {
       icon: "📝",
       link: "/dashboard/blogs",
       color: "#10b981",
-    },
-    {
-      title: "Media Files",
-      count: safeImages.length,
-      icon: "🖼️",
-      link: "/dashboard/media",
-      color: "#f59e0b",
     },
     {
       title: "Draft Blogs",

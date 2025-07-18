@@ -205,9 +205,9 @@ const ProjectsManager = () => {
 
 
       if (editingProject) {
-        const updatedProject = await updateProject(editingProject.id, submitData)
+        await updateProject(editingProject.id, submitData)
       } else {
-        const newProject = await addProject(submitData)
+        await addProject(submitData)
       }
       
       // Refresh projects to ensure we have the latest data
@@ -336,33 +336,28 @@ const ProjectsManager = () => {
                     {/* Design Categories */}
                     <optgroup label="Design Services">
                       <option value="Architecture">Architecture</option>
+                      <option value="Planning">Planning</option>
                       <option value="Interior Design">Interior Design</option>
                       <option value="Landscape">Landscape</option>
-                      <option value="Planning">Planning</option>
                     </optgroup>
                     
                     {/* Build Categories */}
-                    <optgroup label="Build & Construction">
-                      <option value="Interior Build">Interior Build</option>
+                    <optgroup label="Build Services">
+                      <option value="Supervision">Supervision</option>
+                      <option value="Management">Management</option>
+                      <option value="Real Estate">Real Estate</option>
+                    </optgroup>
+                      
+
+                    {/* Construction Categories */}
+                    <optgroup label="Construction Services">
                       <option value="Private Homes">Private Homes</option>
                       <option value="Commercial Buildings">Commercial Buildings</option>
                       <option value="Office">Office</option>
                       <option value="Institute">Institute</option>
                       <option value="Hospitality">Hospitality</option>
+                      <option value="Interior Build">Interior Build</option>
                       <option value="Renovation">Renovation</option>
-                      <option value="Supervision">Supervision</option>
-                      <option value="Management">Management</option>
-                      <option value="Real Estate">Real Estate</option>
-                    </optgroup>
-                    
-                    {/* Project Types */}
-                    <optgroup label="Project Types">
-                      <option value="Residential">Residential</option>
-                      <option value="Commercial">Commercial</option>
-                      <option value="Cultural">Cultural</option>
-                      <option value="Educational">Educational</option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Religious">Religious</option>
                     </optgroup>
                   </select>
                 </div>

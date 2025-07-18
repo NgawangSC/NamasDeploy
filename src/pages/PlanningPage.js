@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./PlanningPage.css"
 
 const PlanningPage = () => {
@@ -25,9 +26,7 @@ const PlanningPage = () => {
 
   // Planning page categories - projects that fall under planning services
   const planningCategories = [
-    "Planning",
-    "Real Estate",
-    "Management"
+    "Planning"
   ]
 
   useEffect(() => {
@@ -183,7 +182,7 @@ const PlanningPage = () => {
             <div key={slideIndex} className="planning-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="planning-project-half">
-                  <div className="planning-project-background" style={{ backgroundImage: `url(${project.image})` }}>
+                                      <div className="planning-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
                     <div className="planning-project-overlay-content">
                       <div className="planning-project-text-content">
                         <h2 className="planning-project-title">{project.title}</h2>

@@ -10,6 +10,11 @@ const HeroBanner = ({ featuredProjects = [] }) => {
   const navigate = useNavigate()
   const [currentSlide, setCurrentSlide] = useState(0)
 
+  // Reset slide to 0 when featuredProjects changes
+  useEffect(() => {
+    setCurrentSlide(0)
+  }, [featuredProjects])
+
   // Auto-advance slides every 5 seconds
   useEffect(() => {
     if (featuredProjects.length <= 1) return

@@ -1,7 +1,5 @@
-"use client"
-
 import { useState, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
@@ -10,7 +8,6 @@ import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
-  const location = useLocation()
   const { getRecentProjects, clients, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)

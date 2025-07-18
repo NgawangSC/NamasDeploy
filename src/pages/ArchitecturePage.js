@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./ArchitecturePage.css"
 
 const ArchitecturePage = () => {
@@ -26,12 +27,6 @@ const ArchitecturePage = () => {
   // Categories that should appear on the Architecture page
   const architectureCategories = [
     "Architecture",
-    "Planning", 
-    "Commercial Buildings",
-    "Cultural",
-    "Educational",
-    "Religious",
-    "Residential"
   ]
 
   useEffect(() => {
@@ -187,7 +182,7 @@ const ArchitecturePage = () => {
             <div key={slideIndex} className="architect-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="architect-project-half">
-                  <div className="architect-project-background" style={{ backgroundImage: `url(${project.image})` }}>
+                                      <div className="architect-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
                     <div className="architect-project-overlay-content">
                       <div className="architect-project-text-content">
                         <h2 className="architect-project-title">{project.title}</h2>
