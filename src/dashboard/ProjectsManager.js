@@ -1,12 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import "./ProjectsManager.css"
 
 const ProjectsManager = () => {
-  const { projects, addProject, updateProject, deleteProject, fetchProjects } = useData()
+  const { projects, addProject, updateProject, deleteProject, fetchProjects, fetchFeaturedProjects } = useData()
+  
+  // Ensure projects are fetched when component mounts
+  useEffect(() => {
+    if (projects.length === 0) {
+      fetchProjects()
+    }
+  }, [projects.length, fetchProjects])
+  
   const [showForm, setShowForm] = useState(false)
   const [showImageManager, setShowImageManager] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
@@ -14,6 +22,7 @@ const ProjectsManager = () => {
   const [imagePreviews, setImagePreviews] = useState([])
   const [managingProject, setManagingProject] = useState(null)
   const [additionalImages, setAdditionalImages] = useState([])
+  const [updatingFeatured, setUpdatingFeatured] = useState(null)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -24,6 +33,7 @@ const ProjectsManager = () => {
     status: "In Progress",
     client: "",
     designTeam: "",
+    featured: false,
   })
 
   const handleInputChange = (e) => {
@@ -234,6 +244,7 @@ const ProjectsManager = () => {
       status: "In Progress",
       client: "",
       designTeam: "",
+      featured: false,
     })
     setSelectedImages([])
     setImagePreviews([])
@@ -283,12 +294,36 @@ const ProjectsManager = () => {
   }
 
   const toggleFeatured = async (project) => {
+    const originalFeaturedStatus = project.featured
+    
     try {
-      const updatedProject = { ...project, featured: !project.featured }
-      await updateProject(project.id, updatedProject)
+      setUpdatingFeatured(project.id)
+      const newFeaturedStatus = !project.featured
+      const action = newFeaturedStatus ? 'added to' : 'removed from'
+      
+      // Update the project on the server
+      await updateProject(project.id, { featured: newFeaturedStatus })
+      
+      // Refresh the projects list to get updated data
+      await fetchProjects()
+      
+      // If we're adding to featured, also refresh featured projects
+      if (newFeaturedStatus) {
+        await fetchFeaturedProjects()
+      }
+      
+      // Notify homepage of changes
+      localStorage.setItem('projectsUpdated', Date.now().toString())
+      localStorage.removeItem('projectsUpdated')
+      
+      // Show success message
+      alert(`"${project.title}" has been ${action} the hero banner!`)
+      
     } catch (error) {
       console.error('Error updating featured status:', error)
       alert('Error updating featured status: ' + error.message)
+    } finally {
+      setUpdatingFeatured(null)
     }
   }
 
@@ -382,6 +417,20 @@ const ProjectsManager = () => {
               <div className="form-group">
                 <label>Design Team</label>
                 <input type="text" name="designTeam" value={formData.designTeam} onChange={handleInputChange} />
+              </div>
+
+              <div className="form-group">
+                <label className="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    name="featured" 
+                    checked={formData.featured} 
+                    onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+                  />
+                  <span className="checkmark"></span>
+                  Add to Hero Banner (Featured)
+                </label>
+                <small>Projects marked as featured will appear in the homepage hero banner carousel.</small>
               </div>
 
               <div className="form-group">
@@ -575,8 +624,14 @@ const ProjectsManager = () => {
                 <button 
                   onClick={() => toggleFeatured(project)} 
                   className={`featured-btn ${project.featured ? 'remove' : 'add'}`}
+                  disabled={updatingFeatured === project.id}
                 >
-                  {project.featured ? 'Remove from Hero' : 'Add to Hero'}
+                  {updatingFeatured === project.id 
+                    ? 'Updating...' 
+                    : project.featured 
+                      ? 'Remove from Hero' 
+                      : 'Add to Hero'
+                  }
                 </button>
               </div>
             </div>

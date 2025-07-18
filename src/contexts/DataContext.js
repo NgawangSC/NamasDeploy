@@ -161,17 +161,22 @@ export const DataProvider = ({ children }) => {
 
   const fetchFeaturedProjects = useCallback(async () => {
     try {
+      console.log('DataContext: Starting fetchFeaturedProjects...');
       setLoading(prev => ({ ...prev, featuredProjects: true }));
       setError(prev => ({ ...prev, featuredProjects: null }));
       
       // Fetch featured projects from the API
+      console.log('DataContext: Calling ApiService.getFeaturedProjects()...');
       const response = await ApiService.getFeaturedProjects();
+      console.log('DataContext: API response:', response);
       const featured = response.data || [];
+      console.log('DataContext: Featured projects data:', featured);
       
       setData(prev => ({
         ...prev,
         featuredProjects: featured
       }));
+      console.log('DataContext: Featured projects set successfully');
     } catch (err) {
       console.error('Error fetching featured projects:', err);
       setError(prev => ({ ...prev, featuredProjects: err.message }));

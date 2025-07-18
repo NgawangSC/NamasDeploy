@@ -103,7 +103,11 @@ const AdminProjects = () => {
       refetch()
     } catch (error) {
       console.error('Error updating featured status:', error)
-      alert('Error updating featured status: ' + error.message)
+      let errorMessage = error.message;
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to server. Please check that the server is running and try again.';
+      }
+      alert('Error updating featured status: ' + errorMessage)
     }
   }
 

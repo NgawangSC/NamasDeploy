@@ -125,7 +125,10 @@ class ApiService {
   }
 
   static async getFeaturedProjects() {
-    return this.request('/projects/featured');
+    console.log('ApiService: Making request to /projects/featured');
+    const result = await this.request('/projects/featured');
+    console.log('ApiService: getFeaturedProjects result:', result);
+    return result;
   }
 
   static async createProject(projectData, files = []) {

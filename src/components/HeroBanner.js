@@ -10,6 +10,10 @@ const HeroBanner = ({ featuredProjects = [] }) => {
   const navigate = useNavigate()
   const [currentSlide, setCurrentSlide] = useState(0)
 
+  // Debug featured projects
+  console.log('HeroBanner: Received featuredProjects:', featuredProjects)
+  console.log('HeroBanner: Featured projects count:', featuredProjects?.length || 0)
+
   // Reset slide to 0 when featuredProjects changes
   useEffect(() => {
     setCurrentSlide(0)

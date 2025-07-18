@@ -52,22 +52,7 @@ const upload = multer({
 })
 
 // In-memory storage (replace with database in production)
-const projects = [
-  {
-    id: 1,
-    title: "Dechen Barwa Wangi Phodrang",
-    image: "/images/project1.png",
-    category: "Residential",
-    location: "Bhutan",
-    year: "2023",
-    status: "Completed",
-    client: "Private Client",
-    designTeam: "NAMAS Architecture",
-    description: "A traditional Bhutanese residential project combining modern amenities with cultural heritage.",
-    featured: true,
-    createdAt: new Date().toISOString(),
-  },
-]
+const projects = []
 
 const blogPosts = [
   {
@@ -238,6 +223,47 @@ app.put("/api/projects/:id", upload.array("images", 10), (req, res) => {
     if (req.files && req.files.length > 0) {
       updatedProject.image = `/uploads/${req.files[0].filename}`
       updatedProject.images = req.files.map((file) => `/uploads/${file.filename}`)
+    }
+
+    projects[projectIndex] = updatedProject
+    res.json({
+      success: true,
+      data: updatedProject,
+      message: "Project updated successfully",
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to update project",
+      details: error.message,
+    })
+  }
+})
+
+// PATCH project (for simple updates like featured status)
+app.patch("/api/projects/:id", express.json(), (req, res) => {
+  try {
+    const projectId = Number.parseInt(req.params.id)
+    const projectIndex = projects.findIndex((p) => p.id === projectId)
+
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found",
+      })
+    }
+
+    const updates = req.body;
+    const updatedProject = {
+      ...projects[projectIndex],
+      ...updates,
+      id: projectId,
+      updatedAt: new Date().toISOString(),
+    }
+
+    // Handle featured field properly (convert to boolean)
+    if (updates.featured !== undefined) {
+      updatedProject.featured = Boolean(updates.featured);
     }
 
     projects[projectIndex] = updatedProject

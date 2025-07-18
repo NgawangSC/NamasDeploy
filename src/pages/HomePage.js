@@ -4,6 +4,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import HeroBanner from "../components/HeroBanner"
+import HeroBannerFixed from "../components/HeroBannerFixed"
+import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
+import DebugFeaturedProjects from "../components/DebugFeaturedProjects"
 import "./HomePage.css"
 
 function HomePage() {
@@ -16,9 +19,16 @@ function HomePage() {
 
   // Fetch data on component mount
   useEffect(() => {
+    console.log('HomePage: Fetching initial data...')
     fetchClients()
     fetchFeaturedProjects()
   }, [fetchClients, fetchFeaturedProjects])
+
+  // Debug featuredProjects
+  useEffect(() => {
+    console.log('HomePage: featuredProjects changed:', featuredProjects)
+    console.log('HomePage: featuredProjects length:', featuredProjects?.length || 0)
+  }, [featuredProjects])
 
   // Also fetch data when the window gains focus (user returns from dashboard)
   useEffect(() => {
@@ -109,8 +119,8 @@ function HomePage() {
 
   return (
     <div className="homepage">
-      {/* Hero Banner Section with Featured Projects */}
-      <HeroBanner featuredProjects={featuredProjects} />
+      {/* Hero Banner Section with Featured Projects - Self-Contained Version */}
+      <HeroBannerSelfContained />
 
       {/* About Us Section */}
       <section className="about-section">
