@@ -32,6 +32,26 @@
   background: #2980b9;
 }
 
+.crop-btn {
+  background: #10b981;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crop-btn:hover {
+  background: #059669;
+}
+
 .form-overlay {
   position: fixed;
   top: 0;

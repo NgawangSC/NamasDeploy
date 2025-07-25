@@ -1,12 +1,128 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
+import { useData } from "../contexts/DataContext"
 import "./AboutPage.css"
+
+// Custom hook for counter animation
+const useCounter = (end, duration = 2000, startAnimation = false) => {
+  const [count, setCount] = useState(0)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
+  useEffect(() => {
+    if (!startAnimation || hasAnimated) return
+
+    let startTime
+    const startCount = 0
+
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime
+      const progress = Math.min((currentTime - startTime) / duration, 1)
+      
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+      const currentCount = Math.floor(easeOutQuart * (end - startCount) + startCount)
+      
+      setCount(currentCount)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      } else {
+        setCount(end)
+        setHasAnimated(true)
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }, [end, duration, startAnimation, hasAnimated])
+
+  return count
+}
+
+// Helper function to format large numbers
+const formatNumber = (num) => {
+  if (num >= 10000) {
+    return Math.floor(num / 1000) + "K"
+  }
+  return num.toString()
+}
+
+// Counter component
+const AnimatedCounter = ({ end, suffix = "", startAnimation, formatLargeNumbers = false }) => {
+  const count = useCounter(end, 2000, startAnimation)
+  const displayValue = formatLargeNumbers ? formatNumber(count) : count
+  return <span>{displayValue}{suffix}</span>
+}
 
 function AboutPage() {
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
+  const [startCounters, setStartCounters] = useState(false)
+  const statisticsRef = useRef(null)
   const navigate = useNavigate()
+  
+  // Get data from context
+  const { data, loading, fetchProjects, fetchClients } = useData()
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchProjects()
+    fetchClients()
+  }, [fetchProjects, fetchClients])
+  
+
+  
+  const [statistics, setStatistics] = useState({
+    projects: 0,
+    clients: 0,
+    workingHours: 0,
+    awards: 0
+  })
+  
+  // Recalculate statistics when data changes
+  useEffect(() => {
+    const calculateStats = () => {
+      const currentYear = new Date().getFullYear()
+      const foundingYear = 2021 // Based on your about section text
+      const yearsInBusiness = Math.max(currentYear - foundingYear, 1) // At least 1 year
+      
+      // Calculate total projects done
+      const totalProjects = data.projects?.length || 0
+      
+      // Calculate happy clients - try to get from clients data, fallback to estimation
+      let happyClients = 0
+      if (data.clients && data.clients.length > 0) {
+        happyClients = data.clients.length
+      } else if (totalProjects > 0) {
+        // Estimate clients as 75% of projects (some clients may have multiple projects)
+        happyClients = Math.max(Math.ceil(totalProjects * 0.75), 1)
+      } else {
+        happyClients = 0
+      }
+      
+      // Calculate working hours (estimated based on projects and years in business)
+      // Average project duration: 3-6 months, 40 hours/week, 4 weeks/month
+      const averageProjectHours = 480 // 3 months * 4 weeks * 40 hours
+      const projectBasedHours = totalProjects * averageProjectHours
+      const minimumYearlyHours = yearsInBusiness * 2000 // 2000 hours per year standard
+      const totalWorkingHours = Math.max(projectBasedHours, minimumYearlyHours)
+      
+      // Calculate awards - count from the awards timeline section (6 awards currently listed)
+      // Can be enhanced to pull from awards data if made dynamic
+      const baseAwards = 6 // Current awards in timeline
+      const additionalAwards = Math.floor(totalProjects / 15) // Bonus awards for project milestones
+      const totalAwards = baseAwards + additionalAwards
+      
+              return {
+          projects: Math.max(totalProjects, 0),
+          clients: Math.max(happyClients, 0),
+          workingHours: Math.max(totalWorkingHours, 0),
+          awards: Math.max(totalAwards, 0)
+        }
+    }
+    
+    const newStats = calculateStats()
+    setStatistics(newStats)
+  }, [data.projects, data.clients])
 
   // Navigation handlers for service pages
   const handlePlanningClick = () => {
@@ -28,42 +144,36 @@ function AboutPage() {
   const coreServices = [
     {
       id: 1,
-      number: "1",
       name: "Architectural Design",
       backDescription:
         "Culturally attuned, innovative solutions.",
     },
     {
       id: 2,
-      number: "2",
       name: "Construction",
       backDescription:
         "Creative, cost-effective building practices with material ingenuity tailored to economic and social contexts.",
     },
     {
       id: 3,
-      number: "3",
       name: "Interior Design",
       backDescription:
         "Bespoke. stylish, and functional environments.",
     },
     {
       id: 4,
-      number: "4",
       name: "Renovation & Remodelling",
       backDescription:
         "Modern transformations of existing spaces.",
     },
     {
       id: 5,
-      number: "5",
       name: "Project Planning",
       backDescription:
         "Feasibility studies, budgeting, and site analysis.",
     },
     {
       id: 6,
-      number: "6",
       name: "Sustainability Consulting",
       backDescription:
         "Eco-friendly and energy-efficient practices.",
@@ -100,6 +210,33 @@ function AboutPage() {
       title: "Interior Designer",
     },
   ]
+
+  // Intersection Observer to trigger counter animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !startCounters) {
+            setStartCounters(true)
+          }
+        })
+      },
+      {
+        threshold: 0.3, // Trigger when 30% of the element is visible
+      }
+    )
+
+    const currentRef = statisticsRef.current
+    if (currentRef) {
+      observer.observe(currentRef)
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef)
+      }
+    }
+  }, [startCounters])
 
   return (
     <div className="about-page">
@@ -181,7 +318,6 @@ function AboutPage() {
                   <div className="diamond-inner">
                     <div className="diamond-front">
                       <div className="diamond-content">
-                        <span className="service-number">{service.number}</span>
                         <h4 className="service-name">{service.name}</h4>
                       </div>
                     </div>
@@ -327,11 +463,47 @@ function AboutPage() {
       </section>
 
       {/* Statistics Section */}
-      <section className="statistics-section">
+      <section className="statistics-section" ref={statisticsRef}>
         <div className="container">
           <div className="statistics-content">
-            <div className="statistics-image">
-              <img src="/images/statistics-pic.jpeg" alt="statistics" />
+            <div className="statistics-box">
+              <div className="box-section">
+                <h4>
+                  {loading.projects ? (
+                    <span>...</span>
+                  ) : (
+                    <AnimatedCounter end={statistics.projects} suffix="+" startAnimation={startCounters} />
+                  )}
+                </h4>
+                <p>Projects Done</p>
+              </div>
+              <div className="box-section">
+                <h4>
+                  {loading.clients ? (
+                    <span>...</span>
+                  ) : (
+                    <AnimatedCounter end={statistics.clients} suffix="+" startAnimation={startCounters} />
+                  )}
+                </h4>
+                <p>Happy Clients</p>
+              </div>
+              <div className="box-section">
+                <h4>
+                  <AnimatedCounter 
+                    end={statistics.workingHours} 
+                    suffix="+" 
+                    startAnimation={startCounters} 
+                    formatLargeNumbers={true}
+                  />
+                </h4>
+                <p>Working Hours</p>
+              </div>
+              <div className="box-section">
+                <h4>
+                  <AnimatedCounter end={statistics.awards} suffix="+" startAnimation={startCounters} />
+                </h4>
+                <p>Awards</p>
+              </div>
             </div>
             <div className="statistics-text">
               <p className="statistics-subtitle">NUMBERS</p>

@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { useBlogs, useBlogOperations } from "../hooks/useApi"
+import { getImageUrl, clearImageCache } from "../utils/imageUtils"
+import BlogImageUpload from "../components/BlogImageUpload"
 import "./AdminBlogs.css"
 
 const AdminBlogs = () => {
@@ -28,8 +30,8 @@ const AdminBlogs = () => {
     })
   }
 
-  const handleImageChange = (e) => {
-    setSelectedImage(e.target.files && e.target.files.length > 0 ? e.target.files[0] : null)
+  const handleImageChange = (file) => {
+    setSelectedImage(file)
   }
 
   const handleSubmit = async (e) => {
@@ -55,6 +57,8 @@ const AdminBlogs = () => {
       setSelectedImage(null)
       setShowForm(false)
       setEditingBlog(null)
+      // Clear image cache to ensure fresh image URLs
+      clearImageCache()
       refetch()
     } catch (error) {
       console.error("Error saving blog:", error)
@@ -72,6 +76,8 @@ const AdminBlogs = () => {
       excerpt: blog.excerpt || "",
       status: blog.status || "published",
     })
+    // Reset selected image when editing to show existing image
+    setSelectedImage(null)
     setShowForm(true)
   }
 
@@ -190,11 +196,11 @@ const AdminBlogs = () => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Featured Image</label>
-                <input type="file" accept="image/*" onChange={handleImageChange} />
-                {selectedImage && <div className="selected-image">Selected: {selectedImage.name}</div>}
-              </div>
+              <BlogImageUpload
+                selectedImage={selectedImage}
+                onImageChange={handleImageChange}
+                existingImageUrl={editingBlog && !selectedImage ? getImageUrl(editingBlog.image) : null}
+              />
 
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={resetForm}>
@@ -213,7 +219,13 @@ const AdminBlogs = () => {
         {blogs?.map((blog) => (
           <div key={blog.id} className="blog-card">
             <div className="blog-image">
-              <img src={blog.image || "/placeholder.svg"} alt={blog.title} />
+              <img 
+                src={getImageUrl(blog.image, true) || "/placeholder.svg"} 
+                alt={blog.title}
+                onError={(e) => {
+                  e.target.src = "/placeholder.svg"
+                }}
+              />
             </div>
             <div className="blog-content">
               <h3>{blog.title}</h3>

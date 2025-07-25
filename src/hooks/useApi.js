@@ -209,12 +209,12 @@ export const useBlogOperations = () => {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
 
-  const createBlog = async (blogData) => {
+  const createBlog = async (blogData, imageFile = null) => {
     try {
       setLoading(true)
       setError(null)
       setSuccess(false)
-      const result = await ApiService.createBlog(blogData)
+      const result = await ApiService.createBlog(blogData, imageFile)
       setSuccess(true)
       return result
     } catch (err) {
@@ -225,12 +225,12 @@ export const useBlogOperations = () => {
     }
   }
 
-  const updateBlog = async (id, blogData) => {
+  const updateBlog = async (id, blogData, imageFile = null) => {
     try {
       setLoading(true)
       setError(null)
       setSuccess(false)
-      const result = await ApiService.updateBlog(id, blogData)
+      const result = await ApiService.updateBlog(id, blogData, imageFile)
       setSuccess(true)
       return result
     } catch (err) {

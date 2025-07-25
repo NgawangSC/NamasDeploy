@@ -1,200 +1,175 @@
-.image-upload-container {
-  width: 100%;
-}
-
-.upload-area {
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  padding: 40px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #f9fafb;
-  margin-bottom: 20px;
-}
-
-.upload-area:hover {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
-}
-
-.upload-area.drag-active {
-  border-color: #3b82f6;
-  background-color: #dbeafe;
-  transform: scale(1.02);
-}
-
-.upload-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.upload-content svg {
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-
-.upload-content p {
-  font-size: 16px;
-  font-weight: 500;
-  color: #374151;
-  margin: 0;
-}
-
-.upload-content span {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.existing-images,
-.selected-images {
-  margin-bottom: 20px;
-}
-
-.existing-images h4,
-.selected-images h4 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.image-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.image-preview {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: #f3f4f6;
-  border: 2px solid #e5e7eb;
-  transition: transform 0.2s ease;
-}
-
-.image-preview:hover {
-  transform: scale(1.05);
-}
-
-.image-preview.existing {
-  border-color: #10b981;
-}
-
-.image-preview img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  display: block;
-}
-
-.remove-image {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
+.image-cropper-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
 }
 
-.remove-image:hover {
-  background-color: #dc2626;
-}
-
-.image-label {
+.image-cropper-overlay {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-  color: white;
-  padding: 8px 4px 4px;
-  font-size: 12px;
-  text-align: center;
-  word-break: break-all;
-  line-height: 1.2;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
-.existing .image-label {
-  background: linear-gradient(transparent, rgba(16, 185, 129, 0.8));
-}
-
-.upload-actions {
+.image-cropper-container {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
   display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+  flex-direction: column;
 }
 
-.upload-btn {
+.image-cropper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.image-cropper-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.close-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.image-cropper-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.crop-area {
+  max-width: 100%;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.image-cropper-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e5e5;
+  background-color: #f9fafb;
+  border-radius: 0 0 8px 8px;
+}
+
+.btn-primary {
   background-color: #3b82f6;
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
-  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  transition: background-color 0.2s;
 }
 
-.upload-btn:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled) {
   background-color: #2563eb;
 }
 
-.upload-btn:disabled {
+.btn-primary:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
 }
 
-/* Form integration styles */
-.image-upload-container .form-group {
-  margin-bottom: 0;
+.btn-secondary {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.image-upload-container .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #374151;
+.btn-secondary:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.image-cropper-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+/* Override react-image-crop styles */
+.ReactCrop__crop-selection {
+  border: 2px solid #3b82f6;
+}
+
+.ReactCrop__drag-handle {
+  background-color: #3b82f6;
+  border: 1px solid white;
+  width: 12px;
+  height: 12px;
+}
+
+.ReactCrop__drag-handle:after {
+  background-color: #1d4ed8;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 8px;
+  .image-cropper-container {
+    max-width: 95vw;
+    max-height: 95vh;
   }
   
-  .image-preview img {
-    height: 100px;
+  .image-cropper-header {
+    padding: 0.75rem 1rem;
   }
   
-  .upload-area {
-    padding: 30px 15px;
+  .image-cropper-content {
+    padding: 1rem;
   }
   
-  .upload-content p {
-    font-size: 14px;
+  .image-cropper-actions {
+    padding: 0.75rem 1rem;
+    flex-direction: column;
   }
   
-  .upload-content span {
-    font-size: 12px;
+  .crop-area {
+    max-height: 50vh;
   }
 }

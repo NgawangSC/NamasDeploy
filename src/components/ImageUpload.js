@@ -1,206 +1,175 @@
-import React, { useState, useRef } from 'react';
-import './ImageUpload.css';
+import React, { useState, useRef, useCallback } from 'react';
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import './ImageCropper.css';
 
-const ImageUpload = ({ 
-  projectId, 
-  onImagesUploaded, 
-  existingImages = [], 
-  isEditing = false,
-  maxFiles = 10 
+const ImageCropper = ({ 
+  imageFile, 
+  onCropComplete, 
+  onCancel, 
+  aspectRatio = 16 / 9, // Default aspect ratio
+  minWidth = 150,
+  minHeight = 150
 }) => {
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef(null);
+  const [crop, setCrop] = useState({
+    unit: '%',
+    width: 90,
+    height: 90,
+    x: 5,
+    y: 5
+  });
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [imgSrc, setImgSrc] = useState('');
+  const imgRef = useRef(null);
+  const previewCanvasRef = useRef(null);
 
-  const handleFiles = (files) => {
-    const fileArray = Array.from(files);
-    const imageFiles = fileArray.filter(file => file.type.startsWith('image/'));
+  // Convert file to image URL
+  React.useEffect(() => {
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setImgSrc(reader.result?.toString() || '');
+      });
+      reader.readAsDataURL(imageFile);
+    }
+  }, [imageFile]);
+
+  const onImageLoad = useCallback((e) => {
+    const { width, height } = e.currentTarget;
     
-    if (imageFiles.length + selectedFiles.length > maxFiles) {
-      alert(`Maximum ${maxFiles} images allowed`);
+    // Set initial crop to center of image
+    const centerX = 5;
+    const centerY = 5;
+    const cropWidth = 90;
+    const cropHeight = aspectRatio ? cropWidth / aspectRatio : 90;
+    
+    setCrop({
+      unit: '%',
+      width: cropWidth,
+      height: cropHeight,
+      x: centerX,
+      y: centerY,
+    });
+  }, [aspectRatio]);
+
+  const generateCroppedImage = useCallback(async () => {
+    if (!completedCrop || !imgRef.current || !previewCanvasRef.current) {
       return;
     }
 
-    const newFiles = imageFiles.map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      id: Math.random().toString(36).substr(2, 9)
-    }));
+    const image = imgRef.current;
+    const canvas = previewCanvasRef.current;
+    const crop = completedCrop;
 
-    setSelectedFiles(prev => [...prev, ...newFiles]);
-  };
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const ctx = canvas.getContext('2d');
+    const pixelRatio = window.devicePixelRatio;
 
-  const handleFileSelect = (e) => {
-    if (e.target.files) {
-      handleFiles(e.target.files);
-    }
-  };
+    canvas.width = crop.width * pixelRatio * scaleX;
+    canvas.height = crop.height * pixelRatio * scaleY;
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files) {
-      handleFiles(e.dataTransfer.files);
-    }
-  };
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width * scaleX,
+      crop.height * scaleY,
+    );
 
-  const removeFile = (fileId) => {
-    setSelectedFiles(prev => {
-      const fileToRemove = prev.find(f => f.id === fileId);
-      if (fileToRemove) {
-        URL.revokeObjectURL(fileToRemove.preview);
-      }
-      return prev.filter(f => f.id !== fileId);
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          console.error('Canvas is empty');
+          return;
+        }
+        resolve(blob);
+      }, 'image/jpeg', 0.95);
     });
-  };
+  }, [completedCrop]);
 
-  const uploadImages = async () => {
-    if (!selectedFiles.length || !projectId) return;
-
-    setUploading(true);
+  const handleCropComplete = async () => {
     try {
-      const files = selectedFiles.map(f => f.file);
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/images`, {
-        method: 'POST',
-        body: (() => {
-          const formData = new FormData();
-          files.forEach(file => {
-            formData.append('images', file);
-          });
-          return formData;
-        })(),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+      const croppedImageBlob = await generateCroppedImage();
+      if (croppedImageBlob) {
+        // Create a new File object from the blob
+        const croppedFile = new File([croppedImageBlob], imageFile.name, {
+          type: 'image/jpeg',
+          lastModified: Date.now(),
+        });
+        onCropComplete(croppedFile);
       }
-
-      // Clean up previews
-      selectedFiles.forEach(f => URL.revokeObjectURL(f.preview));
-      setSelectedFiles([]);
-      
-      // Notify parent component
-      if (onImagesUploaded) {
-        onImagesUploaded(data.newImages, data.project);
-      }
-      
-      alert(`${data.newImages.length} image(s) uploaded successfully!`);
     } catch (error) {
-      console.error('Error uploading images:', error);
-      alert('Error uploading images: ' + error.message);
-    } finally {
-      setUploading(false);
+      console.error('Error generating cropped image:', error);
     }
   };
 
-  const openFileDialog = () => {
-    fileInputRef.current?.click();
-  };
+  if (!imgSrc) {
+    return (
+      <div className="image-cropper-loading">
+        <p>Loading image...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="image-upload-container">
-      <div className="form-group">
-        <label>Project Images</label>
+    <div className="image-cropper-modal">
+      <div className="image-cropper-overlay" onClick={onCancel} />
+      <div className="image-cropper-container">
+        <div className="image-cropper-header">
+          <h3>Crop Image</h3>
+          <button className="close-btn" onClick={onCancel}>×</button>
+        </div>
         
-        {/* Existing Images Display */}
-        {existingImages.length > 0 && (
-          <div className="existing-images">
-            <h4>Current Images ({existingImages.length})</h4>
-            <div className="image-grid">
-              {existingImages.map((image, index) => (
-                <div key={index} className="image-preview existing">
-                  <img src={image} alt={`Project image ${index + 1}`} />
-                  <span className="image-label">Current</span>
-                </div>
-              ))}
-            </div>
+        <div className="image-cropper-content">
+          <div className="crop-area">
+            <ReactCrop
+              crop={crop}
+              onChange={(pixelCrop, percentCrop) => setCrop(percentCrop)}
+              onComplete={(c) => setCompletedCrop(c)}
+              aspect={aspectRatio}
+              minWidth={minWidth}
+              minHeight={minHeight}
+            >
+              <img
+                ref={imgRef}
+                alt="Crop me"
+                src={imgSrc}
+                onLoad={onImageLoad}
+                style={{ maxHeight: '60vh', maxWidth: '100%' }}
+              />
+            </ReactCrop>
           </div>
-        )}
-
-        {/* Upload Area */}
-        <div 
-          className={`upload-area ${dragActive ? 'drag-active' : ''}`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={openFileDialog}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleFileSelect}
+          
+          {/* Hidden canvas for generating cropped image */}
+          <canvas
+            ref={previewCanvasRef}
             style={{ display: 'none' }}
           />
-          
-          <div className="upload-content">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14.828 14.828L21 21M16.5 10.5C16.5 13.8137 13.8137 16.5 10.5 16.5C7.18629 16.5 4.5 13.8137 4.5 10.5C4.5 7.18629 7.18629 4.5 10.5 4.5C13.8137 4.5 16.5 7.18629 16.5 10.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 8V12M12 12V8M12 12L9 9M12 12L15 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <p>Click to select images or drag and drop</p>
-            <span>Maximum {maxFiles} images, JPEG, PNG, GIF, WebP</span>
-          </div>
         </div>
-
-        {/* Selected Files Preview */}
-        {selectedFiles.length > 0 && (
-          <div className="selected-images">
-            <h4>Selected Images ({selectedFiles.length})</h4>
-            <div className="image-grid">
-              {selectedFiles.map((fileObj) => (
-                <div key={fileObj.id} className="image-preview">
-                  <img src={fileObj.preview} alt={fileObj.file.name} />
-                  <button 
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFile(fileObj.id);
-                    }}
-                    className="remove-image"
-                  >
-                    ×
-                  </button>
-                  <span className="image-label">{fileObj.file.name}</span>
-                </div>
-              ))}
-            </div>
-            
-            {/* Upload Button */}
-            {isEditing && projectId && (
-              <div className="upload-actions">
-                <button 
-                  type="button"
-                  onClick={uploadImages}
-                  disabled={uploading || !selectedFiles.length}
-                  className="upload-btn"
-                >
-                  {uploading ? 'Uploading...' : `Upload ${selectedFiles.length} Image(s)`}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        
+        <div className="image-cropper-actions">
+          <button className="btn-secondary" onClick={onCancel}>
+            Cancel
+          </button>
+          <button 
+            className="btn-primary" 
+            onClick={handleCropComplete}
+            disabled={!completedCrop}
+          >
+            Apply Crop
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ImageUpload;
+export default ImageCropper;

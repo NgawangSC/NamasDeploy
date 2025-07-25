@@ -10,14 +10,32 @@ const imageUrlCache = new Map();
  * @returns {string} - Full URL to the image
  */
 export const getImageUrl = (imagePath, bustCache = false) => {
-  if (!imagePath) return "/images/placeholder-logo.png";
+  if (!imagePath) {
+    return "/images/placeholder-logo.png";
+  }
+  
+  // For cache busting or immediate processing, skip cache check
+  if (bustCache) {
+    return constructImageUrl(imagePath, true);
+  }
   
   // Check cache first to prevent flickering
-  const cacheKey = `${imagePath}-${bustCache}`;
-  if (!bustCache && imageUrlCache.has(cacheKey)) {
+  const cacheKey = imagePath;
+  if (imageUrlCache.has(cacheKey)) {
     return imageUrlCache.get(cacheKey);
   }
   
+  // Construct URL and cache it
+  const fullUrl = constructImageUrl(imagePath, false);
+  imageUrlCache.set(cacheKey, fullUrl);
+  
+  return fullUrl;
+};
+
+/**
+ * Helper function to construct image URLs
+ */
+function constructImageUrl(imagePath, bustCache = false) {
   let fullUrl;
   
   // If it's already a full URL, return as is
@@ -33,20 +51,14 @@ export const getImageUrl = (imagePath, bustCache = false) => {
     fullUrl = `${SERVER_BASE_URL}${imagePath}`;
   }
   
-  // Only add cache-busting parameter if explicitly requested
-  // Removed automatic cache busting to prevent image flickering
+  // Add cache-busting parameter if requested
   if (bustCache) {
     const separator = fullUrl.includes('?') ? '&' : '?';
     fullUrl += `${separator}v=${Date.now()}`;
   }
   
-  // Cache the result for consistent URLs
-  if (!bustCache) {
-    imageUrlCache.set(cacheKey, fullUrl);
-  }
-  
   return fullUrl;
-};
+}
 
 /**
  * Determines if cache should be busted for an image
@@ -80,6 +92,20 @@ export const preloadImage = (imageUrl) => {
  */
 export const clearImageCache = () => {
   imageUrlCache.clear();
+};
+
+/**
+ * Clears cache for a specific image path
+ */
+export const clearImageCacheForPath = (imagePath) => {
+  if (!imagePath) return;
+  const keysToDelete = [];
+  for (const key of imageUrlCache.keys()) {
+    if (key.startsWith(imagePath)) {
+      keysToDelete.push(key);
+    }
+  }
+  keysToDelete.forEach(key => imageUrlCache.delete(key));
 };
 
 /**

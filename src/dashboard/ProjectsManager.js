@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import ViewFilter from "../components/ViewFilter"
 import "./ProjectsManager.css"
 
 const ProjectsManager = () => {
@@ -23,6 +24,11 @@ const ProjectsManager = () => {
   const [managingProject, setManagingProject] = useState(null)
   const [additionalImages, setAdditionalImages] = useState([])
   const [updatingFeatured, setUpdatingFeatured] = useState(null)
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [viewMode, setViewMode] = useState("detail") // 'list' or 'detail'
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -35,6 +41,29 @@ const ProjectsManager = () => {
     designTeam: "",
     featured: false,
   })
+
+  // Extract unique categories from projects
+  const categories = useMemo(() => {
+    const cats = [...new Set(projects.map(project => project.category).filter(Boolean))]
+    return cats.sort()
+  }, [projects])
+
+  // Filter projects based on search term and category
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      const matchesSearch = !searchTerm || 
+        project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.designTeam.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.category.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesCategory = !selectedCategory || project.category === selectedCategory
+      
+      return matchesSearch && matchesCategory
+    })
+  }, [projects, searchTerm, selectedCategory])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -293,6 +322,106 @@ const ProjectsManager = () => {
     }
   }
 
+  // List view component
+  const ProjectListView = ({ project }) => (
+    <div className="project-list-item">
+      <div className="project-list-image">
+        <img src={getImageUrl(project.image) || "/placeholder.svg"} alt={project.title} />
+        {project.featured && <span className="featured-badge">Featured</span>}
+        {(() => {
+          const imageCount = project.images && Array.isArray(project.images) 
+            ? project.images.length 
+            : project.image ? 1 : 0;
+          return imageCount > 1 && (
+            <span className="image-count-badge">{imageCount} images</span>
+          );
+        })()}
+      </div>
+      <div className="project-list-content">
+        <div className="project-list-main">
+          <h3>{project.title}</h3>
+          <p className="project-meta">{project.location} • {project.year} • {project.category}</p>
+          <p className="project-description">{project.description}</p>
+          <div className="project-details">
+            {project.client && <span className="detail-item">Client: {project.client}</span>}
+            {project.designTeam && <span className="detail-item">Team: {project.designTeam}</span>}
+          </div>
+        </div>
+        <div className="project-list-sidebar">
+          <span className={`status ${project.status.toLowerCase().replace(" ", "-")}`}>{project.status}</span>
+          <div className="project-actions">
+            <button onClick={() => handleEdit(project)} className="edit-btn">Edit</button>
+            <button onClick={() => handleManageImages(project)} className="manage-images-btn">Images</button>
+            <button onClick={() => handleDelete(project.id)} className="delete-btn">Delete</button>
+            <button 
+              onClick={() => toggleFeatured(project)} 
+              className={`featured-btn ${project.featured ? 'remove' : 'add'}`}
+              disabled={updatingFeatured === project.id}
+            >
+              {updatingFeatured === project.id 
+                ? 'Updating...' 
+                : project.featured 
+                  ? 'Remove from Hero' 
+                  : 'Add to Hero'
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Detail view component (existing card view)
+  const ProjectDetailView = ({ project }) => (
+    <div className="project-card">
+      <div className="project-image">
+        <img src={getImageUrl(project.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
+        {project.featured && <span className="featured-badge">Featured</span>}
+        {(() => {
+          const imageCount = project.images && Array.isArray(project.images) 
+            ? project.images.length 
+            : project.image ? 1 : 0;
+          return imageCount > 1 && (
+            <span className="image-count-badge">{imageCount} images</span>
+          );
+        })()}
+      </div>
+      <div className="project-info">
+        <h3>{project.title}</h3>
+        <p className="project-meta">
+          {project.location} • {project.year} • {project.category}
+        </p>
+        <p className="project-description">{project.description}</p>
+        <div className="project-status">
+          <span className={`status ${project.status.toLowerCase().replace(" ", "-")}`}>{project.status}</span>
+        </div>
+        <div className="project-actions">
+          <button onClick={() => handleEdit(project)} className="edit-btn">
+            Edit
+          </button>
+          <button onClick={() => handleManageImages(project)} className="manage-images-btn">
+            Manage Images
+          </button>
+          <button onClick={() => handleDelete(project.id)} className="delete-btn">
+            Delete
+          </button>
+          <button 
+            onClick={() => toggleFeatured(project)} 
+            className={`featured-btn ${project.featured ? 'remove' : 'add'}`}
+            disabled={updatingFeatured === project.id}
+          >
+            {updatingFeatured === project.id 
+              ? 'Updating...' 
+              : project.featured 
+                ? 'Remove from Hero' 
+                : 'Add to Hero'
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
   const toggleFeatured = async (project) => {
     const originalFeaturedStatus = project.featured
     
@@ -335,6 +464,18 @@ const ProjectsManager = () => {
           Add New Project
         </button>
       </div>
+
+      <ViewFilter
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        categories={categories}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        totalItems={filteredProjects.length}
+        itemType="Projects"
+      />
 
       {showForm && (
         <div className="form-overlay">
@@ -587,57 +728,32 @@ const ProjectsManager = () => {
         </div>
       )}
 
-      <div className="projects-grid">
-        {projects.map((project) => (
-          <div key={project.id} className="project-card">
-            <div className="project-image">
-              <img src={getImageUrl(project.image) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
-              {project.featured && <span className="featured-badge">Featured</span>}
-              {(() => {
-                const imageCount = project.images && Array.isArray(project.images) 
-                  ? project.images.length 
-                  : project.image ? 1 : 0;
-                return imageCount > 1 && (
-                  <span className="image-count-badge">{imageCount} images</span>
-                );
-              })()}
-            </div>
-            <div className="project-info">
-              <h3>{project.title}</h3>
-              <p className="project-meta">
-                {project.location} • {project.year} • {project.category}
-              </p>
-              <p className="project-description">{project.description}</p>
-              <div className="project-status">
-                <span className={`status ${project.status.toLowerCase().replace(" ", "-")}`}>{project.status}</span>
-              </div>
-              <div className="project-actions">
-                <button onClick={() => handleEdit(project)} className="edit-btn">
-                  Edit
-                </button>
-                <button onClick={() => handleManageImages(project)} className="manage-images-btn">
-                  Manage Images
-                </button>
-                <button onClick={() => handleDelete(project.id)} className="delete-btn">
-                  Delete
-                </button>
-                <button 
-                  onClick={() => toggleFeatured(project)} 
-                  className={`featured-btn ${project.featured ? 'remove' : 'add'}`}
-                  disabled={updatingFeatured === project.id}
-                >
-                  {updatingFeatured === project.id 
-                    ? 'Updating...' 
-                    : project.featured 
-                      ? 'Remove from Hero' 
-                      : 'Add to Hero'
-                  }
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {viewMode === 'list' ? (
+        <div className="projects-list">
+          {filteredProjects.map((project) => (
+            <ProjectListView key={project.id} project={project} />
+          ))}
+        </div>
+      ) : (
+        <div className="projects-grid">
+          {filteredProjects.map((project) => (
+            <ProjectDetailView key={project.id} project={project} />
+          ))}
+        </div>
+      )}
+
+      {filteredProjects.length === 0 && projects.length > 0 && (
+        <div className="empty-state">
+          <h3>No projects match your filters</h3>
+          <p>Try adjusting your search or filter criteria</p>
+          <button onClick={() => {
+            setSearchTerm("")
+            setSelectedCategory("")
+          }} className="clear-filters-btn">
+            Clear Filters
+          </button>
+        </div>
+      )}
 
       {projects.length === 0 && (
         <div className="empty-state">

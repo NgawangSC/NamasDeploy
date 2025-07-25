@@ -1,6 +1,7 @@
 // Create this file: src/contexts/DataContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import ApiService from '../services/api';
+import { clearImageCache } from '../utils/imageUtils';
 
 const DataContext = createContext();
 
@@ -234,6 +235,9 @@ export const DataProvider = ({ children }) => {
         projects: [...prev.projects, newProject]
       }));
       
+      // Clear image cache to ensure fresh image URLs
+      clearImageCache();
+      
       return newProject;
     } catch (err) {
       console.error('Error creating project:', err);
@@ -276,6 +280,9 @@ export const DataProvider = ({ children }) => {
         projects: prev.projects.map(p => p.id === id ? updatedProject : p)
       }));
       
+      // Clear image cache to ensure fresh image URLs
+      clearImageCache();
+      
       // Refresh featured projects if featured status might have changed
       if (updates instanceof FormData && updates.has('featured')) {
         fetchFeaturedProjects();
@@ -316,6 +323,9 @@ export const DataProvider = ({ children }) => {
         blogs: [...prev.blogs, newBlog]
       }));
       
+      // Clear image cache to ensure fresh image URLs
+      clearImageCache();
+      
       return newBlog;
     } catch (err) {
       console.error('Error creating blog:', err);
@@ -332,6 +342,9 @@ export const DataProvider = ({ children }) => {
         ...prev,
         blogs: prev.blogs.map(b => b.id === id ? updatedBlog : b)
       }));
+      
+      // Clear image cache to ensure fresh image URLs
+      clearImageCache();
       
       return updatedBlog;
     } catch (err) {

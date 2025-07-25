@@ -34,10 +34,11 @@ function Footer() {
             <h3 className="footer-contact-title">GET IN TOUCH</h3>
             <div className="footer-contact-info">
               <div className="footer-contact-item">
-                <span className="footer-phone">+975 17777777</span>
+                <span className="footer-phone">+975 17786124</span>
+                <span className="footer-phone">+975 77986124</span>
               </div>
               <div className="footer-contact-item">
-                <span className="footer-email">namasbhutan@gmail.com</span>
+                <span className="footer-email">namasdesign2021@gmail.com</span>
               </div>
               <div className="footer-contact-item">
                 <span className="footer-address">Babesa, Thimphu, Bhutan</span>

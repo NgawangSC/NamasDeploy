@@ -196,18 +196,68 @@ class ApiService {
     return this.request('/blogs');
   }
 
-  static async createBlog(blogData) {
-    return this.request('/blogs', {
-      method: 'POST',
-      body: JSON.stringify(blogData),
-    });
+  static async createBlog(blogData, imageFile = null) {
+    if (imageFile) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      
+      // Append blog data
+      Object.keys(blogData).forEach(key => {
+        formData.append(key, blogData[key]);
+      });
+      
+      // Append image file
+      formData.append('image', imageFile);
+      
+      return this.requestMultipart('/blogs', formData);
+    } else {
+      // Use JSON for text-only data
+      return this.request('/blogs', {
+        method: 'POST',
+        body: JSON.stringify(blogData),
+      });
+    }
   }
 
-  static async updateBlog(id, blogData) {
-    return this.request(`/blogs/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(blogData),
-    });
+  static async updateBlog(id, blogData, imageFile = null) {
+    if (imageFile) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      
+      // Append blog data
+      Object.keys(blogData).forEach(key => {
+        formData.append(key, blogData[key]);
+      });
+      
+      // Append image file
+      formData.append('image', imageFile);
+      
+      const url = `${API_BASE_URL}/blogs/${id}`;
+      
+      try {
+        const response = await fetch(url, {
+          method: 'PUT',
+          body: formData,
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+      }
+    } else {
+      // Use JSON for text-only data
+      return this.request(`/blogs/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(blogData),
+      });
+    }
   }
 
   static async deleteBlog(id) {

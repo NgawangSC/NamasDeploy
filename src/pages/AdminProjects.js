@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useProjects, useProjectOperations } from "../hooks/useApi"
 import { useData } from "../contexts/DataContext"
+import { getImageUrl, clearImageCache } from "../utils/imageUtils"
+import ProjectImageUpload from "../components/ProjectImageUpload"
 import "./AdminProjects.css"
 
 const AdminProjects = () => {
@@ -31,13 +33,8 @@ const AdminProjects = () => {
     })
   }
 
-  const handleImageChange = (e) => {
-    // Check if files exist before trying to create an array
-    if (e.target.files && e.target.files.length > 0) {
-      setSelectedImages(Array.from(e.target.files))
-    } else {
-      setSelectedImages([])
-    }
+  const handleImageChange = (images) => {
+    setSelectedImages(images)
   }
 
   const handleSubmit = async (e) => {
@@ -64,6 +61,8 @@ const AdminProjects = () => {
       setSelectedImages([])
       setShowForm(false)
       setEditingProject(null)
+      // Clear image cache to ensure fresh image URLs
+      clearImageCache()
       refetch()
     } catch (error) {
       console.error("Error saving project:", error)
@@ -89,6 +88,7 @@ const AdminProjects = () => {
     if (window.confirm("Are you sure you want to delete this project?")) {
       try {
         await deleteProject(id)
+        clearImageCache()
         refetch()
       } catch (error) {
         console.error("Error deleting project:", error)
@@ -100,6 +100,7 @@ const AdminProjects = () => {
     try {
       const updatedProject = { ...project, featured: !project.featured }
       await updateProjectContext(project.id, updatedProject)
+      clearImageCache()
       refetch()
     } catch (error) {
       console.error('Error updating featured status:', error)
@@ -250,19 +251,11 @@ const AdminProjects = () => {
                 <textarea name="description" value={formData.description} onChange={handleInputChange} rows="4" />
               </div>
 
-              <div className="form-group">
-                <label>Images</label>
-                <input type="file" multiple accept="image/*" onChange={handleImageChange} />
-                {selectedImages.length > 0 && (
-                  <div className="selected-images">
-                    {selectedImages.map((file, index) => (
-                      <span key={index} className="image-name">
-                        {file.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ProjectImageUpload
+                selectedImages={selectedImages}
+                onImagesChange={handleImageChange}
+                maxFiles={10}
+              />
 
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={resetForm}>
@@ -281,7 +274,13 @@ const AdminProjects = () => {
         {projects?.map((project) => (
           <div key={project.id} className="project-card">
             <div className="project-image">
-              <img src={project.image || "/placeholder.svg"} alt={project.title} />
+              <img 
+                src={getImageUrl(project.image, true) || "/placeholder.svg"} 
+                alt={project.title}
+                onError={(e) => {
+                  e.target.src = "/placeholder.svg"
+                }}
+              />
               {project.featured && <span className="featured-badge">Featured</span>}
             </div>
             <div className="project-content">
