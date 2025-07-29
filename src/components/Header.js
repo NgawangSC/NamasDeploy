@@ -12,6 +12,11 @@ const Header = () => {
   const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false)
   const [isConstructionSubmenuOpen, setIsConstructionSubmenuOpen] = useState(false)
   const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false)
+  
+  // Mobile dropdown states
+  const [isMobileDesignOpen, setIsMobileDesignOpen] = useState(false)
+  const [isMobileBuildOpen, setIsMobileBuildOpen] = useState(false)
+  const [isMobileConstructionOpen, setIsMobileConstructionOpen] = useState(false)
 
   const location = useLocation()
   const designDropdownRef = useRef(null)
@@ -54,10 +59,29 @@ const Header = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
+    // Reset mobile dropdown states when closing menu
+    if (isMobileMenuOpen) {
+      setIsMobileDesignOpen(false)
+      setIsMobileBuildOpen(false)
+      setIsMobileConstructionOpen(false)
+    }
   }
 
   const toggleSettingsDropdown = () => {
     setIsSettingsDropdownOpen(!isSettingsDropdownOpen)
+  }
+
+  // Mobile dropdown toggles
+  const toggleMobileDesign = () => {
+    setIsMobileDesignOpen(!isMobileDesignOpen)
+  }
+
+  const toggleMobileBuild = () => {
+    setIsMobileBuildOpen(!isMobileBuildOpen)
+  }
+
+  const toggleMobileConstruction = () => {
+    setIsMobileConstructionOpen(!isMobileConstructionOpen)
   }
 
   const handleDesignHover = () => {
@@ -109,6 +133,13 @@ const Header = () => {
     setIsBuildDropdownOpen(false)
     setIsConstructionSubmenuOpen(false)
     setIsSettingsDropdownOpen(false)
+  }
+
+  const closeMobileMenuAndDropdowns = () => {
+    setIsMobileMenuOpen(false)
+    setIsMobileDesignOpen(false)
+    setIsMobileBuildOpen(false)
+    setIsMobileConstructionOpen(false)
   }
 
   const isDesignActive =
@@ -295,103 +326,108 @@ const Header = () => {
             <RouterLink
               to="/"
               className={`nav-mobile-link ${location.pathname === "/" ? "active" : ""}`}
-              onClick={toggleMobileMenu}
+              onClick={closeMobileMenuAndDropdowns}
             >
               HOME
             </RouterLink>
             <RouterLink
               to="/about"
               className={`nav-mobile-link ${location.pathname === "/about" ? "active" : ""}`}
-              onClick={toggleMobileMenu}
+              onClick={closeMobileMenuAndDropdowns}
             >
               ABOUT
             </RouterLink>
 
-            <div className="mobile-design-section">
-              <div className="design-header">DESIGN</div>
-              <RouterLink to="/architecture" className="nav-mobile-link design-sub-item" onClick={toggleMobileMenu}>
-                Architecture
-              </RouterLink>
-              <RouterLink to="/planning" className="nav-mobile-link design-sub-item" onClick={toggleMobileMenu}>
-                Planning
-              </RouterLink>
-              <RouterLink to="/interior" className="nav-mobile-link design-sub-item" onClick={toggleMobileMenu}>
-                Interior
-              </RouterLink>
-              <RouterLink to="/landscape" className="nav-mobile-link design-sub-item" onClick={toggleMobileMenu}>
-                Landscape
-              </RouterLink>
+            {/* Mobile Design Dropdown */}
+            <div className="mobile-dropdown-section">
+              <button 
+                className={`mobile-dropdown-trigger ${isDesignActive ? "active" : ""}`}
+                onClick={toggleMobileDesign}
+              >
+                DESIGN
+                <ChevronDown size={16} className={`mobile-dropdown-icon ${isMobileDesignOpen ? "rotated" : ""}`} />
+              </button>
+              {isMobileDesignOpen && (
+                <div className="mobile-dropdown-content">
+                  <RouterLink to="/architecture" className="mobile-dropdown-item" onClick={closeMobileMenuAndDropdowns}>
+                    Architecture
+                  </RouterLink>
+                  <RouterLink to="/planning" className="mobile-dropdown-item" onClick={closeMobileMenuAndDropdowns}>
+                    Planning
+                  </RouterLink>
+                  <RouterLink to="/interior" className="mobile-dropdown-item" onClick={closeMobileMenuAndDropdowns}>
+                    Interior
+                  </RouterLink>
+                  <RouterLink to="/landscape" className="mobile-dropdown-item" onClick={closeMobileMenuAndDropdowns}>
+                    Landscape
+                  </RouterLink>
+                </div>
+              )}
             </div>
 
-            <div className="mobile-build-section">
-              <div className="build-header">BUILD</div>
-              <div className="nav-mobile-link build-sub-item construction-mobile-trigger">Construction</div>
-              <div className="mobile-construction-subsection">
-                <RouterLink
-                  to="/construction/private-homes"
-                  className="nav-mobile-link construction-sub-item"
-                  onClick={toggleMobileMenu}
-                >
-                  Private Homes
-                </RouterLink>
-                <RouterLink
-                  to="/construction/commercial-buildings"
-                  className="nav-mobile-link construction-sub-item"
-                  onClick={toggleMobileMenu}
-                >
-                  Commercial Buildings
-                </RouterLink>
-                <RouterLink
-                  to="/construction/office"
-                  className="nav-mobile-link construction-sub-item"
-                  onClick={toggleMobileMenu}
-                >
-                  Office
-                </RouterLink>
-                <RouterLink
-                  to="/construction/institute"
-                  className="nav-mobile-link construction-sub-item"
-                  onClick={toggleMobileMenu}
-                >
-                  Institute
-                </RouterLink>
-                <RouterLink
-                  to="/construction/hospitality"
-                  className="nav-mobile-link construction-sub-item"
-                  onClick={toggleMobileMenu}
-                >
-                  Hospitality
-                </RouterLink>
-                <RouterLink
-                  to="/construction/interior"
-                  className="nav-mobile-link construction-sub-item"
-                  onClick={toggleMobileMenu}
-                >
-                  Interior
-                </RouterLink>
-                <RouterLink
-                  to="/construction/renovation"
-                  className="nav-mobile-link construction-sub-item"
-                  onClick={toggleMobileMenu}
-                >
-                  Renovation
-                </RouterLink>
-              </div>
-              <RouterLink to="/supervision" className="nav-mobile-link build-sub-item" onClick={toggleMobileMenu}>
-                Supervision
-              </RouterLink>
-              <RouterLink to="/management" className="nav-mobile-link build-sub-item" onClick={toggleMobileMenu}>
-                Management
-              </RouterLink>
-              <RouterLink to="/real-estate" className="nav-mobile-link build-sub-item" onClick={toggleMobileMenu}>
-                Real Estate
-              </RouterLink>
+            {/* Mobile Build Dropdown */}
+            <div className="mobile-dropdown-section">
+              <button 
+                className={`mobile-dropdown-trigger ${isBuildActive ? "active" : ""}`}
+                onClick={toggleMobileBuild}
+              >
+                BUILD
+                <ChevronDown size={16} className={`mobile-dropdown-icon ${isMobileBuildOpen ? "rotated" : ""}`} />
+              </button>
+              {isMobileBuildOpen && (
+                <div className="mobile-dropdown-content">
+                  {/* Mobile Construction Dropdown */}
+                  <div className="mobile-construction-dropdown">
+                    <button 
+                      className="mobile-construction-trigger"
+                      onClick={toggleMobileConstruction}
+                    >
+                      Construction
+                      <ChevronDown size={14} className={`mobile-construction-icon ${isMobileConstructionOpen ? "rotated" : ""}`} />
+                    </button>
+                    {isMobileConstructionOpen && (
+                      <div className="mobile-construction-content">
+                        <RouterLink to="/construction/private-homes" className="mobile-construction-item" onClick={closeMobileMenuAndDropdowns}>
+                          Private Homes
+                        </RouterLink>
+                        <RouterLink to="/construction/commercial-buildings" className="mobile-construction-item" onClick={closeMobileMenuAndDropdowns}>
+                          Commercial Buildings
+                        </RouterLink>
+                        <RouterLink to="/construction/office" className="mobile-construction-item" onClick={closeMobileMenuAndDropdowns}>
+                          Office
+                        </RouterLink>
+                        <RouterLink to="/construction/institute" className="mobile-construction-item" onClick={closeMobileMenuAndDropdowns}>
+                          Institute
+                        </RouterLink>
+                        <RouterLink to="/construction/hospitality" className="mobile-construction-item" onClick={closeMobileMenuAndDropdowns}>
+                          Hospitality
+                        </RouterLink>
+                        <RouterLink to="/construction/interior" className="mobile-construction-item" onClick={closeMobileMenuAndDropdowns}>
+                          Interior
+                        </RouterLink>
+                        <RouterLink to="/construction/renovation" className="mobile-construction-item" onClick={closeMobileMenuAndDropdowns}>
+                          Renovation
+                        </RouterLink>
+                      </div>
+                    )}
+                  </div>
+                  <RouterLink to="/supervision" className="mobile-dropdown-item" onClick={closeMobileMenuAndDropdowns}>
+                    Supervision
+                  </RouterLink>
+                  <RouterLink to="/management" className="mobile-dropdown-item" onClick={closeMobileMenuAndDropdowns}>
+                    Management
+                  </RouterLink>
+                  <RouterLink to="/real-estate" className="mobile-dropdown-item" onClick={closeMobileMenuAndDropdowns}>
+                    Real Estate
+                  </RouterLink>
+                </div>
+              )}
             </div>
 
             <RouterLink
               to="/blog"
               className={`nav-mobile-link ${location.pathname === "/blog" ? "active" : ""}`}
-              onClick={toggleMobileMenu}
+              onClick={closeMobileMenuAndDropdowns}
             >
               BLOG
             </RouterLink>

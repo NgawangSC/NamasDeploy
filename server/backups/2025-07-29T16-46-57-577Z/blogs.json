@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "title": "1",
+    "excerpt": "123",
+    "content": "123",
+    "author": "1",
+    "category": "Architecture",
+    "readTime": "5 min read",
+    "date": "July 29, 2025",
+    "image": "",
+    "createdAt": "2025-07-29T16:32:03.343Z",
+    "tags": [],
+    "status": "published",
+    "updatedAt": "2025-07-29T16:32:13.589Z"
+  }
+]

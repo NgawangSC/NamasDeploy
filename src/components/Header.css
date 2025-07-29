@@ -289,7 +289,7 @@
   transform: scale(1.02);
 }
 
-/* Mobile Design Section */
+/* Mobile Design Section - Legacy styles for backward compatibility */
 .mobile-design-section {
   border-left: 4px solid rgba(255, 255, 255, 0.3);
   margin-left: 20px;
@@ -316,7 +316,7 @@
   border-left-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Mobile Build Section */
+/* Mobile Build Section - Legacy styles for backward compatibility */
 .mobile-build-section {
   border-left: 4px solid rgba(255, 255, 255, 0.3);
   margin-left: 20px;
@@ -343,7 +343,7 @@
   border-left-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Mobile Construction Subsection */
+/* Mobile Construction Subsection - Legacy styles for backward compatibility */
 .mobile-construction-subsection {
   border-left: 2px solid rgba(255, 255, 255, 0.2);
   margin-left: 40px;
@@ -359,6 +359,152 @@
 .construction-sub-item:hover {
   background: rgba(255, 255, 255, 0.06);
   border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+/* New Mobile Dropdown Styles */
+.mobile-dropdown-section {
+  text-align: center;
+}
+
+.mobile-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  padding: 14px 0;
+  margin: 0 auto;
+  max-width: 280px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.mobile-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-dropdown-trigger.active {
+  border-bottom: 2px solid white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-dropdown-icon {
+  transition: transform 0.3s ease;
+}
+
+.mobile-dropdown-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.mobile-dropdown-content {
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  animation: mobileDropdownSlide 0.3s ease;
+}
+
+@keyframes mobileDropdownSlide {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.mobile-dropdown-item {
+  display: block;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  padding: 12px 0;
+  margin: 0 auto;
+  max-width: 260px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+/* Mobile Construction Dropdown */
+.mobile-construction-dropdown {
+  text-align: center;
+}
+
+.mobile-construction-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  padding: 12px 0;
+  margin: 0 auto;
+  max-width: 260px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-construction-trigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.mobile-construction-icon {
+  transition: transform 0.3s ease;
+}
+
+.mobile-construction-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.mobile-construction-content {
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  animation: mobileDropdownSlide 0.3s ease;
+}
+
+.mobile-construction-item {
+  display: block;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  padding: 10px 0;
+  margin: 0 auto;
+  max-width: 240px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-construction-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .settings-btn {
@@ -424,6 +570,64 @@
   border-left: 4px solid white;
 }
 
+/* Tablet Responsive - 1024px and below */
+@media (max-width: 1024px) {
+  .nav-desktop {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .settings-btn {
+    display: none;
+  }
+
+  /* Center mobile menu items for tablet */
+  .nav-mobile {
+    align-items: center;
+    text-align: center;
+  }
+
+  .nav-mobile-link {
+    text-align: center;
+    padding: 12px 0;
+    margin: 0 auto;
+    max-width: 300px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-mobile-link.active {
+    border-left: none;
+    border-bottom: 2px solid white;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Mobile dropdown styles for tablet */
+  .mobile-dropdown-trigger {
+    max-width: 300px;
+    padding: 12px 0;
+  }
+
+  .mobile-dropdown-item {
+    max-width: 280px;
+    padding: 12px 0;
+  }
+
+  .mobile-construction-trigger {
+    max-width: 280px;
+    padding: 12px 0;
+  }
+
+  .mobile-construction-item {
+    max-width: 260px;
+    padding: 10px 0;
+  }
+}
+
+/* Mobile Responsive - 768px and below */
 @media (max-width: 768px) {
   .header-container {
     padding: 0 24px;
@@ -444,5 +648,47 @@
   .logo-image {
     height: 50px;
     max-width: 100px;
+  }
+
+  /* Center mobile menu items for mobile */
+  .nav-mobile {
+    align-items: center;
+    text-align: center;
+  }
+
+  .nav-mobile-link {
+    text-align: center;
+    padding: 14px 0;
+    margin: 0 auto;
+    max-width: 280px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-mobile-link.active {
+    border-left: none;
+    border-bottom: 2px solid white;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Mobile dropdown styles for mobile */
+  .mobile-dropdown-trigger {
+    max-width: 280px;
+    padding: 14px 0;
+  }
+
+  .mobile-dropdown-item {
+    max-width: 260px;
+    padding: 12px 0;
+  }
+
+  .mobile-construction-trigger {
+    max-width: 260px;
+    padding: 12px 0;
+  }
+
+  .mobile-construction-item {
+    max-width: 240px;
+    padding: 10px 0;
   }
 }

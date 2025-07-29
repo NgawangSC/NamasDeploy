@@ -3,6 +3,7 @@ const cors = require("cors")
 const multer = require("multer")
 const path = require("path")
 const fs = require("fs")
+const { startAutoBackup, createBackup } = require('./data-backup')
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -51,10 +52,45 @@ const upload = multer({
   },
 })
 
-// In-memory storage (replace with database in production)
-const projects = []
+// Data file paths
+const DATA_DIR = path.join(__dirname, 'data')
+const PROJECTS_FILE = path.join(DATA_DIR, 'projects.json')
+const BLOGS_FILE = path.join(DATA_DIR, 'blogs.json')
+const CLIENTS_FILE = path.join(DATA_DIR, 'clients.json')
+const CONTACTS_FILE = path.join(DATA_DIR, 'contacts.json')
 
-const blogPosts = [
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true })
+}
+
+// Data persistence functions
+const loadData = (filePath, defaultData = []) => {
+  try {
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8')
+      return JSON.parse(data)
+    }
+    return defaultData
+  } catch (error) {
+    console.error(`Error loading data from ${filePath}:`, error)
+    return defaultData
+  }
+}
+
+const saveData = (filePath, data) => {
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+    return true
+  } catch (error) {
+    console.error(`Error saving data to ${filePath}:`, error)
+    return false
+  }
+}
+
+// Load initial data
+let projects = loadData(PROJECTS_FILE, [])
+let blogPosts = loadData(BLOGS_FILE, [
   {
     id: 1,
     title: "Sustainable Architecture in Bhutan",
@@ -67,11 +103,9 @@ const blogPosts = [
     image: "/images/project1.png",
     readTime: "5 min read",
   },
-]
-
-const contacts = []
-
-const clients = []
+])
+let clients = loadData(CLIENTS_FILE, [])
+let contacts = loadData(CONTACTS_FILE, [])
 
 // ROOT ROUTE - Fix for "Cannot GET /"
 app.get("/", (req, res) => {
@@ -94,32 +128,81 @@ app.get("/api", (req, res) => {
     message: "NAMAS Architecture API",
     timestamp: new Date().toISOString(),
     endpoints: [
-      "GET /api/projects - Get all projects",
+      "GET /api/projects - Get all projects (supports ?page=1&limit=10)",
       "POST /api/projects - Create new project",
       "GET /api/projects/:id - Get single project",
       "PUT /api/projects/:id - Update project",
       "DELETE /api/projects/:id - Delete project",
-      "GET /api/blogs - Get all blog posts",
+      "GET /api/blogs - Get all blog posts (supports ?page=1&limit=10)",
       "POST /api/blogs - Create new blog post",
       "GET /api/blogs/:id - Get single blog post",
       "PUT /api/blogs/:id - Update blog post",
       "DELETE /api/blogs/:id - Delete blog post",
+      "GET /api/clients - Get all clients (supports ?page=1&limit=10)",
       "POST /api/contact - Submit contact form",
       "GET /api/contacts - Get all contacts",
       "PUT /api/contacts/:id - Update contact status",
       "POST /api/search - Search projects and blogs",
+      "POST /api/backup - Create manual backup",
     ],
+    stats: {
+      projects: projects.length,
+      blogs: blogPosts.length,
+      clients: clients.length,
+      contacts: contacts.length
+    }
   })
+})
+
+// BACKUP ROUTE
+app.post("/api/backup", (req, res) => {
+  try {
+    const success = createBackup()
+    if (success) {
+      res.json({
+        success: true,
+        message: "Backup created successfully",
+        timestamp: new Date().toISOString()
+      })
+    } else {
+      res.status(500).json({
+        success: false,
+        error: "Failed to create backup"
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Backup operation failed",
+      details: error.message
+    })
+  }
 })
 
 // PROJECT ROUTES
 
-// GET all projects
+// GET all projects with optional pagination
 app.get("/api/projects", (req, res) => {
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 0 // 0 means no limit (return all)
+  const startIndex = (page - 1) * limit
+  
+  let result = projects
+  let totalPages = 1
+  
+  if (limit > 0) {
+    result = projects.slice(startIndex, startIndex + limit)
+    totalPages = Math.ceil(projects.length / limit)
+  }
+  
   res.json({
     success: true,
-    data: projects,
-    count: projects.length,
+    data: result,
+    count: result.length,
+    total: projects.length,
+    page: limit > 0 ? page : 1,
+    totalPages: totalPages,
+    hasMore: limit > 0 ? page < totalPages : false
   })
 })
 
@@ -149,7 +232,7 @@ app.get("/api/projects/:id", (req, res) => {
 })
 
 // POST create new project
-app.post("/api/projects", upload.array("images", 10), (req, res) => {
+app.post("/api/projects", upload.array("images", 25), (req, res) => {
   try {
     const { title, category, location, year, status, client, designTeam, description, featured } = req.body
 
@@ -178,6 +261,7 @@ app.post("/api/projects", upload.array("images", 10), (req, res) => {
     }
 
     projects.push(newProject)
+    saveData(PROJECTS_FILE, projects)
     res.status(201).json({
       success: true,
       data: newProject,
@@ -193,7 +277,7 @@ app.post("/api/projects", upload.array("images", 10), (req, res) => {
 })
 
 // PUT update project
-app.put("/api/projects/:id", upload.array("images", 10), (req, res) => {
+app.put("/api/projects/:id", upload.array("images", 25), (req, res) => {
   try {
     const projectId = Number.parseInt(req.params.id)
     const projectIndex = projects.findIndex((p) => p.id === projectId)
@@ -226,6 +310,7 @@ app.put("/api/projects/:id", upload.array("images", 10), (req, res) => {
     }
 
     projects[projectIndex] = updatedProject
+    saveData(PROJECTS_FILE, projects)
     res.json({
       success: true,
       data: updatedProject,
@@ -267,6 +352,7 @@ app.patch("/api/projects/:id", express.json(), (req, res) => {
     }
 
     projects[projectIndex] = updatedProject
+    saveData(PROJECTS_FILE, projects)
     res.json({
       success: true,
       data: updatedProject,
@@ -295,6 +381,7 @@ app.delete("/api/projects/:id", (req, res) => {
 
   const deletedProject = projects[projectIndex]
   projects.splice(projectIndex, 1)
+  saveData(PROJECTS_FILE, projects)
   res.json({
     success: true,
     message: "Project deleted successfully",
@@ -303,7 +390,7 @@ app.delete("/api/projects/:id", (req, res) => {
 })
 
 // POST add images to existing project
-app.post("/api/projects/:id/images", upload.array("images", 10), (req, res) => {
+app.post("/api/projects/:id/images", upload.array("images", 25), (req, res) => {
   try {
     const projectId = Number.parseInt(req.params.id)
     const projectIndex = projects.findIndex((p) => p.id === projectId)
@@ -334,6 +421,8 @@ app.post("/api/projects/:id/images", upload.array("images", 10), (req, res) => {
     }
     
     project.updatedAt = new Date().toISOString()
+    projects[projectIndex] = project
+    saveData(PROJECTS_FILE, projects)
 
     res.json({
       success: true,
@@ -386,6 +475,8 @@ app.put("/api/projects/:id/cover", (req, res) => {
 
     project.image = imageUrl
     project.updatedAt = new Date().toISOString()
+    projects[projectIndex] = project
+    saveData(PROJECTS_FILE, projects)
 
     res.json({
       success: true,
@@ -441,6 +532,8 @@ app.delete("/api/projects/:id/images", (req, res) => {
     }
     
     project.updatedAt = new Date().toISOString()
+    projects[projectIndex] = project
+    saveData(PROJECTS_FILE, projects)
 
     res.json({
       success: true,
@@ -458,12 +551,28 @@ app.delete("/api/projects/:id/images", (req, res) => {
 
 // BLOG ROUTES
 
-// GET all blog posts
+// GET all blog posts with optional pagination
 app.get("/api/blogs", (req, res) => {
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 0 // 0 means no limit (return all)
+  const startIndex = (page - 1) * limit
+  
+  let result = blogPosts
+  let totalPages = 1
+  
+  if (limit > 0) {
+    result = blogPosts.slice(startIndex, startIndex + limit)
+    totalPages = Math.ceil(blogPosts.length / limit)
+  }
+  
   res.json({
     success: true,
-    data: blogPosts,
-    count: blogPosts.length,
+    data: result,
+    count: result.length,
+    total: blogPosts.length,
+    page: limit > 0 ? page : 1,
+    totalPages: totalPages,
+    hasMore: limit > 0 ? page < totalPages : false
   })
 })
 
@@ -513,6 +622,7 @@ app.post("/api/blogs", upload.single("image"), (req, res) => {
     }
 
     blogPosts.push(newBlog)
+    saveData(BLOGS_FILE, blogPosts)
     res.status(201).json({
       success: true,
       data: newBlog,
@@ -553,6 +663,7 @@ app.put("/api/blogs/:id", upload.single("image"), (req, res) => {
     }
 
     blogPosts[blogIndex] = updatedBlog
+    saveData(BLOGS_FILE, blogPosts)
     res.json({
       success: true,
       data: updatedBlog,
@@ -581,6 +692,7 @@ app.delete("/api/blogs/:id", (req, res) => {
 
   const deletedBlog = blogPosts[blogIndex]
   blogPosts.splice(blogIndex, 1)
+  saveData(BLOGS_FILE, blogPosts)
   res.json({
     success: true,
     message: "Blog post deleted successfully",
@@ -616,6 +728,7 @@ app.post("/api/contact", (req, res) => {
     }
 
     contacts.push(newContact)
+    saveData(CONTACTS_FILE, contacts)
 
     // Here you would typically send an email notification
     console.log("New contact inquiry:", newContact)
@@ -663,7 +776,15 @@ app.put("/api/contacts/:id", (req, res) => {
       updatedAt: new Date().toISOString(),
     }
 
-    res.json({
+          contacts[contactIndex] = {
+        ...contacts[contactIndex],
+        ...req.body,
+        id: contactId,
+        updatedAt: new Date().toISOString(),
+      }
+      saveData(CONTACTS_FILE, contacts)
+
+      res.json({
       success: true,
       data: contacts[contactIndex],
       message: "Contact updated successfully",
@@ -679,12 +800,28 @@ app.put("/api/contacts/:id", (req, res) => {
 
 // CLIENT ROUTES
 
-// GET all clients
+// GET all clients with optional pagination
 app.get("/api/clients", (req, res) => {
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 0 // 0 means no limit (return all)
+  const startIndex = (page - 1) * limit
+  
+  let result = clients
+  let totalPages = 1
+  
+  if (limit > 0) {
+    result = clients.slice(startIndex, startIndex + limit)
+    totalPages = Math.ceil(clients.length / limit)
+  }
+  
   res.json({
     success: true,
-    data: clients,
-    count: clients.length,
+    data: result,
+    count: result.length,
+    total: clients.length,
+    page: limit > 0 ? page : 1,
+    totalPages: totalPages,
+    hasMore: limit > 0 ? page < totalPages : false
   })
 })
 
@@ -728,6 +865,7 @@ app.post("/api/clients", upload.single("logo"), (req, res) => {
     }
 
     clients.push(newClient)
+    saveData(CLIENTS_FILE, clients)
     res.status(201).json({
       success: true,
       data: newClient,
@@ -768,6 +906,7 @@ app.put("/api/clients/:id", upload.single("logo"), (req, res) => {
     }
 
     clients[clientIndex] = updatedClient
+    saveData(CLIENTS_FILE, clients)
     res.json({
       success: true,
       data: updatedClient,
@@ -796,6 +935,7 @@ app.delete("/api/clients/:id", (req, res) => {
 
   const deletedClient = clients[clientIndex]
   clients.splice(clientIndex, 1)
+  saveData(CLIENTS_FILE, clients)
   res.json({
     success: true,
     message: "Client deleted successfully",
@@ -935,4 +1075,9 @@ app.listen(PORT, () => {
   console.log(`📡 Server URL: http://localhost:${PORT}`)
   console.log(`📋 API Documentation: http://localhost:${PORT}/api`)
   console.log(`📁 Upload directory: uploads/`)
+  console.log(`💾 Data directory: ${DATA_DIR}`)
+  console.log(`📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${contacts.length} contacts`)
+  
+  // Start automatic backup system
+  startAutoBackup()
 })

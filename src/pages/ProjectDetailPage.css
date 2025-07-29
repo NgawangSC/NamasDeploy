@@ -320,6 +320,23 @@
   font-weight: 600;
 }
 
+/* Tablet styles */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .project-info-section {
+    padding: 30px 24px;
+  }
+
+  .info-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+
+  .info-cell {
+    font-size: 13px;
+  }
+}
+
+/* Mobile and small tablet styles */
 @media (max-width: 768px) {
   .project-detail-page {
     padding-top: 70px;
@@ -359,13 +376,116 @@
     padding: 40px 24px;
   }
 
+  /* Create a more responsive layout for project details */
   .info-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0;
+  }
+
+  .info-row:first-child {
+    display: none; /* Hide the header row on mobile */
+  }
+
+  .info-row.info-data {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px 0;
   }
 
   .info-cell {
-    padding: 8px 0;
+    padding: 12px 0;
+    position: relative;
+  }
+
+  /* Add labels before each data cell on mobile */
+  .info-data .info-cell:nth-child(1):before {
+    content: "PROJECT NAME";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(2):before {
+    content: "CLIENT";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(3):before {
+    content: "YEAR";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(4):before {
+    content: "LOCATION";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(5):before {
+    content: "DESIGN TEAM";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(6):before {
+    content: "STATUS";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .project-info-section {
+    padding: 30px 16px;
+  }
+
+  .info-row.info-data {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .project-title-overlay {
+    left: 16px;
+    right: 16px;
+  }
+
+  .project-title-overlay h1 {
+    font-size: 1.5rem;
   }
 }
