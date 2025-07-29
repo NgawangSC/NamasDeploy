@@ -89,6 +89,13 @@ const ClientsManager = () => {
   const categories = ["General", "Government", "Corporate", "Banking", "Real Estate", "Healthcare", "Education"]
   const statuses = ["Active", "Inactive", "Pending"]
 
+  // Sort clients by creation date (most recent first)
+  const sortedClients = [...clients].sort((a, b) => {
+    const dateA = new Date(a.createdAt || a.updatedAt || a.date || 0)
+    const dateB = new Date(b.createdAt || b.updatedAt || b.date || 0)
+    return dateB - dateA
+  })
+
   return (
     <div className="clients-manager">
       <div className="manager-header">
@@ -201,13 +208,13 @@ const ClientsManager = () => {
       )}
 
       <div className="clients-list">
-        {clients.length === 0 ? (
+        {sortedClients.length === 0 ? (
           <div className="no-clients">
             <p>No clients found. Add your first client to get started!</p>
           </div>
         ) : (
           <div className="clients-grid">
-            {clients.map((client) => (
+            {sortedClients.map((client) => (
               <div key={client.id} className="client-card">
                 <div className="client-logo">
                   <img 

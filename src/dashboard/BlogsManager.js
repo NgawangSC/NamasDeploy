@@ -33,9 +33,9 @@ const BlogsManager = () => {
     return cats.sort()
   }, [blogs])
 
-  // Filter blogs based on search term and category
+  // Filter and sort blogs based on search term and category
   const filteredBlogs = useMemo(() => {
-    return blogs.filter(blog => {
+    const filtered = blogs.filter(blog => {
       const matchesSearch = !searchTerm || 
         blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         blog.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -46,6 +46,13 @@ const BlogsManager = () => {
       const matchesCategory = !selectedCategory || blog.category === selectedCategory
       
       return matchesSearch && matchesCategory
+    })
+    
+    // Sort by creation date (most recent first)
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.updatedAt || a.publishedAt || a.date || 0)
+      const dateB = new Date(b.createdAt || b.updatedAt || b.publishedAt || b.date || 0)
+      return dateB - dateA
     })
   }, [blogs, searchTerm, selectedCategory])
 

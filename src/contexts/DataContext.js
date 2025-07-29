@@ -436,10 +436,12 @@ export const DataProvider = ({ children }) => {
       .slice(0, limit);
   };
 
-  // Fetch projects from API on mount (after all functions are defined)
+  // Fetch data from API on mount (after all functions are defined)
   useEffect(() => {
     fetchProjects();
-  }, [fetchProjects]);
+    fetchBlogs();
+    fetchClients();
+  }, [fetchProjects, fetchBlogs, fetchClients]);
 
   const contextValue = {
     data,

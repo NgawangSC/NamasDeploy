@@ -59,8 +59,10 @@
 }
 
 .recent-content {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
 }
 
 .recent-section {
@@ -68,8 +70,7 @@
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  max-width: 600px;
-  width: 100%;
+  height: fit-content;
 }
 
 .section-header {
@@ -189,17 +190,25 @@
   text-decoration: underline;
 }
 
+.client-link {
+  color: #3498db;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.client-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
 
   .recent-content {
-    justify-content: stretch;
-  }
-
-  .recent-section {
-    max-width: none;
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .stat-card {

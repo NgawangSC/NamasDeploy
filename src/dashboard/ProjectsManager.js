@@ -48,9 +48,9 @@ const ProjectsManager = () => {
     return cats.sort()
   }, [projects])
 
-  // Filter projects based on search term and category
+  // Filter and sort projects based on search term and category
   const filteredProjects = useMemo(() => {
-    return projects.filter(project => {
+    const filtered = projects.filter(project => {
       const matchesSearch = !searchTerm || 
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -62,6 +62,13 @@ const ProjectsManager = () => {
       const matchesCategory = !selectedCategory || project.category === selectedCategory
       
       return matchesSearch && matchesCategory
+    })
+    
+    // Sort by creation date (most recent first)
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.updatedAt || a.date || 0)
+      const dateB = new Date(b.createdAt || b.updatedAt || b.date || 0)
+      return dateB - dateA
     })
   }, [projects, searchTerm, selectedCategory])
 
