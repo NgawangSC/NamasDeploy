@@ -402,6 +402,7 @@
   gap: 30px;
   max-width: 900px;
   margin: 0 auto;
+  justify-items: center;
 }
 
 .team-member-card {
@@ -452,6 +453,25 @@
   font-weight: 300;
   margin: 0;
   color: #adb5bd;
+}
+
+.team-loading,
+.no-team-members {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.team-loading {
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.no-team-members {
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
 /* About Section */
@@ -931,7 +951,6 @@
   left: 0;
   width: 100%;
   height: 50%;
-  background: rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
 

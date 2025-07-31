@@ -497,8 +497,8 @@
 }
 
 .client-logo img {
-  width: 80px;
-  height: 80px;
+  width: 150px;
+  height: 150px;
   object-fit: contain;
   border-radius: 8px;
   background: white;
@@ -509,7 +509,7 @@
   color: #333;
   font-size: 0.9rem;
   font-weight: 500;
-  margin-top: 10px;
+  margin: 0;
   text-align: center;
 }
 

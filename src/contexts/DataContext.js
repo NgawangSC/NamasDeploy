@@ -43,6 +43,8 @@ export const DataProvider = ({ children }) => {
     blogs: [],
     // Clients data - will be fetched from API
     clients: [],
+    // Team members data - will be fetched from API
+    teamMembers: [],
     // Media files
     media: [
       {
@@ -60,7 +62,8 @@ export const DataProvider = ({ children }) => {
     projects: false,
     featuredProjects: false,
     blogs: false,
-    clients: false
+    clients: false,
+    teamMembers: false
   });
 
 
@@ -69,7 +72,8 @@ export const DataProvider = ({ children }) => {
     projects: null,
     featuredProjects: null,
     blogs: null,
-    clients: null
+    clients: null,
+    teamMembers: null
   });
 
   // Load data from localStorage on component mount
@@ -81,10 +85,11 @@ export const DataProvider = ({ children }) => {
         setData(prev => ({
           ...prev,
           ...parsed,
-          // Don't restore projects, blogs, and clients from localStorage, fetch from API instead
+          // Don't restore projects, blogs, clients, and teamMembers from localStorage, fetch from API instead
           projects: [],
           blogs: [],
-          clients: []
+          clients: [],
+          teamMembers: []
         }));
       } catch (error) {
         console.error('Error loading saved data:', error);
@@ -92,9 +97,9 @@ export const DataProvider = ({ children }) => {
     }
   }, []);
 
-  // Save data to localStorage whenever data changes (excluding projects, blogs, and clients)
+  // Save data to localStorage whenever data changes (excluding projects, blogs, clients, and teamMembers)
   useEffect(() => {
-    const { projects, blogs, clients, ...dataToSave } = data;
+    const { projects, blogs, clients, teamMembers, ...dataToSave } = data;
     localStorage.setItem('websiteData', JSON.stringify(dataToSave));
   }, [data]);
 
@@ -185,6 +190,26 @@ export const DataProvider = ({ children }) => {
       setError(prev => ({ ...prev, clients: err.message }));
     } finally {
       setLoading(prev => ({ ...prev, clients: false }));
+    }
+  }, []);
+
+  const fetchTeamMembers = useCallback(async () => {
+    try {
+      setLoading(prev => ({ ...prev, teamMembers: true }));
+      setError(prev => ({ ...prev, teamMembers: null }));
+      
+      const response = await ApiService.getTeamMembers();
+      const apiTeamMembers = response.data || [];
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: apiTeamMembers
+      }));
+    } catch (err) {
+      console.error('Error fetching team members:', err);
+      setError(prev => ({ ...prev, teamMembers: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, teamMembers: false }));
     }
   }, []);
 
@@ -536,6 +561,54 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  const addTeamMember = async (member) => {
+    try {
+      const response = await ApiService.createTeamMember(member);
+      const newMember = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: [...prev.teamMembers, newMember]
+      }));
+      
+      return newMember;
+    } catch (err) {
+      console.error('Error creating team member:', err);
+      throw err;
+    }
+  };
+
+  const updateTeamMember = async (id, updates) => {
+    try {
+      const response = await ApiService.updateTeamMember(id, updates);
+      const updatedMember = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: prev.teamMembers.map(m => m.id === id ? updatedMember : m)
+      }));
+      
+      return updatedMember;
+    } catch (err) {
+      console.error('Error updating team member:', err);
+      throw err;
+    }
+  };
+
+  const deleteTeamMember = async (id) => {
+    try {
+      await ApiService.deleteTeamMember(id);
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: prev.teamMembers.filter(m => m.id !== id)
+      }));
+    } catch (err) {
+      console.error('Error deleting team member:', err);
+      throw err;
+    }
+  };
+
   const addMedia = (media) => {
     setData(prev => ({
       ...prev,
@@ -562,7 +635,8 @@ export const DataProvider = ({ children }) => {
     fetchProjects();
     fetchBlogs();
     fetchClients();
-  }, [fetchProjects, fetchBlogs, fetchClients]);
+    fetchTeamMembers();
+  }, [fetchProjects, fetchBlogs, fetchClients, fetchTeamMembers]);
 
   const contextValue = {
     data,
@@ -580,18 +654,23 @@ export const DataProvider = ({ children }) => {
     addClient,
     updateClient,
     deleteClient,
+    addTeamMember,
+    updateTeamMember,
+    deleteTeamMember,
     addMedia,
     deleteMedia,
     fetchProjects,
     fetchFeaturedProjects,
     fetchBlogs,
     fetchClients,
+    fetchTeamMembers,
     getRecentProjects,
     // Export individual data for easier access
     projects: data.projects,
     featuredProjects: data.featuredProjects,
     blogs: data.blogs,
     clients: data.clients,
+    teamMembers: data.teamMembers,
     media: data.media
   };
 

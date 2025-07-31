@@ -1,6 +1,13 @@
 const API_BASE_URL = 'http://localhost:5000/api';
+const SERVER_BASE_URL = 'http://localhost:5000';
 
 class ApiService {
+  // Helper method to construct full image URLs
+  static getImageUrl(imagePath) {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${SERVER_BASE_URL}${imagePath}`;
+  }
   // Helper method for making HTTP requests
   static async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -262,6 +269,85 @@ class ApiService {
 
   static async deleteBlog(id) {
     return this.request(`/blogs/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Team Member methods
+  static async getTeamMembers() {
+    return this.request('/team-members');
+  }
+
+  static async createTeamMember(teamMemberData) {
+    const { image, ...data } = teamMemberData;
+    
+    if (image) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      
+      // Append team member data
+      Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
+      });
+      
+      // Append image file
+      formData.append('image', image);
+      
+      return this.requestMultipart('/team-members', formData);
+    } else {
+      // Use JSON for text-only data
+      return this.request('/team-members', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    }
+  }
+
+  static async updateTeamMember(id, teamMemberData) {
+    const { image, ...data } = teamMemberData;
+    
+    if (image) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      
+      // Append team member data
+      Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
+      });
+      
+      // Append image file
+      formData.append('image', image);
+      
+      const url = `${API_BASE_URL}/team-members/${id}`;
+      
+      try {
+        const response = await fetch(url, {
+          method: 'PUT',
+          body: formData,
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+      }
+    } else {
+      // Use JSON for text-only data
+      return this.request(`/team-members/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    }
+  }
+
+  static async deleteTeamMember(id) {
+    return this.request(`/team-members/${id}`, {
       method: 'DELETE',
     });
   }

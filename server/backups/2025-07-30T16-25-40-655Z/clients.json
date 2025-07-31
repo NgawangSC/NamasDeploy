@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "123",
+    "description": "123",
+    "website": "https://example.com",
+    "category": "Education",
+    "status": "Active",
+    "logo": "/uploads/logo-1753890763332-467534256.jpg",
+    "createdAt": "2025-07-30T15:52:43.340Z"
+  }
+]

@@ -34,7 +34,7 @@ function Footer() {
             <h3 className="footer-contact-title">GET IN TOUCH</h3>
             <div className="footer-contact-info">
               <div className="footer-contact-item">
-                <span className="footer-phone">+975 17786124</span>
+                <span className="footer-phone">+975 17786124</span> <br/>
                 <span className="footer-phone">+975 77986124</span>
               </div>
               <div className="footer-contact-item">

@@ -25,12 +25,16 @@ const DashboardLogin = ({ setIsAuthenticated }) => {
     setIsLoading(true)
     setError("")
 
-    // Simple authentication (replace with real authentication)
-    if (credentials.username === "admin" && credentials.password === "admin123") {
+    // Very simple authentication - just check the values directly
+    if (
+      (credentials.username === "admin" && credentials.password === "admin123") ||
+      (credentials.username === "admin" && credentials.password === "admin") ||
+      (credentials.username === "admin" && credentials.password === "password")
+    ) {
       localStorage.setItem("dashboardAuth", "true")
       setIsAuthenticated(true)
     } else {
-      setError("Invalid username or password")
+      setError("Invalid credentials. Try: admin/admin123 or admin/admin or admin/password")
     }
 
     setIsLoading(false)
@@ -79,9 +83,10 @@ const DashboardLogin = ({ setIsAuthenticated }) => {
         </form>
 
         <div className="login-info">
-          <p>Default credentials:</p>
-          <p>Username: admin</p>
-          <p>Password: admin123</p>
+          <p>Try these credentials:</p>
+          <p>Username: admin | Password: admin123</p>
+          <p>Username: admin | Password: admin</p>
+          <p>Username: admin | Password: password</p>
         </div>
       </div>
     </div>

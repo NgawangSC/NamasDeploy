@@ -60,10 +60,10 @@ const cleanOldBackups = () => {
   }
 }
 
-// Auto backup every hour (or 10 minutes in development)
+// Auto backup every 24 hours (or 10 minutes in development)
 const startAutoBackup = () => {
   const isDevelopment = process.env.NODE_ENV === 'development'
-  const backupInterval = isDevelopment ? 10 * 60 * 1000 : 60 * 60 * 1000 // 10 min dev, 1 hour prod
+  const backupInterval = isDevelopment ? 10 * 60 * 1000 : 24 * 60 * 60 * 1000 // 10 min dev, 24 hours prod
   
   // Create initial backup
   createBackup()
@@ -74,7 +74,7 @@ const startAutoBackup = () => {
     cleanOldBackups()
   }, backupInterval)
   
-  const intervalText = isDevelopment ? '10 minutes' : 'hourly'
+  const intervalText = isDevelopment ? '10 minutes' : 'daily'
   console.log(`🔄 Auto-backup system started (${intervalText})`)
 }
 

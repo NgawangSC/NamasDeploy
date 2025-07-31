@@ -59,6 +59,7 @@ const BLOGS_FILE = path.join(DATA_DIR, 'blogs.json')
 const CLIENTS_FILE = path.join(DATA_DIR, 'clients.json')
 const CONTACTS_FILE = path.join(DATA_DIR, 'contacts.json')
 
+
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true })
@@ -106,6 +107,8 @@ let blogPosts = loadData(BLOGS_FILE, [
 ])
 let clients = loadData(CLIENTS_FILE, [])
 let contacts = loadData(CONTACTS_FILE, [])
+
+
 
 // ROOT ROUTE - Fix for "Cannot GET /"
 app.get("/", (req, res) => {

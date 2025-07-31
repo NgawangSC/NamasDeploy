@@ -99,12 +99,9 @@ function AboutPage() {
         happyClients = 0
       }
       
-      // Calculate working hours (estimated based on projects and years in business)
-      // Average project duration: 3-6 months, 40 hours/week, 4 weeks/month
-      const averageProjectHours = 480 // 3 months * 4 weeks * 40 hours
-      const projectBasedHours = totalProjects * averageProjectHours
-      const minimumYearlyHours = yearsInBusiness * 2000 // 2000 hours per year standard
-      const totalWorkingHours = Math.max(projectBasedHours, minimumYearlyHours)
+      // Calculate working hours (1 project = 100 working hours)
+      const hoursPerProject = 100
+      const totalWorkingHours = totalProjects * hoursPerProject
       
       // Calculate awards - count from the awards timeline section (6 awards currently listed)
       // Can be enhanced to pull from awards data if made dynamic
@@ -580,64 +577,6 @@ function AboutPage() {
                 Working together with your architect, you will share your project needs, dreams and goals.
               </p>
               <button className="service-btn" onClick={handleExteriorClick}>READ</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Awards Timeline Section */}
-      <section className="awards-section">
-        <div className="container">
-          <div className="awards-header">
-            <p className="awards-label">TIMELINE</p>
-            <h2 className="awards-title">Awards that we have</h2>
-          </div>
-          <div className="awards-timeline">
-            <div className="awards-column">
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-            </div>
-            <div className="awards-column">
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

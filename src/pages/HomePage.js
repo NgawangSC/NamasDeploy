@@ -269,8 +269,8 @@ function HomePage() {
                               e.target.src = "/images/placeholder-logo.png"
                             }}
                           />
+                          <div className="client-name">{client.name}</div>
                         </div>
-                        <div className="client-name">{client.name}</div>
                       </div>
                     ))}
                 </div>

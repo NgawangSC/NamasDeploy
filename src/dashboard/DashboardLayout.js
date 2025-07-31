@@ -17,6 +17,7 @@ const DashboardLayout = ({ children, setIsAuthenticated }) => {
     { path: "/dashboard/projects", label: "Projects", icon: "🏗️" },
     { path: "/dashboard/blogs", label: "Blogs", icon: "📝" },
     { path: "/dashboard/clients", label: "Clients", icon: "🏢" },
+    { path: "/dashboard/team", label: "Team", icon: "👥" },
   ]
 
   return (

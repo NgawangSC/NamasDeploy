@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "name": "Sonam Tobgay",
+    "title": "Founder",
+    "position": "Founder",
+    "image": "/uploads/image-1753889463462-575293089.jpg",
+    "createdAt": "2025-07-30T15:30:51.976Z",
+    "updatedAt": "2025-07-30T15:31:03.467Z"
+  },
+  {
+    "id": 3,
+    "name": "123",
+    "title": "123",
+    "position": "123",
+    "image": null,
+    "createdAt": "2025-07-30T15:31:28.528Z",
+    "updatedAt": "2025-07-30T15:31:28.528Z"
+  },
+  {
+    "id": 4,
+    "name": "12312312",
+    "title": "12312321",
+    "position": "3123123",
+    "image": null,
+    "createdAt": "2025-07-30T15:31:31.415Z",
+    "updatedAt": "2025-07-30T15:31:31.415Z"
+  },
+  {
+    "id": 5,
+    "name": "123",
+    "title": "123",
+    "position": "123",
+    "image": null,
+    "createdAt": "2025-07-30T16:33:52.901Z",
+    "updatedAt": "2025-07-30T16:33:52.901Z"
+  },
+  {
+    "id": 6,
+    "name": "123",
+    "title": "123",
+    "position": "123",
+    "image": "/uploads/image-1753893283410-979432742.png",
+    "createdAt": "2025-07-30T16:33:55.486Z",
+    "updatedAt": "2025-07-30T16:34:43.414Z"
+  },
+  {
+    "id": 7,
+    "name": "123",
+    "title": "123",
+    "position": "123",
+    "image": null,
+    "createdAt": "2025-07-30T16:33:57.591Z",
+    "updatedAt": "2025-07-30T16:33:57.591Z"
+  },
+  {
+    "id": 8,
+    "name": "123",
+    "title": "123",
+    "position": "123",
+    "image": null,
+    "createdAt": "2025-07-30T16:34:00.073Z",
+    "updatedAt": "2025-07-30T16:34:00.073Z"
+  },
+  {
+    "id": 9,
+    "name": "123",
+    "title": "123",
+    "position": "123",
+    "image": null,
+    "createdAt": "2025-07-30T16:34:02.101Z",
+    "updatedAt": "2025-07-30T16:34:02.101Z"
+  },
+  {
+    "id": 10,
+    "name": "123",
+    "title": "321",
+    "position": "312",
+    "image": null,
+    "createdAt": "2025-07-30T16:34:05.358Z",
+    "updatedAt": "2025-07-30T16:34:05.358Z"
+  },
+  {
+    "id": 11,
+    "name": "123",
+    "title": "123",
+    "position": "213",
+    "image": null,
+    "createdAt": "2025-07-30T16:34:07.326Z",
+    "updatedAt": "2025-07-30T16:34:07.326Z"
+  },
+  {
+    "id": 12,
+    "name": "123",
+    "title": "123",
+    "position": "231",
+    "image": null,
+    "createdAt": "2025-07-30T16:34:09.750Z",
+    "updatedAt": "2025-07-30T16:34:09.750Z"
+  },
+  {
+    "id": 13,
+    "name": "123",
+    "title": "123",
+    "position": "123",
+    "image": null,
+    "createdAt": "2025-07-30T16:34:12.064Z",
+    "updatedAt": "2025-07-30T16:34:12.064Z"
+  }
+]
