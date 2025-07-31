@@ -34,6 +34,7 @@ import HeroBannerManager from "./dashboard/HeroBannerManager"
 import RecentProjectsManager from "./dashboard/RecentProjectsManager"
 import BlogsManager from "./dashboard/BlogsManager"
 import ClientsManager from "./dashboard/ClientsManager"
+import TeamManager from "./dashboard/TeamManager"
 import MediaManager from "./dashboard/MediaManager"
 
 import DashboardLogin from "./dashboard/DashboardLogin"
@@ -78,6 +79,7 @@ function App() {
                     <Route path="/recent-projects" element={<RecentProjectsManager />} />
                     <Route path="/blogs" element={<BlogsManager />} />
                     <Route path="/clients" element={<ClientsManager />} />
+                    <Route path="/team" element={<TeamManager />} />
                     <Route path="/media" element={<MediaManager />} />
                   </Routes>
                 </DashboardLayout>
