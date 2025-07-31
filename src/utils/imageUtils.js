@@ -1,4 +1,4 @@
-const SERVER_BASE_URL = 'http://localhost:5000';
+const SERVER_BASE_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
 
 // Cache for image URLs to prevent flickering
 const imageUrlCache = new Map();

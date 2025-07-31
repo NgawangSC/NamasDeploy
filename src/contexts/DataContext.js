@@ -264,7 +264,7 @@ export const DataProvider = ({ children }) => {
       // Check if projectData is FormData (contains files)
       if (projectData instanceof FormData) {
         // Handle FormData directly
-        const url = 'http://localhost:5000/api/projects';
+        const url = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/api/projects` : 'http://localhost:5000/api/projects';
         const fetchResponse = await fetch(url, {
           method: 'POST',
           body: projectData,
@@ -306,7 +306,7 @@ export const DataProvider = ({ children }) => {
       // Check if updates is FormData (contains files)
       if (updates instanceof FormData) {
         // Handle FormData directly
-        const url = `http://localhost:5000/api/projects/${id}`;
+        const url = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/api/projects/${id}` : `http://localhost:5000/api/projects/${id}`;
         const fetchResponse = await fetch(url, {
           method: 'PUT',
           body: updates,
