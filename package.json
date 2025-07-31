@@ -16,7 +16,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:production": "env-cmd -f .env.production react-scripts build",
+    "build:production": "env-cmd -f .env.production react-scripts build && cp public/.htaccess build/.htaccess",
     "build:cpanel": "npm run build:production && npm run optimize:cpanel",
     "optimize:cpanel": "echo 'Build completed for cPanel deployment. Upload the build folder contents to your cPanel public_html directory.'",
     "eject": "react-scripts eject"
