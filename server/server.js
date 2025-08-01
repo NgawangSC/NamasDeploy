@@ -218,6 +218,128 @@ app.get("/api/projects/featured", (req, res) => {
   })
 })
 
+// POST new project
+app.post("/api/projects", upload.array('images', 10), (req, res) => {
+  try {
+    console.log("📝 Creating new project:", req.body)
+    
+    // Parse project data from request body
+    const projectData = {
+      id: Date.now().toString(),
+      title: req.body.title,
+      description: req.body.description,
+      category: req.body.category,
+      location: req.body.location,
+      year: req.body.year,
+      client: req.body.client,
+      featured: req.body.featured === 'true' || req.body.featured === true,
+      status: req.body.status || 'completed',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    // Handle uploaded images
+    if (req.files && req.files.length > 0) {
+      projectData.images = req.files.map(file => `/uploads/${file.filename}`)
+    } else {
+      projectData.images = []
+    }
+    
+    // Validate required fields
+    if (!projectData.title || !projectData.description) {
+      return res.status(400).json({
+        success: false,
+        error: "Title and description are required"
+      })
+    }
+    
+    // Add to projects array
+    projects.push(projectData)
+    
+    // Save to file
+    saveData(PROJECTS_FILE, projects)
+    
+    console.log("✅ Project created successfully:", projectData.title)
+    
+    res.status(201).json({
+      success: true,
+      data: projectData,
+      message: "Project created successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error creating project:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to create project",
+      details: error.message
+    })
+  }
+})
+
+// PUT update existing project
+app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
+  try {
+    const projectId = req.params.id
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
+      })
+    }
+    
+    console.log("📝 Updating project:", projectId, req.body)
+    
+    // Get existing project
+    const existingProject = projects[projectIndex]
+    
+    // Parse updated data from request body
+    const updatedData = {
+      ...existingProject,
+      title: req.body.title || existingProject.title,
+      description: req.body.description || existingProject.description,
+      category: req.body.category || existingProject.category,
+      location: req.body.location || existingProject.location,
+      year: req.body.year || existingProject.year,
+      client: req.body.client || existingProject.client,
+      featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
+      status: req.body.status || existingProject.status,
+      updatedAt: new Date().toISOString()
+    }
+    
+    // Handle uploaded images
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map(file => `/uploads/${file.filename}`)
+      // Keep existing images and add new ones
+      updatedData.images = [...(existingProject.images || []), ...newImages]
+    }
+    
+    // Update the project in the array
+    projects[projectIndex] = updatedData
+    
+    // Save to file
+    saveData(PROJECTS_FILE, projects)
+    
+    console.log("✅ Project updated successfully:", updatedData.title)
+    
+    res.json({
+      success: true,
+      data: updatedData,
+      message: "Project updated successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error updating project:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to update project",
+      details: error.message
+    })
+  }
+})
+
 // Your existing blogs logic
 app.get("/api/blogs", (req, res) => {
   try {
