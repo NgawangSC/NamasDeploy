@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import ApiService from "../services/api"
 import "./AboutPage.css"
@@ -208,6 +209,15 @@ function AboutPage() {
       title: "Interior Designer",
     },
   ]
+
+  // Testimonial slider functions
+  const nextTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev + 1) % testimonials.length)
+  }
+
+  const prevTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }
 
   // Intersection Observer to trigger counter animation
   useEffect(() => {
@@ -460,7 +470,26 @@ function AboutPage() {
             <h2 className="testimonials-title">They love us</h2>
           </div>
           <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
+                  onClick={() => setSelectedTestimonial(index)}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
             <div className="testimonial-quote-container">
+              <div className="testimonial-slider-nav">
+                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
               <div className="quote-mark">"</div>
               <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
               <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>

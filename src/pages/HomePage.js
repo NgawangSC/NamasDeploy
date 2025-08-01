@@ -13,6 +13,7 @@ function HomePage() {
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
   const totalClientSlides = Math.max(1, Math.ceil(clients.length / 3))
+  const totalClientSlidesResponsive = Math.max(1, clients.length)
 
   // Fetch data on component mount
   useEffect(() => {
@@ -100,14 +101,26 @@ function HomePage() {
     },
   ]
 
+  // Testimonial slider functions
+  const nextTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev + 1) % testimonials.length)
+  }
 
+  const prevTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }
 
   const nextClientSlide = () => {
-    setCurrentClientSlide((prev) => (prev + 1) % totalClientSlides)
+    // Check if we're on a responsive breakpoint (this is a simple check, you might want to use a proper media query hook)
+    const isResponsive = window.innerWidth <= 768
+    const maxSlides = isResponsive ? totalClientSlidesResponsive : totalClientSlides
+    setCurrentClientSlide((prev) => (prev + 1) % maxSlides)
   }
 
   const prevClientSlide = () => {
-    setCurrentClientSlide((prev) => (prev - 1 + totalClientSlides) % totalClientSlides)
+    const isResponsive = window.innerWidth <= 768
+    const maxSlides = isResponsive ? totalClientSlidesResponsive : totalClientSlides
+    setCurrentClientSlide((prev) => (prev - 1 + maxSlides) % maxSlides)
   }
 
   const handleReadMore = (projectId) => {
@@ -217,7 +230,26 @@ function HomePage() {
             <h2 className="testimonials-title">They love us</h2>
           </div>
           <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
+                  onClick={() => setSelectedTestimonial(index)}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
             <div className="testimonial-quote-container">
+              <div className="testimonial-slider-nav">
+                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
               <div className="quote-mark">"</div>
               <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
               <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
@@ -259,6 +291,22 @@ function HomePage() {
                         </div>
                       </div>
                     ))}
+                </div>
+                <div className="clients-grid-responsive">
+                  {clients.slice(currentClientSlide, currentClientSlide + 1).map((client) => (
+                    <div key={client.id} className="client-card">
+                      <div className="client-logo">
+                        <img 
+                          src={getImageUrl(client.logo)} 
+                          alt={client.name}
+                          onError={(e) => {
+                            e.target.src = "/images/placeholder-logo.png"
+                          }}
+                        />
+                        <div className="client-name">{client.name}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <button onClick={nextClientSlide} className="clients-arrow clients-arrow-right">
                   <ChevronRight size={24} />

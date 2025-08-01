@@ -723,11 +723,61 @@ button {
   text-align: right;
 }
 
+/* Testimonial slider navigation */
+.testimonial-slider-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: none; /* Hidden by default, shown on mobile */
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.testimonial-arrow {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  color: #333;
+}
+
+.testimonial-arrow:hover {
+  background: #333;
+  color: white;
+  transform: scale(1.1);
+}
+
+.testimonial-arrow-left {
+  transform: translateX(-25px);
+}
+
+.testimonial-arrow-right {
+  transform: translateX(25px);
+}
+
 /* Responsive Design for Testimonials */
 @media (max-width: 968px) {
   .testimonials-content {
     grid-template-columns: 1fr;
     gap: 40px;
+  }
+
+  .testimonials-list {
+    display: none; /* Hide testimonial list on tablets */
+  }
+
+  .testimonial-slider-nav {
+    display: flex; /* Show slider navigation on tablets */
   }
 
   .testimonial-quote-container {
@@ -736,12 +786,6 @@ button {
 
   .testimonials-title {
     font-size: 2.5rem;
-  }
-
-  .testimonials-list {
-    min-height: auto;
-    padding-bottom: 20px;
-    margin-left: 0;
   }
 }
 
@@ -752,6 +796,14 @@ button {
 
   .testimonials-header {
     margin-bottom: 50px;
+  }
+
+  .testimonials-list {
+    display: none; /* Hide testimonial list on phones */
+  }
+
+  .testimonial-slider-nav {
+    display: flex; /* Show slider navigation on phones */
   }
 
   .testimonial-quote-container {
@@ -772,13 +824,9 @@ button {
     font-size: 2rem;
   }
 
-  .testimonials-list {
-    border-width: 2px;
-    padding-bottom: 15px;
-  }
-
-  .testimonial-name-btn {
-    padding: 10px 20px;
+  .testimonial-arrow {
+    width: 45px;
+    height: 45px;
   }
 }
 
@@ -787,9 +835,12 @@ button {
     padding: 60px 16px;
   }
 
-  .testimonial-name-btn {
-    padding: 8px 16px;
-    font-size: 15px;
+  .testimonials-list {
+    display: none; /* Hide testimonial list on small phones */
+  }
+
+  .testimonial-slider-nav {
+    display: flex; /* Show slider navigation on small phones */
   }
 
   .testimonial-quote-container {
@@ -813,9 +864,17 @@ button {
     font-size: 14px;
   }
 
-  .testimonials-list {
-    border-width: 2px;
-    padding-bottom: 12px;
+  .testimonial-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .testimonial-arrow-left {
+    transform: translateX(-20px);
+  }
+
+  .testimonial-arrow-right {
+    transform: translateX(20px);
   }
 }
 
@@ -933,6 +992,13 @@ button {
   opacity: 1;
 }
 
+/* Clients grid responsive */
+.clients-grid-responsive {
+  display: none; /* Hidden by default, shown on responsive */
+  align-items: center;
+  justify-content: center;
+}
+
 /* Responsive Design for Clients */
 @media (max-width: 968px) {
   .clients-title-image {
@@ -940,7 +1006,11 @@ button {
   }
 
   .clients-grid {
-    gap: 20px;
+    display: none; /* Hide client grid on tablets */
+  }
+
+  .clients-grid-responsive {
+    display: flex; /* Show responsive client grid on tablets */
   }
 
   .client-card {
@@ -959,17 +1029,23 @@ button {
   }
 
   .clients-grid {
-    flex-direction: column;
-    gap: 20px;
+    display: none; /* Hide client grid on phones */
+  }
+
+  .clients-grid-responsive {
+    display: flex; /* Show responsive client grid on phones */
   }
 
   .clients-arrow {
     order: 0;
+    display: flex; /* Show client arrows on phones */
   }
 
   .client-card {
-    width: 300px;
+    width: 100%;
+    max-width: 350px;
     height: 180px;
+    margin: 0 auto;
   }
 }
 
@@ -982,9 +1058,19 @@ button {
     padding: 60px 16px;
   }
 
+  .clients-grid {
+    display: none; /* Hide client grid on small phones */
+  }
+
+  .clients-grid-responsive {
+    display: flex; /* Show responsive client grid on small phones */
+  }
+
   .client-card {
-    width: 260px;
+    width: 100%;
+    max-width: 300px;
     height: 160px;
+    margin: 0 auto;
   }
 }
 
