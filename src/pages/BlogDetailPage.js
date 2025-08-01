@@ -14,27 +14,25 @@ const BlogDetailPage = () => {
   const { blogs, fetchBlogs } = useData()
 
   useEffect(() => {
-    const loadBlog = async () => {
-      try {
-        setLoading(true)
-        
-        // If blogs are not loaded yet, fetch them
-        if (blogs.length === 0) {
+    const ensureBlogsLoaded = async () => {
+      if (blogs.length === 0) {
+        try {
           await fetchBlogs()
+        } catch (error) {
+          console.error("Error fetching blogs:", error)
         }
-        
-        // Find the blog by ID from the context
-        const foundBlog = blogs.find((b) => b.id === Number.parseInt(id))
-        setBlog(foundBlog)
-      } catch (error) {
-        console.error('Error loading blog:', error)
-      } finally {
-        setLoading(false)
       }
     }
+    ensureBlogsLoaded()
+  }, [fetchBlogs, blogs.length])
 
-    loadBlog()
-  }, [id, blogs, fetchBlogs])
+  useEffect(() => {
+    if (blogs.length > 0) {
+      const foundBlog = blogs.find((b) => b.id === Number(id))
+      setBlog(foundBlog || null)
+      setLoading(false)
+    }
+  }, [blogs, id])
 
   const handleBackClick = () => {
     navigate("/blog")
@@ -57,6 +55,7 @@ const BlogDetailPage = () => {
           <div className="blog-detail-not-found">
             <h2>Blog post not found</h2>
             <p>The blog post you're looking for doesn't exist or may have been removed.</p>
+            <button onClick={handleBackClick} className="back-button">Go Back</button>
           </div>
         </div>
       </div>

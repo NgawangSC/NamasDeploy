@@ -85,7 +85,6 @@ function AboutPage() {
     const calculateStats = () => {
       const currentYear = new Date().getFullYear()
       const foundingYear = 2021 // Based on your about section text
-      const yearsInBusiness = Math.max(currentYear - foundingYear, 1) // At least 1 year
       
       // Calculate total projects done
       const totalProjects = data.projects?.length || 0

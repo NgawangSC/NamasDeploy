@@ -1,7 +1,7 @@
 // Hero Banner Fix Utility
 // This module provides enhanced data fetching and error handling for featured projects
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 export const heroUtils = {
   // Direct API call with comprehensive error handling

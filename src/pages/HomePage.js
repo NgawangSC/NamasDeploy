@@ -3,10 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
-import HeroBanner from "../components/HeroBanner"
-import HeroBannerFixed from "../components/HeroBannerFixed"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
-import DebugFeaturedProjects from "../components/DebugFeaturedProjects"
 import "./HomePage.css"
 
 function HomePage() {

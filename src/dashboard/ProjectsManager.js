@@ -429,39 +429,38 @@ const ProjectsManager = () => {
     </div>
   )
 
-  const toggleFeatured = async (project) => {
-    const originalFeaturedStatus = project.featured
+const toggleFeatured = async (project) => {
+  try {
+    setUpdatingFeatured(project.id)
+    const newFeaturedStatus = !project.featured
+    const action = newFeaturedStatus ? 'added to' : 'removed from'
     
-    try {
-      setUpdatingFeatured(project.id)
-      const newFeaturedStatus = !project.featured
-      const action = newFeaturedStatus ? 'added to' : 'removed from'
-      
-      // Update the project on the server
-      await updateProject(project.id, { featured: newFeaturedStatus })
-      
-      // Refresh the projects list to get updated data
-      await fetchProjects()
-      
-      // If we're adding to featured, also refresh featured projects
-      if (newFeaturedStatus) {
-        await fetchFeaturedProjects()
-      }
-      
-      // Notify homepage of changes
-      localStorage.setItem('projectsUpdated', Date.now().toString())
-      localStorage.removeItem('projectsUpdated')
-      
-      // Show success message
-      alert(`"${project.title}" has been ${action} the hero banner!`)
-      
-    } catch (error) {
-      console.error('Error updating featured status:', error)
-      alert('Error updating featured status: ' + error.message)
-    } finally {
-      setUpdatingFeatured(null)
+    // Update the project on the server
+    await updateProject(project.id, { featured: newFeaturedStatus })
+
+    // Refresh the projects list to get updated data
+    await fetchProjects()
+
+    // If we're adding to featured, also refresh featured projects
+    if (newFeaturedStatus) {
+      await fetchFeaturedProjects()
     }
+
+    // Notify homepage of changes
+    localStorage.setItem('projectsUpdated', Date.now().toString())
+    localStorage.removeItem('projectsUpdated')
+
+    // Show success message
+    alert(`"${project.title}" has been ${action} the hero banner!`)
+    
+  } catch (error) {
+    console.error('Error updating featured status:', error)
+    alert('Error updating featured status: ' + error.message)
+  } finally {
+    setUpdatingFeatured(null)
   }
+}
+
 
   return (
     <div className="projects-manager">
@@ -603,7 +602,7 @@ const ProjectsManager = () => {
                     <div className="preview-grid">
                       {imagePreviews.map((preview, index) => (
                         <div key={index} className="preview-item">
-                          <img src={preview} alt={`Preview ${index + 1}`} />
+                          <img src={preview} alt={`Project preview ${index + 1}`} />
                           <button
                             type="button"
                             onClick={() => removeImagePreview(index)}
@@ -661,9 +660,7 @@ const ProjectsManager = () => {
                   <div className="current-images-grid">
                     {managingProject.images.map((imageUrl, index) => (
                       <div key={index} className="current-image-item">
-                        <img 
-                          src={getImageUrl(imageUrl)} 
-                          alt={`Project image ${index + 1}`} 
+                        <img src={getImageUrl(imageUrl)} alt={`${managingProject.title} - image ${index + 1}`}
                           onError={(e) => {
                             console.warn('Image failed to load:', getImageUrl(imageUrl));
                             e.target.src = "/placeholder.svg?height=150&width=200&text=Image+Not+Found";

@@ -1,4 +1,4 @@
-const SERVER_BASE_URL = 'http://localhost:5000';
+const SERVER_BASE_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
 
 // Cache for image URLs to prevent flickering
 const imageUrlCache = new Map();
@@ -73,13 +73,6 @@ function constructImageUrl(imagePath, bustCache = false) {
  * @param {string} imagePath - The image path
  * @returns {boolean} - Whether to bust cache
  */
-const shouldBustCache = (imagePath) => {
-  if (!imagePath) return false;
-  
-  // Reduced aggressive cache busting to prevent flickering
-  // Only bust cache when explicitly needed
-  return false;
-};
 
 /**
  * Preloads an image to prevent flickering on display

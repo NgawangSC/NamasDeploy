@@ -87,7 +87,7 @@ const BlogImageUpload = ({
       {displayImage ? (
         <div className="image-preview-container">
           <div className="image-preview">
-            <img src={displayImage} alt="Blog featured image" />
+            <img src={displayImage} alt="Blog featured" />
             <div className="image-overlay">
               <button 
                 type="button"
