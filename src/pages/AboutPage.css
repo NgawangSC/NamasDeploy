@@ -948,7 +948,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
   pointer-events: auto;
   color: #333;
 }
@@ -956,7 +955,6 @@
 .testimonial-arrow:hover {
   background: #333;
   color: white;
-  transform: scale(1.1);
 }
 
 .testimonial-arrow-left {
