@@ -260,6 +260,11 @@ app.use((error, req, res, next) => {
   })
 })
 
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.url} from ${req.ip}`)
+  next()
+})
+
 // 404 handler for undefined routes
 app.use("*", (req, res) => {
   res.status(404).json({
