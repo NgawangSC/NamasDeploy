@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 5000
 
 const allowedOrigins = [
   'https://www.namasbhutan.com',
+  'https://railway.com',
   'http://localhost:3000',
   'http://localhost:3001'
 ]
