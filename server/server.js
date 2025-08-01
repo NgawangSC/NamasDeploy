@@ -286,11 +286,11 @@ app.use("*", (req, res) => {
 })
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 NAMAS Architecture API Server running on port ${PORT}`)
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`)
   console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
-  console.log(`📡 Server URL: http://localhost:${PORT}`)
+  console.log(`📡 Server URL: http://0.0.0.0:${PORT}`)
   console.log(
     `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${teamMembers.length} team members, ${contacts.length} contacts`,
   )
