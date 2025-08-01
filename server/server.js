@@ -9,11 +9,27 @@ const corsOptions = require('./cors-fix')
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Enhanced CORS Middleware
-app.use(cors(corsOptions))
+const allowedOrigins = [
+  'https://www.namasbhutan.com',
+  'http://localhost:3000',
+  'http://localhost:3001'
+]
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error("Not allowed by CORS"))
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 
 // Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
+app.options("*", cors())
 
 // Request logging middleware for debugging
 app.use((req, res, next) => {
