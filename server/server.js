@@ -9,6 +9,14 @@ const corsOptions = require('./cors-fix')
 const app = express()
 const PORT = process.env.PORT || 5000
 
+
+const cors = require('cors');
+app.use(cors({
+  origin: 'https://www.namasbhutan.com', // allow your frontend domain
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // allowed HTTP methods
+  credentials: true // if you use cookies or authorization headers
+}));
+
 // Use the CORS options from cors-fix.js
 app.use(cors(corsOptions))
 
