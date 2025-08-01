@@ -746,7 +746,6 @@ button {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
   pointer-events: auto;
   color: #333;
 }
@@ -754,7 +753,6 @@ button {
 .testimonial-arrow:hover {
   background: #333;
   color: white;
-  transform: scale(1.1);
 }
 
 .testimonial-arrow-left {
@@ -1005,12 +1003,35 @@ button {
     max-height: 100px;
   }
 
+  .clients-carousel {
+    position: relative;
+    flex-direction: row;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
   .clients-grid {
     display: none; /* Hide client grid on tablets */
   }
 
   .clients-grid-responsive {
     display: flex; /* Show responsive client grid on tablets */
+    position: relative;
+  }
+
+  .clients-arrow {
+    display: flex;
+    position: absolute;
+    z-index: 10;
+  }
+
+  .clients-arrow-left {
+    left: -60px;
+  }
+
+  .clients-arrow-right {
+    right: -60px;
   }
 
   .client-card {
@@ -1024,8 +1045,11 @@ button {
   }
 
   .clients-carousel {
-    flex-direction: column;
-    gap: 30px;
+    position: relative;
+    flex-direction: row;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
   }
 
   .clients-grid {
@@ -1034,11 +1058,21 @@ button {
 
   .clients-grid-responsive {
     display: flex; /* Show responsive client grid on phones */
+    position: relative;
   }
 
   .clients-arrow {
-    order: 0;
     display: flex; /* Show client arrows on phones */
+    position: absolute;
+    z-index: 10;
+  }
+
+  .clients-arrow-left {
+    left: -60px;
+  }
+
+  .clients-arrow-right {
+    right: -60px;
   }
 
   .client-card {
@@ -1058,12 +1092,35 @@ button {
     padding: 60px 16px;
   }
 
+  .clients-carousel {
+    position: relative;
+    flex-direction: row;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
   .clients-grid {
     display: none; /* Hide client grid on small phones */
   }
 
   .clients-grid-responsive {
     display: flex; /* Show responsive client grid on small phones */
+    position: relative;
+  }
+
+  .clients-arrow {
+    display: flex;
+    position: absolute;
+    z-index: 10;
+  }
+
+  .clients-arrow-left {
+    left: -50px; /* Slightly closer on small phones */
+  }
+
+  .clients-arrow-right {
+    right: -50px; /* Slightly closer on small phones */
   }
 
   .client-card {

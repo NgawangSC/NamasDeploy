@@ -439,7 +439,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
   pointer-events: auto;
   color: #333;
 }
@@ -447,7 +446,6 @@
 .testimonial-arrow:hover {
   background: #333;
   color: white;
-  transform: scale(1.1);
 }
 
 .testimonial-arrow-left {
@@ -634,6 +632,37 @@
   .testimonials-title {
     font-size: 2.5rem;
   }
+
+  .clients-carousel {
+    position: relative;
+    flex-direction: row;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clients-grid {
+    display: none; /* Hide client grid on tablets */
+  }
+
+  .clients-grid-responsive {
+    display: flex; /* Show responsive client grid on tablets */
+    position: relative;
+  }
+
+  .clients-arrow {
+    display: flex;
+    position: absolute;
+    z-index: 10;
+  }
+
+  .clients-arrow-left {
+    left: -60px;
+  }
+
+  .clients-arrow-right {
+    right: -60px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -702,8 +731,11 @@
   }
 
   .clients-carousel {
-    flex-direction: column;
-    gap: 30px;
+    position: relative;
+    flex-direction: row;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
   }
 
   .clients-grid {
@@ -712,10 +744,21 @@
 
   .clients-grid-responsive {
     display: flex; /* Show client grid on tablets and phones */
+    position: relative;
   }
 
   .clients-arrow {
     display: flex; /* Show client arrows on tablets and phones */
+    position: absolute;
+    z-index: 10;
+  }
+
+  .clients-arrow-left {
+    left: -60px;
+  }
+
+  .clients-arrow-right {
+    right: -60px;
   }
 
   .client-card {
@@ -772,6 +815,37 @@
 
   .testimonial-arrow-right {
     transform: translateX(20px);
+  }
+
+  .clients-carousel {
+    position: relative;
+    flex-direction: row;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clients-grid {
+    display: none; /* Hide client grid on small phones */
+  }
+
+  .clients-grid-responsive {
+    display: flex; /* Show responsive client grid on small phones */
+    position: relative;
+  }
+
+  .clients-arrow {
+    display: flex;
+    position: absolute;
+    z-index: 10;
+  }
+
+  .clients-arrow-left {
+    left: -50px; /* Slightly closer on small phones */
+  }
+
+  .clients-arrow-right {
+    right: -50px; /* Slightly closer on small phones */
   }
 }
 
