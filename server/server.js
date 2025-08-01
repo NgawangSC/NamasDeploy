@@ -137,7 +137,10 @@ app.get("/api", (req, res) => {
     message: "NAMAS Architecture API",
     availableRoutes: [
       "GET /api/projects",
+      "GET /api/projects/featured",
       "POST /api/projects",
+      "PUT /api/projects/:id",
+      "DELETE /api/projects/:id",
       "GET /api/blogs",
       "POST /api/blogs",
       "GET /api/clients",
@@ -280,7 +283,7 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
 // PUT update existing project
 app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
   try {
-    const projectId = req.params.id
+    const projectId = parseInt(req.params.id)
     const projectIndex = projects.findIndex(p => p.id === projectId)
     
     if (projectIndex === -1) {
@@ -335,6 +338,46 @@ app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to update project",
+      details: error.message
+    })
+  }
+})
+
+// DELETE project
+app.delete("/api/projects/:id", (req, res) => {
+  try {
+    const projectId = parseInt(req.params.id)
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
+      })
+    }
+    
+    // Get the project before deletion for cleanup
+    const projectToDelete = projects[projectIndex]
+    
+    // Remove project from array
+    projects.splice(projectIndex, 1)
+    
+    // Save updated data to file
+    saveData(PROJECTS_FILE, projects)
+    
+    console.log("🗑️ Project deleted successfully:", projectToDelete.title)
+    
+    res.json({
+      success: true,
+      message: "Project deleted successfully",
+      data: { id: projectId }
+    })
+    
+  } catch (error) {
+    console.error("❌ Error deleting project:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete project",
       details: error.message
     })
   }
@@ -409,7 +452,10 @@ app.use("*", (req, res) => {
       "GET /api",
       "GET /test",
       "GET /api/projects",
+      "GET /api/projects/featured",
       "POST /api/projects",
+      "PUT /api/projects/:id",
+      "DELETE /api/projects/:id",
       "GET /api/blogs",
       "POST /api/blogs",
       "GET /api/clients",
