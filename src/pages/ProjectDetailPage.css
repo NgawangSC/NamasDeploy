@@ -569,12 +569,24 @@
   text-align: center;
 }
 
-.design-team-info p {
-  font-size: 1.2rem;
+.team-members h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.team-members p {
+  font-size: 1.3rem;
   color: #333;
   margin: 0;
-  padding: 1rem;
+  padding: 1.5rem;
   background: #f8f9fa;
   border-radius: 8px;
   border-left: 4px solid #007bff;
+  font-weight: 500;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

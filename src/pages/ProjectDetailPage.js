@@ -230,7 +230,7 @@ const ProjectDetailPage = () => {
             <div className="info-cell">{project.year || 'N/A'}</div>
             <div className="info-cell">{project.location || 'N/A'}</div>
             <div className="info-cell clickable-design-team" onClick={() => setShowDesignTeamModal(true)}>
-              {project.designTeam || 'NAMAS Architecture'}
+              DESIGN TEAM
             </div>
             <div className="info-cell">{project.status || 'N/A'}</div>
           </div>
@@ -263,7 +263,10 @@ const ProjectDetailPage = () => {
 
             <div className="modal-content">
               <div className="design-team-info">
-                <p>{project.designTeam || 'NAMAS Architecture'}</p>
+                <div className="team-members">
+                  <h3>Team Members</h3>
+                  <p>{project.designTeam || 'NAMAS Architecture'}</p>
+                </div>
               </div>
             </div>
           </div>
