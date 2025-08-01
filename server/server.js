@@ -9,27 +9,35 @@ const corsOptions = require('./cors-fix')
 const app = express()
 const PORT = process.env.PORT || 5000
 
-const allowedOrigins = [
-  'https://www.namasbhutan.com',
-  'http://localhost:3000',
-  'http://localhost:3001'
-]
+// Use the CORS options from cors-fix.js
+app.use(cors(corsOptions))
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error("Not allowed by CORS"))
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
+// Handle preflight requests explicitly with the same options
+app.options("*", cors(corsOptions))
 
-// Handle preflight requests explicitly
-app.options("*", cors())
+// Additional CORS headers middleware for extra reliability
+app.use((req, res, next) => {
+  const origin = req.get('Origin');
+  const allowedOrigins = [
+    'https://www.namasbhutan.com',
+    'https://namasbhutan.com',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:4173'
+  ];
+
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-HTTP-Method-Override');
+    res.header('Access-Control-Expose-Headers', 'Content-Length, X-Foo, X-Bar');
+  }
+
+  next();
+});
 
 // Request logging middleware for debugging
 app.use((req, res, next) => {
