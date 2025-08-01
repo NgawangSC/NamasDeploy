@@ -3,12 +3,7 @@
   "name": "NAMAS Architecture Studio",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 48x48 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "favicon.png",
+      "src": "logo.png",
       "sizes": "64x64 48x48 32x32 24x24 16x16",
       "type": "image/png"
     },
