@@ -14,10 +14,15 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
+    // Check if the origin is allowed
     if (allowedOrigins.includes(origin)) {
+      console.log('CORS allowed origin:', origin);
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
+      // In production, be more permissive during initial testing
+      // You can uncomment the line below to temporarily allow all origins
+      // callback(null, true);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -31,7 +36,8 @@ const corsOptions = {
     'Accept',
     'Authorization',
     'Cache-Control',
-    'X-HTTP-Method-Override'
+    'X-HTTP-Method-Override',
+    'Access-Control-Allow-Origin'
   ],
   exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
   preflightContinue: false
