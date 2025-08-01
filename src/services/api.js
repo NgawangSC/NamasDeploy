@@ -1,5 +1,6 @@
-const API_BASE_URL = 'http://localhost:5000/api';
-const SERVER_BASE_URL = 'http://localhost:5000';
+// Get API URLs from environment variables or fallback to localhost for development
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const SERVER_BASE_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
 
 class ApiService {
   // Helper method to construct full image URLs
