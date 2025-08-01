@@ -25,7 +25,7 @@ const BlogsManager = () => {
     author: "",
     category: "",
     tags: "",
-    status: "draft",
+    status: "published",
     image: "",
   })
 
@@ -131,7 +131,7 @@ const BlogsManager = () => {
       author: "",
       category: "",
       tags: "",
-      status: "draft",
+      status: "published",
       image: "",
     })
     setSelectedImage(null)
