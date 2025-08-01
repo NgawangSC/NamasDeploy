@@ -158,6 +158,10 @@ class ApiService {
     return this.request("/projects")
   }
 
+  static async getProject(id) {
+    return this.request(`/projects/${id}`)
+  }
+
   static async getFeaturedProjects() {
     console.log("ApiService: Making request to /projects/featured")
     const result = await this.request("/projects/featured")

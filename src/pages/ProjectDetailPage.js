@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import ApiService from "../services/api"
 import "./ProjectDetailPage.css"
 
 const ProjectDetailPage = () => {
@@ -13,6 +14,7 @@ const ProjectDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [project, setProject] = useState(null)
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
+  const [singleProjectLoading, setSingleProjectLoading] = useState(false)
 
   useEffect(() => {
     // Fetch projects on mount if not already loaded
@@ -34,12 +36,33 @@ const ProjectDetailPage = () => {
   }, [loading.projects, fetchProjects])
 
   useEffect(() => {
-    const foundProject = projects.find((p) => p.id === Number.parseInt(id))
-    setProject(foundProject)
+    const foundProject = projects.find((p) => {
+      // Handle both string and number IDs for backward compatibility
+      return p.id === Number.parseInt(id) || p.id === id || p.id.toString() === id
+    })
     
-    // Reset image index when project changes
     if (foundProject) {
+      setProject(foundProject)
       setCurrentImageIndex(0)
+    } else if (projects.length > 0) {
+      // If we have projects loaded but can't find this one, try fetching it individually
+      const fetchSingleProject = async () => {
+        try {
+          setSingleProjectLoading(true)
+          const response = await ApiService.getProject(id)
+          if (response.success && response.data) {
+            setProject(response.data)
+            setCurrentImageIndex(0)
+          }
+        } catch (error) {
+          console.error('Error fetching single project:', error)
+          // Project not found - will show "not found" message
+        } finally {
+          setSingleProjectLoading(false)
+        }
+      }
+      
+      fetchSingleProject()
     }
   }, [id, projects])
 
@@ -62,18 +85,20 @@ const ProjectDetailPage = () => {
 
 
   // Show loading only if we truly have no data and are actively loading
-  if (loading.projects && projects.length === 0) {
+  if ((loading.projects && projects.length === 0) || singleProjectLoading) {
     return (
       <div className="project-loading">
-        <div>Loading projects...</div>
-        <button 
-          onClick={() => {
-            fetchProjects()
-          }}
-          style={{ marginTop: '10px', padding: '8px 16px' }}
-        >
-          Retry Loading
-        </button>
+        <div>{singleProjectLoading ? 'Loading project...' : 'Loading projects...'}</div>
+        {!singleProjectLoading && (
+          <button 
+            onClick={() => {
+              fetchProjects()
+            }}
+            style={{ marginTop: '10px', padding: '8px 16px' }}
+          >
+            Retry Loading
+          </button>
+        )}
       </div>
     )
   }
