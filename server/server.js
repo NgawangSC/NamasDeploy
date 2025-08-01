@@ -96,6 +96,12 @@ const corsOptions = {
 // Apply CORS middleware FIRST
 app.use(cors(corsOptions))
 
+// Add request logging middleware EARLY
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.url} from ${req.ip}`)
+  next()
+})
+
 // Then apply other middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -103,6 +109,16 @@ app.use("/uploads", express.static(UPLOADS_DIR))
 
 // Add explicit preflight handler
 app.options("*", cors(corsOptions))
+
+// TEST ROUTE - Add this EARLY
+app.get("/test", (req, res) => {
+  console.log("🧪 Test route hit!")
+  res.json({
+    status: "working",
+    message: "Server is responding!",
+    timestamp: new Date().toISOString(),
+  })
+})
 
 // Routes
 app.get("/", (req, res) => {
@@ -260,11 +276,6 @@ app.use((error, req, res, next) => {
   })
 })
 
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.url} from ${req.ip}`)
-  next()
-})
-
 // 404 handler for undefined routes
 app.use("*", (req, res) => {
   res.status(404).json({
@@ -274,6 +285,7 @@ app.use("*", (req, res) => {
     availableRoutes: [
       "GET /",
       "GET /api",
+      "GET /test",
       "GET /api/projects",
       "POST /api/projects",
       "GET /api/blogs",
@@ -291,7 +303,7 @@ app.use("*", (req, res) => {
 })
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 NAMAS Architecture API Server running on port ${PORT}`)
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`)
   console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
