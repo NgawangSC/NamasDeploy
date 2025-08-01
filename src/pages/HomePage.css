@@ -684,27 +684,39 @@
 
   .clients-carousel {
     position: relative;
-    flex-direction: row;
-    gap: 0;
+    display: flex;
     align-items: center;
     justify-content: center;
+    gap: 20px; /* Reduced gap for tablets */
   }
 
   .clients-grid {
-    display: none; /* Hide client grid on tablets */
+    display: flex; /* Show client grid on tablets (same as desktop) */
+    gap: 20px; /* Reduced gap for tablets */
   }
 
   .clients-grid-responsive {
-    display: flex; /* Show responsive client grid on tablets */
-    position: relative;
+    display: none; /* Hide responsive client grid on tablets */
   }
 
   .clients-arrow {
-    display: none; /* Hide old client arrows on tablets */
+    display: flex; /* Show client arrows on tablets (same as desktop) */
   }
 
   .client-slider-nav {
-    display: flex; /* Show new client slider navigation on tablets */
+    display: none; /* Hide slider navigation on tablets */
+  }
+
+  .client-card {
+    width: 280px;
+    height: 200px;
+    padding: 15px;
+  }
+
+  .client-logo img {
+    width: 100px;
+    height: 100px;
+    padding: 12px;
   }
 }
 
@@ -782,11 +794,11 @@
   }
 
   .clients-grid {
-    display: none; /* Hide client grid on tablets and phones */
+    display: none; /* Hide client grid on phones */
   }
 
   .clients-grid-responsive {
-    display: flex; /* Show client grid on tablets and phones */
+    display: flex; /* Show responsive client grid on phones */
     position: relative;
   }
 
