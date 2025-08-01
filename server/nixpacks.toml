@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["echo 'No build step needed for API server'"]
+
+[start]
+cmd = "node server.js"
+
+[variables]
+NODE_ENV = "production"
