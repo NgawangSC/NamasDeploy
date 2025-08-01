@@ -4,18 +4,84 @@ const multer = require("multer")
 const path = require("path")
 const fs = require("fs")
 const { startAutoBackup, createBackup } = require('./data-backup')
-const corsOptions = require('./cors-fix')
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Use the CORS options from cors-fix.js
-app.use(cors(corsOptions))
+// Comprehensive CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'https://www.namasbhutan.com',
+      'https://namasbhutan.com',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://localhost:4173'
+    ];
 
-// Handle preflight requests explicitly with the same options
-app.options("*", cors(corsOptions))
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log('CORS allowed origin:', origin);
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'X-HTTP-Method-Override',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Methods'
+  ],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  preflightContinue: false
+};
 
-// Additional CORS headers middleware for extra reliability
+// Apply CORS middleware first
+app.use(cors(corsOptions));
+
+// Handle all OPTIONS requests explicitly
+app.options("*", (req, res) => {
+  const origin = req.get('Origin');
+  const allowedOrigins = [
+    'https://www.namasbhutan.com',
+    'https://namasbhutan.com',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:4173'
+  ];
+
+  console.log('OPTIONS request from origin:', origin);
+
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || 'https://www.namasbhutan.com');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-HTTP-Method-Override');
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+    res.status(200).end();
+  } else {
+    res.status(403).end();
+  }
+});
+
+// Additional CORS headers middleware for all requests
 app.use((req, res, next) => {
   const origin = req.get('Origin');
   const allowedOrigins = [
@@ -29,7 +95,7 @@ app.use((req, res, next) => {
   ];
 
   if (!origin || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Origin', origin || 'https://www.namasbhutan.com');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-HTTP-Method-Override');
@@ -163,6 +229,7 @@ app.get("/api", (req, res) => {
     message: "NAMAS Architecture API",
     timestamp: new Date().toISOString(),
     endpoints: [
+      "GET /api/health - Health check endpoint",
       "GET /api/projects - Get all projects (supports ?page=1&limit=10)",
       "POST /api/projects - Create new project",
       "GET /api/projects/:id - Get single project",
@@ -196,6 +263,17 @@ app.get("/api", (req, res) => {
       teamMembers: teamMembers.length,
       contacts: contacts.length
     }
+  })
+})
+
+// HEALTH CHECK ROUTE
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+    cors: "configured",
+    origin: req.get('Origin') || 'no-origin'
   })
 })
 
