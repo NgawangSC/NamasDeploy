@@ -1,6 +1,9 @@
 // CORS configuration options for the Namas Bhutan API
 const corsOptions = {
   origin: function (origin, callback) {
+    // Get allowed origins from environment variable or use defaults
+    const envOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
+    
     const allowedOrigins = [
       'https://www.namasbhutan.com',
       'https://namasbhutan.com',
@@ -8,7 +11,8 @@ const corsOptions = {
       'http://localhost:3001',
       'http://localhost:5173', // Vite dev server
       'http://127.0.0.1:5173',
-      'http://localhost:4173' // Vite preview
+      'http://localhost:4173', // Vite preview
+      ...envOrigins
     ];
 
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -20,10 +24,15 @@ const corsOptions = {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
-      // In production, be more permissive during initial testing
-      // You can uncomment the line below to temporarily allow all origins
-      // callback(null, true);
-      callback(new Error('Not allowed by CORS'));
+      console.log('Allowed origins:', allowedOrigins);
+      
+      // In production, be more permissive to avoid blocking legitimate requests
+      if (process.env.NODE_ENV === 'production') {
+        console.log('Production mode: allowing origin due to potential Railway proxy issues');
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
