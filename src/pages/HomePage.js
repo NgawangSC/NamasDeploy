@@ -271,9 +271,6 @@ function HomePage() {
               </div>
             ) : clients.length > 0 ? (
               <>
-                <button onClick={prevClientSlide} className="clients-arrow clients-arrow-left">
-                  <ChevronLeft size={24} />
-                </button>
                 <div className="clients-grid">
                   {clients
                     .slice(currentClientSlide * 3, (currentClientSlide + 1) * 3)
@@ -307,7 +304,18 @@ function HomePage() {
                       </div>
                     </div>
                   ))}
+                  <div className="client-slider-nav">
+                    <button onClick={prevClientSlide} className="client-arrow client-arrow-left">
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button onClick={nextClientSlide} className="client-arrow client-arrow-right">
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
                 </div>
+                <button onClick={prevClientSlide} className="clients-arrow clients-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
                 <button onClick={nextClientSlide} className="clients-arrow clients-arrow-right">
                   <ChevronRight size={24} />
                 </button>

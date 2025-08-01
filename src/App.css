@@ -967,6 +967,9 @@ button {
   align-items: center;
   text-align: center;
   gap: 15px;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
 }
 
 .client-logo img {
@@ -976,6 +979,8 @@ button {
   border-radius: 8px;
   background: white;
   padding: 10px;
+  display: block;
+  margin: 0 auto;
 }
 
 .client-name {
@@ -995,6 +1000,47 @@ button {
   display: none; /* Hidden by default, shown on responsive */
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+/* Client slider navigation */
+.client-slider-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: none; /* Hidden by default, shown on responsive */
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.client-arrow {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  color: #333;
+}
+
+.client-arrow:hover {
+  background: #333;
+  color: white;
+}
+
+.client-arrow-left {
+  transform: translateX(-25px);
+}
+
+.client-arrow-right {
+  transform: translateX(25px);
 }
 
 /* Responsive Design for Clients */
@@ -1021,17 +1067,11 @@ button {
   }
 
   .clients-arrow {
-    display: flex;
-    position: absolute;
-    z-index: 10;
+    display: none; /* Hide old client arrows on tablets */
   }
 
-  .clients-arrow-left {
-    left: -60px;
-  }
-
-  .clients-arrow-right {
-    right: -60px;
+  .client-slider-nav {
+    display: flex; /* Show new client slider navigation on tablets */
   }
 
   .client-card {
@@ -1062,17 +1102,16 @@ button {
   }
 
   .clients-arrow {
-    display: flex; /* Show client arrows on phones */
-    position: absolute;
-    z-index: 10;
+    display: none; /* Hide old client arrows on phones */
   }
 
-  .clients-arrow-left {
-    left: -60px;
+  .client-slider-nav {
+    display: flex; /* Show new client slider navigation on phones */
   }
 
-  .clients-arrow-right {
-    right: -60px;
+  .client-arrow {
+    width: 45px;
+    height: 45px;
   }
 
   .client-card {
@@ -1110,17 +1149,24 @@ button {
   }
 
   .clients-arrow {
-    display: flex;
-    position: absolute;
-    z-index: 10;
+    display: none; /* Hide old client arrows on small phones */
   }
 
-  .clients-arrow-left {
-    left: -50px; /* Slightly closer on small phones */
+  .client-slider-nav {
+    display: flex; /* Show new client slider navigation on small phones */
   }
 
-  .clients-arrow-right {
-    right: -50px; /* Slightly closer on small phones */
+  .client-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .client-arrow-left {
+    transform: translateX(-20px);
+  }
+
+  .client-arrow-right {
+    transform: translateX(20px);
   }
 
   .client-card {
