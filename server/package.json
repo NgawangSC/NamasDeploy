@@ -1,13 +1,11 @@
 {
-  "name": "namas-server",
+  "name": "namas-architecture-backend",
   "version": "1.0.0",
-  "description": "Backend server for NAMAS Architecture website",
+  "description": "Backend API for NAMAS Architecture",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "npx nodemon --config nodemon.json server.js",
-    "dev:verbose": "npx nodemon --config nodemon.json --verbose server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -18,12 +16,7 @@
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "keywords": [
-    "express",
-    "api",
-    "architecture",
-    "namas"
-  ],
-  "author": "NAMAS Architecture",
-  "license": "MIT"
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
