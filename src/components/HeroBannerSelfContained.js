@@ -73,15 +73,18 @@ const HeroBannerSelfContained = () => {
     return () => clearInterval(interval)
   }, [featuredProjects.length])
 
-  const nextSlide = () => {
+  const nextSlide = (e) => {
+    e?.stopPropagation()
     setCurrentSlide(prev => (prev + 1) % featuredProjects.length)
   }
 
-  const prevSlide = () => {
+  const prevSlide = (e) => {
+    e?.stopPropagation()
     setCurrentSlide(prev => (prev - 1 + featuredProjects.length) % featuredProjects.length)
   }
 
-  const goToSlide = (index) => {
+  const goToSlide = (index, e) => {
+    e?.stopPropagation()
     setCurrentSlide(index)
   }
 
@@ -221,10 +224,10 @@ const HeroBannerSelfContained = () => {
         {/* Navigation arrows */}
         {featuredProjects.length > 1 && (
           <>
-            <button className="hero-arrow hero-arrow-left" onClick={prevSlide}>
+            <button className="hero-arrow hero-arrow-left" onClick={(e) => prevSlide(e)}>
               <ChevronLeft size={24} />
             </button>
-            <button className="hero-arrow hero-arrow-right" onClick={nextSlide}>
+            <button className="hero-arrow hero-arrow-right" onClick={(e) => nextSlide(e)}>
               <ChevronRight size={24} />
             </button>
           </>
@@ -237,7 +240,7 @@ const HeroBannerSelfContained = () => {
               <button
                 key={index}
                 className={`hero-indicator ${index === currentSlide ? 'active' : ''}`}
-                onClick={() => goToSlide(index)}
+                onClick={(e) => goToSlide(index, e)}
               />
             ))}
           </div>
