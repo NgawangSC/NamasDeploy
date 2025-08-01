@@ -14,8 +14,9 @@
     "production": {
       "variables": {
         "NODE_ENV": "production",
-        "ALLOWED_ORIGINS": "https://www.namasbhutan.com,https://namasbhutan.com",
-        "HOST": "0.0.0.0"
+        "ALLOWED_ORIGINS": "https://www.namasbhutan.com,https://namasbhutan.com,https://namasdeploy-production.up.railway.app",
+        "HOST": "0.0.0.0",
+        "PORT": "$PORT"
       }
     }
   }
