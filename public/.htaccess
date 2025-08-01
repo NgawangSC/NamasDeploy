@@ -62,3 +62,18 @@ Header always set X-XSS-Protection "1; mode=block"
     mod_gzip_item_exclude mime ^image/.*
     mod_gzip_item_include handler ^cgi-script$
 </IfModule>
+
+# Favicon MIME types
+<Files "favicon.ico">
+    Header set Content-Type "image/x-icon"
+</Files>
+
+<Files "*.png">
+    Header set Content-Type "image/png"
+</Files>
+
+# Cache favicon files
+<FilesMatch "\.(ico|png)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+</FilesMatch>
