@@ -460,17 +460,6 @@ function AboutPage() {
             <h2 className="testimonials-title">They love us</h2>
           </div>
           <div className="testimonials-content">
-            <div className="testimonials-list">
-              {testimonials.map((testimonial, index) => (
-                <button
-                  key={testimonial.id}
-                  onClick={() => setSelectedTestimonial(index)}
-                  className={`testimonial-name-btn ${index === selectedTestimonial ? "active" : ""}`}
-                >
-                  {testimonial.name}
-                </button>
-              ))}
-            </div>
             <div className="testimonial-quote-container">
               <div className="quote-mark">"</div>
               <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
