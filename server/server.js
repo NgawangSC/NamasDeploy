@@ -141,16 +141,26 @@ app.get("/api", (req, res) => {
       "POST /api/projects",
       "PUT /api/projects/:id",
       "DELETE /api/projects/:id",
+      "POST /api/projects/:id/images",
+      "DELETE /api/projects/:id/images",
+      "PUT /api/projects/:id/cover",
       "GET /api/blogs",
       "POST /api/blogs",
+      "PUT /api/blogs/:id",
+      "DELETE /api/blogs/:id",
       "GET /api/clients",
       "POST /api/clients",
+      "PUT /api/clients/:id",
+      "DELETE /api/clients/:id",
       "GET /api/team-members",
       "POST /api/team-members",
       "PUT /api/team-members/:id",
       "DELETE /api/team-members/:id",
+      "GET /api/contacts",
       "POST /api/contact",
+      "PUT /api/contacts/:id",
       "POST /api/search",
+      "POST /api/media/upload",
     ],
   })
 })
@@ -383,6 +393,181 @@ app.delete("/api/projects/:id", (req, res) => {
   }
 })
 
+// POST add images to existing project
+app.post("/api/projects/:id/images", upload.array('images', 10), (req, res) => {
+  try {
+    const projectId = parseInt(req.params.id)
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
+      })
+    }
+    
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No images uploaded"
+      })
+    }
+    
+    // Add new images to the project
+    const newImages = req.files.map(file => `/uploads/${file.filename}`)
+    projects[projectIndex].images = [...(projects[projectIndex].images || []), ...newImages]
+    projects[projectIndex].updatedAt = new Date().toISOString()
+    
+    // Save to file
+    saveData(PROJECTS_FILE, projects)
+    
+    console.log("📷 Images added to project:", projects[projectIndex].title)
+    
+    res.json({
+      success: true,
+      message: "Images added successfully",
+      data: {
+        projectId: projectId,
+        newImages: newImages,
+        totalImages: projects[projectIndex].images.length
+      }
+    })
+    
+  } catch (error) {
+    console.error("❌ Error adding images to project:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to add images",
+      details: error.message
+    })
+  }
+})
+
+// DELETE remove image from project
+app.delete("/api/projects/:id/images", (req, res) => {
+  try {
+    const projectId = parseInt(req.params.id)
+    const { imageUrl } = req.body
+    
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Image URL is required"
+      })
+    }
+    
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
+      })
+    }
+    
+    // Remove image from project
+    const project = projects[projectIndex]
+    const imageIndex = project.images?.indexOf(imageUrl) || -1
+    
+    if (imageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Image not found in project"
+      })
+    }
+    
+    project.images.splice(imageIndex, 1)
+    project.updatedAt = new Date().toISOString()
+    
+    // If this was the cover image, update it
+    if (project.image === imageUrl) {
+      project.image = project.images.length > 0 ? project.images[0] : null
+    }
+    
+    // Save to file
+    saveData(PROJECTS_FILE, projects)
+    
+    console.log("🗑️ Image removed from project:", project.title)
+    
+    res.json({
+      success: true,
+      message: "Image removed successfully",
+      data: {
+        projectId: projectId,
+        removedImage: imageUrl,
+        remainingImages: project.images.length
+      }
+    })
+    
+  } catch (error) {
+    console.error("❌ Error removing image from project:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to remove image",
+      details: error.message
+    })
+  }
+})
+
+// PUT set cover image for project
+app.put("/api/projects/:id/cover", (req, res) => {
+  try {
+    const projectId = parseInt(req.params.id)
+    const { imageUrl } = req.body
+    
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Image URL is required"
+      })
+    }
+    
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
+      })
+    }
+    
+    // Check if the image exists in the project's images
+    const project = projects[projectIndex]
+    if (!project.images || !project.images.includes(imageUrl)) {
+      return res.status(400).json({
+        success: false,
+        error: "Image not found in project images"
+      })
+    }
+    
+    // Set as cover image
+    project.image = imageUrl
+    project.updatedAt = new Date().toISOString()
+    
+    // Save to file
+    saveData(PROJECTS_FILE, projects)
+    
+    console.log("🖼️ Cover image set for project:", project.title)
+    
+    res.json({
+      success: true,
+      message: "Cover image set successfully",
+      data: {
+        projectId: projectId,
+        coverImage: imageUrl
+      }
+    })
+    
+  } catch (error) {
+    console.error("❌ Error setting cover image:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to set cover image",
+      details: error.message
+    })
+  }
+})
+
 // Your existing blogs logic
 app.get("/api/blogs", (req, res) => {
   try {
@@ -393,6 +578,124 @@ app.get("/api/blogs", (req, res) => {
     })
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch blogs" })
+  }
+})
+
+// POST create new blog
+app.post("/api/blogs", upload.single('image'), (req, res) => {
+  try {
+    const newBlog = {
+      id: Date.now(),
+      title: req.body.title,
+      content: req.body.content,
+      author: req.body.author || "Admin",
+      excerpt: req.body.excerpt || req.body.content?.substring(0, 200),
+      published: req.body.published !== undefined ? (req.body.published === 'true' || req.body.published === true) : true,
+      image: req.file ? `/uploads/${req.file.filename}` : null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    blogPosts.push(newBlog)
+    saveData(BLOGS_FILE, blogPosts)
+    
+    console.log("✅ Blog created successfully:", newBlog.title)
+    
+    res.json({
+      success: true,
+      data: newBlog,
+      message: "Blog created successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error creating blog:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to create blog",
+      details: error.message
+    })
+  }
+})
+
+// PUT update existing blog
+app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
+  try {
+    const blogId = parseInt(req.params.id)
+    const blogIndex = blogPosts.findIndex(b => b.id === blogId)
+    
+    if (blogIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Blog not found"
+      })
+    }
+    
+    const existingBlog = blogPosts[blogIndex]
+    
+    const updatedBlog = {
+      ...existingBlog,
+      title: req.body.title || existingBlog.title,
+      content: req.body.content || existingBlog.content,
+      author: req.body.author || existingBlog.author,
+      excerpt: req.body.excerpt || existingBlog.excerpt,
+      published: req.body.published !== undefined ? (req.body.published === 'true' || req.body.published === true) : existingBlog.published,
+      image: req.file ? `/uploads/${req.file.filename}` : existingBlog.image,
+      updatedAt: new Date().toISOString()
+    }
+    
+    blogPosts[blogIndex] = updatedBlog
+    saveData(BLOGS_FILE, blogPosts)
+    
+    console.log("✅ Blog updated successfully:", updatedBlog.title)
+    
+    res.json({
+      success: true,
+      data: updatedBlog,
+      message: "Blog updated successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error updating blog:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to update blog",
+      details: error.message
+    })
+  }
+})
+
+// DELETE blog
+app.delete("/api/blogs/:id", (req, res) => {
+  try {
+    const blogId = parseInt(req.params.id)
+    const blogIndex = blogPosts.findIndex(b => b.id === blogId)
+    
+    if (blogIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Blog not found"
+      })
+    }
+    
+    const deletedBlog = blogPosts[blogIndex]
+    blogPosts.splice(blogIndex, 1)
+    saveData(BLOGS_FILE, blogPosts)
+    
+    console.log("🗑️ Blog deleted successfully:", deletedBlog.title)
+    
+    res.json({
+      success: true,
+      message: "Blog deleted successfully",
+      data: { id: blogId }
+    })
+    
+  } catch (error) {
+    console.error("❌ Error deleting blog:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete blog",
+      details: error.message
+    })
   }
 })
 
@@ -409,6 +712,122 @@ app.get("/api/clients", (req, res) => {
   }
 })
 
+// POST create new client
+app.post("/api/clients", upload.single('logo'), (req, res) => {
+  try {
+    const newClient = {
+      id: Date.now(),
+      name: req.body.name,
+      description: req.body.description,
+      website: req.body.website,
+      contact: req.body.contact,
+      logo: req.file ? `/uploads/${req.file.filename}` : null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    clients.push(newClient)
+    saveData(CLIENTS_FILE, clients)
+    
+    console.log("✅ Client created successfully:", newClient.name)
+    
+    res.json({
+      success: true,
+      data: newClient,
+      message: "Client created successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error creating client:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to create client",
+      details: error.message
+    })
+  }
+})
+
+// PUT update existing client
+app.put("/api/clients/:id", upload.single('logo'), (req, res) => {
+  try {
+    const clientId = parseInt(req.params.id)
+    const clientIndex = clients.findIndex(c => c.id === clientId)
+    
+    if (clientIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Client not found"
+      })
+    }
+    
+    const existingClient = clients[clientIndex]
+    
+    const updatedClient = {
+      ...existingClient,
+      name: req.body.name || existingClient.name,
+      description: req.body.description || existingClient.description,
+      website: req.body.website || existingClient.website,
+      contact: req.body.contact || existingClient.contact,
+      logo: req.file ? `/uploads/${req.file.filename}` : existingClient.logo,
+      updatedAt: new Date().toISOString()
+    }
+    
+    clients[clientIndex] = updatedClient
+    saveData(CLIENTS_FILE, clients)
+    
+    console.log("✅ Client updated successfully:", updatedClient.name)
+    
+    res.json({
+      success: true,
+      data: updatedClient,
+      message: "Client updated successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error updating client:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to update client",
+      details: error.message
+    })
+  }
+})
+
+// DELETE client
+app.delete("/api/clients/:id", (req, res) => {
+  try {
+    const clientId = parseInt(req.params.id)
+    const clientIndex = clients.findIndex(c => c.id === clientId)
+    
+    if (clientIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Client not found"
+      })
+    }
+    
+    const deletedClient = clients[clientIndex]
+    clients.splice(clientIndex, 1)
+    saveData(CLIENTS_FILE, clients)
+    
+    console.log("🗑️ Client deleted successfully:", deletedClient.name)
+    
+    res.json({
+      success: true,
+      message: "Client deleted successfully",
+      data: { id: clientId }
+    })
+    
+  } catch (error) {
+    console.error("❌ Error deleting client:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete client",
+      details: error.message
+    })
+  }
+})
+
 // Your existing team members logic
 app.get("/api/team-members", (req, res) => {
   try {
@@ -419,6 +838,300 @@ app.get("/api/team-members", (req, res) => {
     })
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch team members" })
+  }
+})
+
+// POST create new team member
+app.post("/api/team-members", upload.single('image'), (req, res) => {
+  try {
+    const newMember = {
+      id: Date.now(),
+      name: req.body.name,
+      position: req.body.position,
+      bio: req.body.bio,
+      email: req.body.email,
+      phone: req.body.phone,
+      image: req.file ? `/uploads/${req.file.filename}` : null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    teamMembers.push(newMember)
+    saveData(TEAM_MEMBERS_FILE, teamMembers)
+    
+    console.log("✅ Team member created successfully:", newMember.name)
+    
+    res.json({
+      success: true,
+      data: newMember,
+      message: "Team member created successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error creating team member:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to create team member",
+      details: error.message
+    })
+  }
+})
+
+// PUT update existing team member
+app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
+  try {
+    const memberId = parseInt(req.params.id)
+    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
+    
+    if (memberIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Team member not found"
+      })
+    }
+    
+    const existingMember = teamMembers[memberIndex]
+    
+    const updatedMember = {
+      ...existingMember,
+      name: req.body.name || existingMember.name,
+      position: req.body.position || existingMember.position,
+      bio: req.body.bio || existingMember.bio,
+      email: req.body.email || existingMember.email,
+      phone: req.body.phone || existingMember.phone,
+      image: req.file ? `/uploads/${req.file.filename}` : existingMember.image,
+      updatedAt: new Date().toISOString()
+    }
+    
+    teamMembers[memberIndex] = updatedMember
+    saveData(TEAM_MEMBERS_FILE, teamMembers)
+    
+    console.log("✅ Team member updated successfully:", updatedMember.name)
+    
+    res.json({
+      success: true,
+      data: updatedMember,
+      message: "Team member updated successfully"
+    })
+    
+  } catch (error) {
+    console.error("❌ Error updating team member:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to update team member",
+      details: error.message
+    })
+  }
+})
+
+// DELETE team member
+app.delete("/api/team-members/:id", (req, res) => {
+  try {
+    const memberId = parseInt(req.params.id)
+    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
+    
+    if (memberIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Team member not found"
+      })
+    }
+    
+    const deletedMember = teamMembers[memberIndex]
+    teamMembers.splice(memberIndex, 1)
+    saveData(TEAM_MEMBERS_FILE, teamMembers)
+    
+    console.log("🗑️ Team member deleted successfully:", deletedMember.name)
+    
+    res.json({
+      success: true,
+      message: "Team member deleted successfully",
+      data: { id: memberId }
+    })
+    
+  } catch (error) {
+    console.error("❌ Error deleting team member:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete team member",
+      details: error.message
+    })
+  }
+})
+
+// POST upload media files
+app.post("/api/media/upload", upload.array('images', 10), (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No files uploaded"
+      })
+    }
+    
+    const uploadedFiles = req.files.map(file => `/uploads/${file.filename}`)
+    
+    console.log("📷 Media files uploaded:", uploadedFiles.length)
+    
+    res.json({
+      success: true,
+      message: "Files uploaded successfully",
+      data: uploadedFiles
+    })
+    
+  } catch (error) {
+    console.error("❌ Error uploading media:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload media",
+      details: error.message
+    })
+  }
+})
+
+// POST contact form submission
+app.post("/api/contact", (req, res) => {
+  try {
+    const newContact = {
+      id: Date.now(),
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+      subject: req.body.subject,
+      message: req.body.message,
+      status: "new",
+      createdAt: new Date().toISOString()
+    }
+    
+    contacts.push(newContact)
+    saveData(CONTACTS_FILE, contacts)
+    
+    console.log("📧 Contact form submitted:", newContact.name)
+    
+    res.json({
+      success: true,
+      message: "Contact form submitted successfully",
+      data: newContact
+    })
+    
+  } catch (error) {
+    console.error("❌ Error submitting contact form:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to submit contact form",
+      details: error.message
+    })
+  }
+})
+
+// GET contacts (for admin)
+app.get("/api/contacts", (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: contacts,
+      count: contacts.length
+    })
+  } catch (error) {
+    console.error("❌ Error fetching contacts:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch contacts"
+    })
+  }
+})
+
+// PUT update contact status
+app.put("/api/contacts/:id", (req, res) => {
+  try {
+    const contactId = parseInt(req.params.id)
+    const contactIndex = contacts.findIndex(c => c.id === contactId)
+    
+    if (contactIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Contact not found"
+      })
+    }
+    
+    contacts[contactIndex] = {
+      ...contacts[contactIndex],
+      status: req.body.status || contacts[contactIndex].status,
+      updatedAt: new Date().toISOString()
+    }
+    
+    saveData(CONTACTS_FILE, contacts)
+    
+    res.json({
+      success: true,
+      message: "Contact updated successfully",
+      data: contacts[contactIndex]
+    })
+    
+  } catch (error) {
+    console.error("❌ Error updating contact:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to update contact",
+      details: error.message
+    })
+  }
+})
+
+// POST search functionality
+app.post("/api/search", (req, res) => {
+  try {
+    const { query, type } = req.body
+    
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        error: "Search query is required"
+      })
+    }
+    
+    let results = []
+    const searchQuery = query.toLowerCase()
+    
+    // Search in projects
+    if (!type || type === 'projects') {
+      const projectResults = projects.filter(project => 
+        project.title?.toLowerCase().includes(searchQuery) ||
+        project.description?.toLowerCase().includes(searchQuery) ||
+        project.category?.toLowerCase().includes(searchQuery) ||
+        project.location?.toLowerCase().includes(searchQuery)
+      ).map(project => ({ ...project, type: 'project' }))
+      
+      results = results.concat(projectResults)
+    }
+    
+    // Search in blogs
+    if (!type || type === 'blogs') {
+      const blogResults = blogPosts.filter(blog => 
+        blog.title?.toLowerCase().includes(searchQuery) ||
+        blog.content?.toLowerCase().includes(searchQuery) ||
+        blog.excerpt?.toLowerCase().includes(searchQuery)
+      ).map(blog => ({ ...blog, type: 'blog' }))
+      
+      results = results.concat(blogResults)
+    }
+    
+    console.log(`🔍 Search performed for "${query}", found ${results.length} results`)
+    
+    res.json({
+      success: true,
+      data: results,
+      count: results.length,
+      query: query
+    })
+    
+  } catch (error) {
+    console.error("❌ Error performing search:", error)
+    res.status(500).json({
+      success: false,
+      error: "Search failed",
+      details: error.message
+    })
   }
 })
 
@@ -456,16 +1169,26 @@ app.use("*", (req, res) => {
       "POST /api/projects",
       "PUT /api/projects/:id",
       "DELETE /api/projects/:id",
+      "POST /api/projects/:id/images",
+      "DELETE /api/projects/:id/images",
+      "PUT /api/projects/:id/cover",
       "GET /api/blogs",
       "POST /api/blogs",
+      "PUT /api/blogs/:id",
+      "DELETE /api/blogs/:id",
       "GET /api/clients",
       "POST /api/clients",
+      "PUT /api/clients/:id",
+      "DELETE /api/clients/:id",
       "GET /api/team-members",
       "POST /api/team-members",
       "PUT /api/team-members/:id",
       "DELETE /api/team-members/:id",
+      "GET /api/contacts",
       "POST /api/contact",
+      "PUT /api/contacts/:id",
       "POST /api/search",
+      "POST /api/media/upload",
     ],
   })
 })

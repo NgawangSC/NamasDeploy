@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "title": "Architecture",
+    "title": "Test Update",
     "category": "Architecture",
     "location": "Thimphu",
     "year": "2025",
@@ -23,7 +23,7 @@
       "/uploads/images-1753801868855-538922152.jpg"
     ],
     "createdAt": "2025-07-29T15:11:08.859Z",
-    "updatedAt": "2025-07-29T15:21:09.973Z"
+    "updatedAt": "2025-08-01T13:06:54.447Z"
   },
   {
     "id": 2,
