@@ -1,209 +1,98 @@
 const express = require("express")
-const cors = require("cors")
 const multer = require("multer")
 const path = require("path")
 const fs = require("fs")
-const { startAutoBackup, createBackup } = require('./data-backup')
-const corsOptions = require('./cors-fix')
+const cors = require("cors") // ✅ ADDED CORS
 
 const app = express()
 const PORT = process.env.PORT || 5000
+const DATA_DIR = "./data"
+const UPLOADS_DIR = "./uploads"
+const TEAM_MEMBERS_FILE = path.join(DATA_DIR, "team-members.json")
+const PROJECTS_FILE = path.join(DATA_DIR, "projects.json")
+const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
+const CLIENTS_FILE = path.join(DATA_DIR, "clients.json")
+const CONTACTS_FILE = path.join(DATA_DIR, "contacts.json")
 
+// Load data from files
+let teamMembers = loadData(TEAM_MEMBERS_FILE)
+let projects = loadData(PROJECTS_FILE)
+let blogPosts = loadData(BLOGS_FILE)
+let clients = loadData(CLIENTS_FILE)
+let contacts = loadData(CONTACTS_FILE)
 
-const cors = require('cors');
-app.use(cors({
-  origin: 'https://www.namasbhutan.com', // allow your frontend domain
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // allowed HTTP methods
-  credentials: true // if you use cookies or authorization headers
-}));
-
-// Use the CORS options from cors-fix.js
-app.use(cors(corsOptions))
-
-// Handle preflight requests explicitly with the same options
-app.options("*", cors(corsOptions))
-
-// Additional CORS headers middleware for extra reliability
-app.use((req, res, next) => {
-  const origin = req.get('Origin');
-  const allowedOrigins = [
-    'https://www.namasbhutan.com',
-    'https://namasbhutan.com',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:4173'
-  ];
-
-  if (!origin || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-HTTP-Method-Override');
-    res.header('Access-Control-Expose-Headers', 'Content-Length, X-Foo, X-Bar');
-  }
-
-  next();
-});
-
-// Request logging middleware for debugging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
-  next();
-});
-
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use("/uploads", express.static("uploads"))
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = "uploads/"
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true })
-    }
-    cb(null, uploadDir)
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
-    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname))
-  },
-})
-
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
-    const mimetype = allowedTypes.test(file.mimetype)
-
-    if (mimetype && extname) {
-      return cb(null, true)
-    } else {
-      cb(new Error("Only image files are allowed"))
-    }
-  },
-})
-
-// Data file paths
-const DATA_DIR = path.join(__dirname, 'data')
-const PROJECTS_FILE = path.join(DATA_DIR, 'projects.json')
-const BLOGS_FILE = path.join(DATA_DIR, 'blogs.json')
-const CLIENTS_FILE = path.join(DATA_DIR, 'clients.json')
-const CONTACTS_FILE = path.join(DATA_DIR, 'contacts.json')
-const TEAM_MEMBERS_FILE = path.join(DATA_DIR, 'team-members.json')
-
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true })
-}
-
-// Data persistence functions
-const loadData = (filePath, defaultData = []) => {
+function loadData(filePath) {
   try {
     if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, 'utf8')
-      return JSON.parse(data)
+      return JSON.parse(fs.readFileSync(filePath, "utf8"))
     }
-    return defaultData
+    return []
   } catch (error) {
     console.error(`Error loading data from ${filePath}:`, error)
-    return defaultData
+    return []
   }
 }
 
-const saveData = (filePath, data) => {
+function saveData(filePath, data) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
-    return true
   } catch (error) {
     console.error(`Error saving data to ${filePath}:`, error)
-    return false
   }
 }
 
-// Load initial data
-let projects = loadData(PROJECTS_FILE, [])
-let blogPosts = loadData(BLOGS_FILE, [
-  {
-    id: 1,
-    title: "Sustainable Architecture in Bhutan",
-    excerpt:
-      "Exploring traditional building techniques and modern sustainable practices in contemporary Bhutanese architecture.",
-    content: "<p>Bhutan's unique approach to architecture has always been deeply rooted in sustainability...</p>",
-    date: "March 15, 2024",
-    author: "NAMAS Architecture Team",
-    category: "Sustainability",
-    image: "/images/project1.png",
-    readTime: "5 min read",
+// Setup uploads
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR)
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, UPLOADS_DIR)
   },
-])
-let clients = loadData(CLIENTS_FILE, [])
-let contacts = loadData(CONTACTS_FILE, [])
-let teamMembers = loadData(TEAM_MEMBERS_FILE, [])
-
-
-
-// ROOT ROUTE - Fix for "Cannot GET /"
-app.get("/", (req, res) => {
-  res.json({
-    message: "NAMAS Architecture API Server",
-    version: "1.0.0",
-    endpoints: {
-      projects: "/api/projects",
-      blogs: "/api/blogs",
-      contacts: "/api/contact",
-      search: "/api/search",
-    },
-    status: "Server is running successfully",
-  })
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
+    cb(null, uniqueSuffix + path.extname(file.originalname))
+  },
 })
 
-// API STATUS ROUTE
+const upload = multer({ storage })
+
+// Middleware
+app.use(express.json())
+
+// ✅ CORS MIDDLEWARE
+app.use(cors({
+  origin: "https://www.namasbhutan.com",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}))
+
+app.use("/uploads", express.static(UPLOADS_DIR))
+
+// Routes
+app.get("/", (req, res) => {
+  res.send("Welcome to the NAMAS Architecture API")
+})
+
 app.get("/api", (req, res) => {
   res.json({
+    success: true,
     message: "NAMAS Architecture API",
-    timestamp: new Date().toISOString(),
-    endpoints: [
-      "GET /api/projects - Get all projects (supports ?page=1&limit=10)",
-      "POST /api/projects - Create new project",
-      "GET /api/projects/:id - Get single project",
-      "PUT /api/projects/:id - Update project",
-      "DELETE /api/projects/:id - Delete project",
-      "GET /api/blogs - Get all blog posts (supports ?page=1&limit=10)",
-      "POST /api/blogs - Create new blog post",
-      "GET /api/blogs/:id - Get single blog post",
-      "PUT /api/blogs/:id - Update blog post",
-      "DELETE /api/blogs/:id - Delete blog post",
-      "GET /api/clients - Get all clients (supports ?page=1&limit=10)",
-      "POST /api/clients - Create new client",
-      "GET /api/clients/:id - Get single client",
-      "PUT /api/clients/:id - Update client",
-      "DELETE /api/clients/:id - Delete client",
-      "GET /api/team-members - Get all team members (supports ?page=1&limit=10)",
-      "POST /api/team-members - Create new team member",
-      "GET /api/team-members/:id - Get single team member",
-      "PUT /api/team-members/:id - Update team member",
-      "DELETE /api/team-members/:id - Delete team member",
-      "POST /api/contact - Submit contact form",
-      "GET /api/contacts - Get all contacts",
-      "PUT /api/contacts/:id - Update contact status",
-      "POST /api/search - Search projects and blogs",
-      "POST /api/backup - Create manual backup",
+    availableRoutes: [
+      "GET /api/projects",
+      "POST /api/projects",
+      "GET /api/blogs",
+      "POST /api/blogs",
+      "GET /api/clients",
+      "POST /api/clients",
+      "GET /api/team-members",
+      "POST /api/team-members",
+      "PUT /api/team-members/:id",
+      "DELETE /api/team-members/:id",
+      "POST /api/contact",
+      "POST /api/search",
     ],
-    stats: {
-      projects: projects.length,
-      blogs: blogPosts.length,
-      clients: clients.length,
-      teamMembers: teamMembers.length,
-      contacts: contacts.length
-    }
   })
 })
 
@@ -998,20 +887,20 @@ app.delete("/api/clients/:id", (req, res) => {
 
 // TEAM MEMBERS ROUTES
 
-// GET all team members
+// GET all team members with pagination
 app.get("/api/team-members", (req, res) => {
   const page = parseInt(req.query.page) || 1
-  const limit = parseInt(req.query.limit) || 0 // 0 means no limit (return all)
+  const limit = parseInt(req.query.limit) || 0
   const startIndex = (page - 1) * limit
-  
+
   let result = teamMembers
   let totalPages = 1
-  
+
   if (limit > 0) {
     result = teamMembers.slice(startIndex, startIndex + limit)
     totalPages = Math.ceil(teamMembers.length / limit)
   }
-  
+
   res.json({
     success: true,
     data: result,
@@ -1286,7 +1175,5 @@ app.listen(PORT, () => {
   console.log(`📁 Upload directory: uploads/`)
   console.log(`💾 Data directory: ${DATA_DIR}`)
   console.log(`📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${teamMembers.length} team members, ${contacts.length} contacts`)
-  
-  // Start automatic backup system
   startAutoBackup()
 })
