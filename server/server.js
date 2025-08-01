@@ -617,13 +617,23 @@ app.get("/api/blogs", (req, res) => {
 // POST create new blog
 app.post("/api/blogs", upload.single('image'), (req, res) => {
   try {
+    // Handle both 'status' and 'published' fields for backward compatibility
+    let status = 'draft'; // Default to draft
+    if (req.body.status) {
+      status = req.body.status;
+    } else if (req.body.published !== undefined) {
+      status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft';
+    }
+    
     const newBlog = {
       id: Date.now(),
       title: req.body.title,
       content: req.body.content,
       author: req.body.author || "Admin",
       excerpt: req.body.excerpt || req.body.content?.substring(0, 200),
-      published: req.body.published !== undefined ? (req.body.published === 'true' || req.body.published === true) : true,
+      category: req.body.category || "",
+      tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : req.body.tags) : [],
+      status: status,
       image: req.file ? `/uploads/${req.file.filename}` : null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -665,13 +675,23 @@ app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
     
     const existingBlog = blogPosts[blogIndex]
     
+    // Handle both 'status' and 'published' fields for backward compatibility
+    let status = existingBlog.status || (existingBlog.published ? 'published' : 'draft');
+    if (req.body.status) {
+      status = req.body.status;
+    } else if (req.body.published !== undefined) {
+      status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft';
+    }
+    
     const updatedBlog = {
       ...existingBlog,
       title: req.body.title || existingBlog.title,
       content: req.body.content || existingBlog.content,
       author: req.body.author || existingBlog.author,
       excerpt: req.body.excerpt || existingBlog.excerpt,
-      published: req.body.published !== undefined ? (req.body.published === 'true' || req.body.published === true) : existingBlog.published,
+      category: req.body.category || existingBlog.category,
+      tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : req.body.tags) : (existingBlog.tags || []),
+      status: status,
       image: req.file ? `/uploads/${req.file.filename}` : existingBlog.image,
       updatedAt: new Date().toISOString()
     }
