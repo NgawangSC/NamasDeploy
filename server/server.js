@@ -138,6 +138,7 @@ app.get("/api", (req, res) => {
     availableRoutes: [
       "GET /api/projects",
       "GET /api/projects/featured",
+      "GET /api/projects/:id",
       "POST /api/projects",
       "PUT /api/projects/:id",
       "DELETE /api/projects/:id",
@@ -231,6 +232,38 @@ app.get("/api/projects/featured", (req, res) => {
   })
 })
 
+// GET single project by ID - MUST come after /featured route
+app.get("/api/projects/:id", (req, res) => {
+  try {
+    const projectId = req.params.id
+    
+    // Try to find project by both string and number ID for backward compatibility
+    const project = projects.find(p => {
+      return p.id === Number.parseInt(projectId) || p.id === projectId || p.id.toString() === projectId
+    })
+    
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
+      })
+    }
+    
+    res.json({
+      success: true,
+      data: project
+    })
+    
+  } catch (error) {
+    console.error("❌ Error fetching project:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch project",
+      details: error.message
+    })
+  }
+})
+
 // POST new project
 app.post("/api/projects", upload.array('images', 10), (req, res) => {
   try {
@@ -238,7 +271,7 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
     
     // Parse project data from request body
     const projectData = {
-      id: Date.now().toString(),
+      id: Date.now(),
       title: req.body.title,
       description: req.body.description,
       category: req.body.category,
@@ -1166,6 +1199,7 @@ app.use("*", (req, res) => {
       "GET /test",
       "GET /api/projects",
       "GET /api/projects/featured",
+      "GET /api/projects/:id",
       "POST /api/projects",
       "PUT /api/projects/:id",
       "DELETE /api/projects/:id",

@@ -388,5 +388,19 @@
     ],
     "createdAt": "2025-07-29T15:22:42.761Z",
     "updatedAt": "2025-07-29T15:22:45.989Z"
+  },
+  {
+    "id": 1754054290959,
+    "title": "Test Project",
+    "description": "Test Description",
+    "category": "Test Category",
+    "location": "Test Location",
+    "year": "2025",
+    "client": "Test Client",
+    "featured": false,
+    "status": "In Progress",
+    "createdAt": "2025-08-01T13:18:10.959Z",
+    "updatedAt": "2025-08-01T13:18:10.959Z",
+    "images": []
   }
 ]
