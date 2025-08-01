@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import ApiService from "../services/api"
 import "./AboutPage.css"
@@ -57,6 +58,15 @@ const AnimatedCounter = ({ end, suffix = "", startAnimation, formatLargeNumbers 
 
 function AboutPage() {
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
+
+  // Slider functions for mobile testimonials
+  const nextTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev + 1) % testimonials.length)
+  }
+
+  const prevTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }
   const [startCounters, setStartCounters] = useState(false)
   const statisticsRef = useRef(null)
   const navigate = useNavigate()
@@ -460,10 +470,40 @@ function AboutPage() {
             <h2 className="testimonials-title">They love us</h2>
           </div>
           <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  onClick={() => setSelectedTestimonial(index)}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? "active" : ""}`}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
             <div className="testimonial-quote-container">
               <div className="quote-mark">"</div>
               <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
               <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
+            </div>
+            
+            {/* Mobile Testimonial Slider Controls */}
+            <div className="testimonial-mobile-controls">
+              <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                <ChevronLeft size={24} />
+              </button>
+              <div className="testimonial-dots">
+                {testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedTestimonial(index)}
+                    className={`testimonial-dot ${index === selectedTestimonial ? "active" : ""}`}
+                  />
+                ))}
+              </div>
+              <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                <ChevronRight size={24} />
+              </button>
             </div>
           </div>
         </div>

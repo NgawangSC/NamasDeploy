@@ -10,9 +10,32 @@ function HomePage() {
   const navigate = useNavigate()
   const { getRecentProjects, clients, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
-  const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
-  const totalClientSlides = Math.max(1, Math.ceil(clients.length / 3))
+  // Slider functions for mobile testimonials
+  const nextTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev + 1) % testimonials.length)
+  }
+
+  const prevTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }
+  const [currentClientSlide, setCurrentClientSlide] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  const clientsPerSlide = isMobile ? 1 : 3
+  const totalClientSlides = Math.max(1, Math.ceil(clients.length / clientsPerSlide))
+
+  // Track screen size for responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Fetch data on component mount
   useEffect(() => {
@@ -217,10 +240,40 @@ function HomePage() {
             <h2 className="testimonials-title">They love us</h2>
           </div>
           <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  onClick={() => setSelectedTestimonial(index)}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? "active" : ""}`}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
             <div className="testimonial-quote-container">
               <div className="quote-mark">"</div>
               <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
               <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
+            </div>
+            
+            {/* Mobile Testimonial Slider Controls */}
+            <div className="testimonial-mobile-controls">
+              <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                <ChevronLeft size={24} />
+              </button>
+              <div className="testimonial-dots">
+                {testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedTestimonial(index)}
+                    className={`testimonial-dot ${index === selectedTestimonial ? "active" : ""}`}
+                  />
+                ))}
+              </div>
+              <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                <ChevronRight size={24} />
+              </button>
             </div>
           </div>
         </div>
@@ -244,7 +297,10 @@ function HomePage() {
                 </button>
                 <div className="clients-grid">
                   {clients
-                    .slice(currentClientSlide * 3, (currentClientSlide + 1) * 3)
+                    .slice(
+                      isMobile ? currentClientSlide : currentClientSlide * 3,
+                      isMobile ? currentClientSlide + 1 : (currentClientSlide + 1) * 3
+                    )
                     .map((client) => (
                       <div key={client.id} className="client-card">
                         <div className="client-logo">
