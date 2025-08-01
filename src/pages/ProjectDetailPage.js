@@ -15,6 +15,7 @@ const ProjectDetailPage = () => {
   const [project, setProject] = useState(null)
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
   const [singleProjectLoading, setSingleProjectLoading] = useState(false)
+  const [showDesignTeamModal, setShowDesignTeamModal] = useState(false)
 
   useEffect(() => {
     // Fetch projects on mount if not already loaded
@@ -228,7 +229,9 @@ const ProjectDetailPage = () => {
             <div className="info-cell">{project.client || 'N/A'}</div>
             <div className="info-cell">{project.year || 'N/A'}</div>
             <div className="info-cell">{project.location || 'N/A'}</div>
-            <div className="info-cell">{project.designTeam || 'NAMAS Architecture'}</div>
+            <div className="info-cell clickable-design-team" onClick={() => setShowDesignTeamModal(true)}>
+              {project.designTeam || 'NAMAS Architecture'}
+            </div>
             <div className="info-cell">{project.status || 'N/A'}</div>
           </div>
         </div>
@@ -246,6 +249,26 @@ const ProjectDetailPage = () => {
           </div>
         )}
       </div>
+
+      {/* Design Team Modal */}
+      {showDesignTeamModal && (
+        <div className="design-team-modal-overlay" onClick={() => setShowDesignTeamModal(false)}>
+          <div className="design-team-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Design Team</h2>
+              <button className="btn-close" onClick={() => setShowDesignTeamModal(false)}>
+                ×
+              </button>
+            </div>
+
+            <div className="modal-content">
+              <div className="design-team-info">
+                <p>{project.designTeam || 'NAMAS Architecture'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
