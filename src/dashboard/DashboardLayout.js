@@ -8,6 +8,7 @@ const DashboardLayout = ({ children, setIsAuthenticated }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("dashboardAuth")
+    localStorage.removeItem("dashboardAuthTime")
     setIsAuthenticated(false)
     navigate("/dashboard/login")
   }
