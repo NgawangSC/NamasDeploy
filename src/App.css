@@ -1052,31 +1052,7 @@ button {
     max-height: 100px;
   }
 
-  .clients-carousel {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px; /* Reduced gap for tablets */
-  }
-
-  .clients-grid {
-    display: flex; /* Show client grid on tablets (same as desktop) */
-    gap: 20px; /* Reduced gap for tablets */
-  }
-
-  .clients-grid-responsive {
-    display: none; /* Hide responsive client grid on tablets */
-  }
-
-  .clients-arrow {
-    display: flex; /* Show client arrows on tablets (same as desktop) */
-  }
-
-  .client-slider-nav {
-    display: none; /* Hide slider navigation on tablets */
-  }
-
+  /* Tablets use same client layout as desktop */
   .client-card {
     width: 280px;
     height: 200px;
@@ -1097,10 +1073,10 @@ button {
 
   .clients-carousel {
     position: relative;
-    flex-direction: row;
-    gap: 0;
+    display: flex;
     align-items: center;
     justify-content: center;
+    gap: 40px;
   }
 
   .clients-grid {
@@ -1109,20 +1085,14 @@ button {
 
   .clients-grid-responsive {
     display: flex; /* Show responsive client grid on phones */
-    position: relative;
   }
 
   .clients-arrow {
-    display: none; /* Hide old client arrows on phones */
+    display: flex; /* Show external client arrows on phones */
   }
 
   .client-slider-nav {
-    display: flex; /* Show new client slider navigation on phones */
-  }
-
-  .client-arrow {
-    width: 45px;
-    height: 45px;
+    display: none; /* Hide internal slider navigation on phones */
   }
 
   .client-card {
@@ -1151,10 +1121,10 @@ button {
 
   .clients-carousel {
     position: relative;
-    flex-direction: row;
-    gap: 0;
+    display: flex;
     align-items: center;
     justify-content: center;
+    gap: 30px;
   }
 
   .clients-grid {
@@ -1163,28 +1133,14 @@ button {
 
   .clients-grid-responsive {
     display: flex; /* Show responsive client grid on small phones */
-    position: relative;
   }
 
   .clients-arrow {
-    display: none; /* Hide old client arrows on small phones */
+    display: flex; /* Show external client arrows on small phones */
   }
 
   .client-slider-nav {
-    display: flex; /* Show new client slider navigation on small phones */
-  }
-
-  .client-arrow {
-    width: 40px;
-    height: 40px;
-  }
-
-  .client-arrow-left {
-    transform: translateX(-20px);
-  }
-
-  .client-arrow-right {
-    transform: translateX(20px);
+    display: none; /* Hide internal slider navigation on small phones */
   }
 
   .client-card {
