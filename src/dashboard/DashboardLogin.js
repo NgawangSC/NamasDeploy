@@ -31,7 +31,9 @@ const DashboardLogin = ({ setIsAuthenticated }) => {
       (credentials.username === "admin" && credentials.password === "admin") ||
       (credentials.username === "admin" && credentials.password === "password")
     ) {
+      const currentTime = new Date().getTime()
       localStorage.setItem("dashboardAuth", "true")
+      localStorage.setItem("dashboardAuthTime", currentTime.toString())
       setIsAuthenticated(true)
     } else {
       setError("Invalid credentials. Try: admin/admin123 or admin/admin or admin/password")

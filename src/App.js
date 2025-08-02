@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Routes, Route, useLocation } from "react-router-dom"
+import { Routes, Route, useLocation, Navigate } from "react-router-dom"
 import { DataProvider } from "./contexts/DataContext" // Add this import
 import Header from "./components/Header"
 import Footer from "./components/Footer"
@@ -51,46 +51,115 @@ function ScrollToTop() {
   return null
 }
 
+// Dashboard Route Component
+function DashboardRoute({ isAuthenticated, setIsAuthenticated }) {
+  const location = useLocation()
+  
+  // If not authenticated and trying to access any dashboard route except login
+  if (!isAuthenticated && location.pathname !== '/dashboard/login') {
+    return <Navigate to="/dashboard/login" replace />
+  }
+  
+  // If authenticated and trying to access login page, redirect to dashboard home
+  if (isAuthenticated && location.pathname === '/dashboard/login') {
+    return <Navigate to="/dashboard" replace />
+  }
+  
+  // If authenticated, show the dashboard
+  if (isAuthenticated) {
+    return (
+      <DataProvider>
+        <DashboardLayout setIsAuthenticated={setIsAuthenticated}>
+          <Routes>
+            <Route path="/" element={<DashboardHome />} />
+            <Route path="/projects" element={<ProjectsManager />} />
+            <Route path="/hero-banner" element={<HeroBannerManager />} />
+            <Route path="/recent-projects" element={<RecentProjectsManager />} />
+            <Route path="/blogs" element={<BlogsManager />} />
+            <Route path="/clients" element={<ClientsManager />} />
+            <Route path="/team" element={<TeamManager />} />
+            <Route path="/media" element={<MediaManager />} />
+          </Routes>
+        </DashboardLayout>
+      </DataProvider>
+    )
+  }
+  
+  // Show login page
+  return <DashboardLogin setIsAuthenticated={setIsAuthenticated} />
+}
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Check authentication status
   useEffect(() => {
-    const authStatus = localStorage.getItem("dashboardAuth")
-    setIsAuthenticated(authStatus === "true")
+    const checkAuth = () => {
+      try {
+        const authStatus = localStorage.getItem("dashboardAuth")
+        const authTimestamp = localStorage.getItem("dashboardAuthTime")
+        
+        if (authStatus === "true" && authTimestamp) {
+          const now = new Date().getTime()
+          const authTime = parseInt(authTimestamp)
+          const hoursPassed = (now - authTime) / (1000 * 60 * 60)
+          
+          // Auto-logout after 24 hours for security
+          if (hoursPassed > 24) {
+            localStorage.removeItem("dashboardAuth")
+            localStorage.removeItem("dashboardAuthTime")
+            setIsAuthenticated(false)
+          } else {
+            setIsAuthenticated(true)
+          }
+        } else {
+          setIsAuthenticated(false)
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error)
+        setIsAuthenticated(false)
+      }
+      setIsLoading(false)
+    }
+
+    checkAuth()
   }, [])
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Loading...
+      </div>
+    )
+  }
 
   return (
     <div className="App">
       <ScrollToTop />
       <Routes>
-        {/* Dashboard Routes - Wrapped with DataProvider */}
-        <Route path="/dashboard/login" element={<DashboardLogin setIsAuthenticated={setIsAuthenticated} />} />
+        {/* Dashboard Routes */}
+        <Route 
+          path="/dashboard/login" 
+          element={
+            isAuthenticated ? 
+            <Navigate to="/dashboard" replace /> : 
+            <DashboardLogin setIsAuthenticated={setIsAuthenticated} />
+          } 
+        />
         <Route
           path="/dashboard/*"
-          element={
-            isAuthenticated ? (
-              <DataProvider>
-                <DashboardLayout setIsAuthenticated={setIsAuthenticated}>
-                  <Routes>
-                    <Route path="/" element={<DashboardHome />} />
-                    <Route path="/projects" element={<ProjectsManager />} />
-                    <Route path="/hero-banner" element={<HeroBannerManager />} />
-                    <Route path="/recent-projects" element={<RecentProjectsManager />} />
-                    <Route path="/blogs" element={<BlogsManager />} />
-                    <Route path="/clients" element={<ClientsManager />} />
-                    <Route path="/team" element={<TeamManager />} />
-                    <Route path="/media" element={<MediaManager />} />
-                  </Routes>
-                </DashboardLayout>
-              </DataProvider>
-            ) : (
-              <DashboardLogin setIsAuthenticated={setIsAuthenticated} />
-            )
-          }
+          element={<DashboardRoute isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />}
         />
 
-        {/* Public Routes - You can also wrap these with DataProvider if needed */}
+        {/* Public Routes */}
         <Route
           path="/*"
           element={
