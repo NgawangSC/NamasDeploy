@@ -431,6 +431,11 @@
     font-size: 1.5rem;
   }
 
+  /* Show one project at a time on mobile */
+  .architect-project-half {
+    width: 100%;
+  }
+
   .architect-filter-section h2 {
     font-size: 1.5rem;
   }
@@ -522,5 +527,10 @@
   .architect-read-btn {
     padding: 0.5rem 1.5rem;
     font-size: 0.8rem;
+  }
+
+  /* Show one project at a time on mobile */
+  .architect-project-half {
+    width: 100%;
   }
 }

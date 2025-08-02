@@ -13,6 +13,7 @@ const InstitutePage = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [translateX, setTranslateX] = useState(0)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const sliderRef = useRef(null)
 
   // Filter state
@@ -25,7 +26,7 @@ const InstitutePage = () => {
 
   // Institute page categories - projects that fall under institute/educational services
   const instituteCategories = [
-    "Institute",
+    "Architecture",
   ]
 
   useEffect(() => {
@@ -34,6 +35,20 @@ const InstitutePage = () => {
       fetchProjects()
     }
   }, [projects, loading.projects, fetchProjects])
+
+  // Handle window resize to update mobile state
+  useEffect(() => {
+    const handleResize = () => {
+      const newIsMobile = window.innerWidth <= 768
+      if (newIsMobile !== isMobile) {
+        setIsMobile(newIsMobile)
+        setCurrentSlide(0) // Reset to first slide when changing layouts
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isMobile])
 
   // Filter projects to show only institute-related categories
   let instituteProjects = projects.filter(project => 
