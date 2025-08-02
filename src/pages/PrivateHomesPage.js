@@ -13,6 +13,7 @@ const PrivateHomesPage = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [translateX, setTranslateX] = useState(0)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const sliderRef = useRef(null)
 
   // Filter projects to show only relevant projects for Private Homes page
@@ -36,7 +37,19 @@ const PrivateHomesPage = () => {
     }
   }, [allProjects, loading.projects, fetchProjects])
 
+  // Handle window resize to update mobile state
+  useEffect(() => {
+    const handleResize = () => {
+      const newIsMobile = window.innerWidth <= 768
+      if (newIsMobile !== isMobile) {
+        setIsMobile(newIsMobile)
+        setCurrentSlide(0) // Reset to first slide when changing layouts
+      }
+    }
 
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isMobile])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -62,14 +75,14 @@ const PrivateHomesPage = () => {
     )
   })
 
-  const totalSlides = Math.ceil(filteredProjects.length / 2)
+  const totalSlides = isMobile ? filteredProjects.length : Math.ceil(filteredProjects.length / 2)
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
       ...prev,
       [filterType]: value
     }))
-    setCurrentSlide(0)
+    setCurrentSlide(0) // Reset to first slide when filter changes
     setOpenDropdown(null)
   }
 
@@ -146,9 +159,16 @@ const PrivateHomesPage = () => {
   const getAllProjectPairs = () => {
     const pairs = []
     for (let i = 0; i < totalSlides; i++) {
-      const startIndex = i * 2
-      const pair = filteredProjects.slice(startIndex, startIndex + 2)
-      pairs.push(pair)
+      if (isMobile) {
+        // Show one project per slide on mobile
+        const project = filteredProjects[i]
+        pairs.push(project ? [project] : [])
+      } else {
+        // Show two projects per slide on desktop
+        const startIndex = i * 2
+        const pair = filteredProjects.slice(startIndex, startIndex + 2)
+        pairs.push(pair)
+      }
     }
     return pairs
   }
