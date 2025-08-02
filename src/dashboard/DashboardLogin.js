@@ -24,19 +24,16 @@ const DashboardLogin = ({ setIsAuthenticated }) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
-
-    // Very simple authentication - just check the values directly
+    
     if (
-      (credentials.username === "admin" && credentials.password === "admin123") ||
-      (credentials.username === "admin" && credentials.password === "admin") ||
-      (credentials.username === "admin" && credentials.password === "password")
+      (credentials.username === "namasbhutan" && credentials.password === "admin123")
     ) {
       const currentTime = new Date().getTime()
       localStorage.setItem("dashboardAuth", "true")
       localStorage.setItem("dashboardAuthTime", currentTime.toString())
       setIsAuthenticated(true)
     } else {
-      setError("Invalid credentials. Try: admin/admin123 or admin/admin or admin/password")
+      setError("Invalid credentials.")
     }
 
     setIsLoading(false)
@@ -85,10 +82,6 @@ const DashboardLogin = ({ setIsAuthenticated }) => {
         </form>
 
         <div className="login-info">
-          <p>Try these credentials:</p>
-          <p>Username: admin | Password: admin123</p>
-          <p>Username: admin | Password: admin</p>
-          <p>Username: admin | Password: password</p>
         </div>
       </div>
     </div>
