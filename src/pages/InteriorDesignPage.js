@@ -27,7 +27,7 @@ const InteriorDesignPage = () => {
 
   // Categories that should appear on the Interior Design page
   const interiorDesignCategories = [
-    "Interior Design"
+    "Architecture"
   ]
 
   useEffect(() => {

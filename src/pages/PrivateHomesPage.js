@@ -18,7 +18,7 @@ const PrivateHomesPage = () => {
 
   // Filter projects to show only relevant projects for Private Homes page
   const projects = allProjects.filter(project => 
-    project.category === "Residential" || project.category === "Private Homes"
+    project.category === "Architecture"
   )
 
   // Filter states

@@ -26,7 +26,7 @@ const InstitutePage = () => {
 
   // Institute page categories - projects that fall under institute/educational services
   const instituteCategories = [
-    "Institute",
+    "Architecture",
   ]
 
   useEffect(() => {

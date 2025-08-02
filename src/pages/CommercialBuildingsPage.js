@@ -27,7 +27,7 @@ const CommercialBuildingsPage = () => {
 
   // Categories that should appear on the Commercial Buildings page
   const commercialCategories = [
-    "Commercial Buildings"
+    "Architecture"
   ]
 
   useEffect(() => {

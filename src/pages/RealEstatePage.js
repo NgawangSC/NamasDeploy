@@ -27,7 +27,7 @@ const RealEstatePage = () => {
 
   // Categories that should appear on the Real Estate page
   const realEstateCategories = [
-    "Real Estate"
+    "Architecture"
   ]
 
   useEffect(() => {
