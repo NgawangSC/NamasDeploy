@@ -27,6 +27,19 @@
   justify-content: center;
 }
 
+.experience-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../../public/images/experience-bg.jpeg');
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
 .experience-box:hover {
   transform: translateY(-5px);
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
@@ -55,20 +68,34 @@
 .experience-content h4 {
   font-size: 3.5rem;
   font-weight: 700;
-  color: #2c3e50;
   margin: 0 0 15px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   line-height: 1;
+  background: url('../../public/images/experience-bg.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;
+  filter: contrast(1.5) brightness(0.8);
 }
 
 .experience-content p {
   font-size: 1rem;
-  color: #34495e;
   margin: 0;
   line-height: 1.4;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
+  background: url('../../public/images/experience-bg.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: contrast(1.5) brightness(0.8);
 }
 
 /* Responsive adjustments */
@@ -86,10 +113,26 @@
   .experience-content h4 {
     font-size: 3rem;
     margin: 0 0 10px 0;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
   }
   
   .experience-content p {
     font-size: 0.9rem;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
   }
 }
 
@@ -106,10 +149,26 @@
   
   .experience-content h4 {
     font-size: 2.5rem;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
   }
   
   .experience-content p {
     font-size: 0.8rem;
     letter-spacing: 0.5px;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
   }
 }
