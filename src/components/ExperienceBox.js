@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ExperienceBox.css';
+import experienceBg from '../assets/experience-bg.jpeg';
 
 // Custom hook for counter animation
 const useCounter = (end, duration = 2000, startAnimation = false) => {
@@ -77,7 +78,12 @@ const ExperienceBox = () => {
 
   return (
     <div className="experience-box-container" ref={boxRef}>
-      <div className="experience-box">
+      <div 
+        className="experience-box"
+        style={{
+          '--experience-bg-image': `url(${experienceBg})`
+        }}
+      >
         <div className="experience-content">
           <h4>
             <AnimatedCounter 
