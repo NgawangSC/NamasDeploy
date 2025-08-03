@@ -168,24 +168,40 @@
   color: #6b7280;
 }
 
-.clients-grid {
-  display: grid;
+.clients-container {
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  /* Default: maximum 3 columns */
-  grid-template-columns: repeat(3, 1fr);
 }
 
-/* Responsive: 2 columns on tablets */
+.clients-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: nowrap;
+}
+
+.clients-row .client-card {
+  flex: 1;
+  min-width: 0; /* Allows flex items to shrink below their content size */
+}
+
+/* Responsive: stack cards vertically on tablets */
 @media (max-width: 900px) {
-  .clients-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .clients-row {
+    flex-wrap: wrap;
+  }
+  
+  .clients-row .client-card {
+    flex: 1 1 calc(50% - 0.75rem);
+    min-width: 300px;
   }
 }
 
-/* Responsive: 1 column on mobile */
+/* Responsive: full width on mobile */
 @media (max-width: 600px) {
-  .clients-grid {
-    grid-template-columns: 1fr;
+  .clients-row .client-card {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 }
 
