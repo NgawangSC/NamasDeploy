@@ -1,0 +1,159 @@
+.experience-box-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.experience-box {
+  border: 30px solid;
+  border-image: url('../../public/images/experience-bg.jpeg') 30;
+  border-radius: 0;
+  width: 300px;
+  height: 250px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  background: white;
+  position: relative;
+  z-index: 10;
+  transition: all 0.3s ease;
+  animation: floatIn 0.8s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.experience-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes floatIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.experience-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 30px;
+}
+
+.experience-content h4 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin: 0 0 15px 0;
+  line-height: 1;
+  background: url('../../public/images/experience-bg.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;
+  filter: contrast(1.5) brightness(0.8);
+}
+
+.experience-content p {
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.4;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: url('../../public/images/experience-bg.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: contrast(1.5) brightness(0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .experience-box {
+    width: 280px;
+    height: 220px;
+    border: 20px solid;
+    border-image: url('../../public/images/experience-bg.jpeg') 20;
+  }
+  
+  .experience-content {
+    padding: 30px 20px;
+  }
+  
+  .experience-content h4 {
+    font-size: 3rem;
+    margin: 0 0 10px 0;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
+  }
+  
+  .experience-content p {
+    font-size: 0.9rem;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
+  }
+}
+
+@media (max-width: 480px) {
+  .experience-box {
+    width: 250px;
+    height: 200px;
+    border: 15px solid;
+    border-image: url('../../public/images/experience-bg.jpeg') 15;
+  }
+  
+  .experience-content {
+    padding: 25px 15px;
+  }
+  
+  .experience-content h4 {
+    font-size: 2.5rem;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
+  }
+  
+  .experience-content p {
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    background: url('../../public/images/experience-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: contrast(1.5) brightness(0.8);
+  }
+}
