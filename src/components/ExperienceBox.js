@@ -50,6 +50,8 @@ const ExperienceBox = () => {
   const foundingYear = 2022;
   const yearsOfExperience = currentYear - foundingYear + 1; // +1 to include the founding year
 
+
+
   // Intersection Observer to trigger animation when component is visible
   useEffect(() => {
     const currentRef = boxRef.current;
