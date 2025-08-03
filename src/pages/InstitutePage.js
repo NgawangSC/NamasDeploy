@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
-import "./DesignPage.css"
+import "./InstitutePage.css"
 
 const InstitutePage = () => {
   const navigate = useNavigate()
@@ -15,15 +15,16 @@ const InstitutePage = () => {
   const [translateX, setTranslateX] = useState(0)
   const sliderRef = useRef(null)
 
-  // Filter state
-  const [selectedYear, setSelectedYear] = useState("")
-  const [selectedLocation, setSelectedLocation] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("")
-  const [showYearDropdown, setShowYearDropdown] = useState(false)
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  // Filter states
+  const [filters, setFilters] = useState({
+    year: '',
+    location: '',
+    category: '',
+    status: '' // NEW status filter
+  })
+  const [openDropdown, setOpenDropdown] = useState(null)
 
-  // Institute page categories - projects that fall under institute/educational services
+  // Categories that should appear on the Institute page
   const instituteCategories = [
     "Institute",
   ]
@@ -35,35 +36,60 @@ const InstitutePage = () => {
     }
   }, [projects, loading.projects, fetchProjects])
 
-  // Filter projects to show only institute-related categories
-  let instituteProjects = projects.filter(project => 
+  // Filter projects to show only institute related categories
+  const instituteProjects = projects.filter(project => 
     instituteCategories.includes(project.category)
   )
 
-  // Apply additional filters
-  if (selectedYear) {
-    instituteProjects = instituteProjects.filter(project => project.year === selectedYear)
-  }
-  if (selectedLocation) {
-    instituteProjects = instituteProjects.filter(project => project.location === selectedLocation)
-  }
-  if (selectedCategory) {
-    instituteProjects = instituteProjects.filter(project => project.category === selectedCategory)
-  }
-
-  // Get unique values for filter options
-  const availableYears = [...new Set(projects.filter(p => instituteCategories.includes(p.category)).map(p => p.year))].sort()
-  const availableLocations = [...new Set(projects.filter(p => instituteCategories.includes(p.category)).map(p => p.location))].sort()
-  const availableCategories = [...new Set(projects.filter(p => instituteCategories.includes(p.category)).map(p => p.category))].sort()
-
-  const totalSlides = Math.ceil(instituteProjects.length / 2)
-
-  // Reset slide when filters change
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdown && !event.target.closest('.institute-filter-item')) {
+        setOpenDropdown(null)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [openDropdown])
+
+  const getUniqueValues = (key) => {
+    return [...new Set(instituteProjects.map(project => project[key]))].sort()
+  }
+
+  const filteredProjects = instituteProjects.filter(project => {
+    return (
+      (!filters.year || project.year === filters.year) &&
+      (!filters.location || project.location === filters.location) &&
+      (!filters.category || project.category === filters.category) &&
+      (!filters.status || project.status === filters.status)
+    )
+  })
+
+  const totalSlides = Math.ceil(filteredProjects.length / 2)
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }))
     setCurrentSlide(0)
-  }, [selectedYear, selectedLocation, selectedCategory])
+    setOpenDropdown(null)
+  }
+
+  const handleDropdownToggle = (e, dropdownType) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setOpenDropdown(openDropdown === dropdownType ? null : dropdownType)
+  }
+
+  const handleDropdownItemClick = (e, filterType, value) => {
+    e.preventDefault()
+    e.stopPropagation()
+    handleFilterChange(filterType, value)
+  }
 
   const handleMouseDown = (e) => {
+    if (e.target.closest('.institute-filter-section')) return
     setIsDragging(true)
     setStartX(e.clientX)
     setTranslateX(0)
@@ -71,34 +97,25 @@ const InstitutePage = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return
-
     const currentX = e.clientX
-    const diff = currentX - startX
-    setTranslateX(diff)
+    setTranslateX(currentX - startX)
   }
 
   const handleMouseUp = (e) => {
     if (!isDragging) return
-
     setIsDragging(false)
-    const currentX = e.clientX
-    const diff = currentX - startX
+    const diff = e.clientX - startX
 
-    // Threshold for slide change (150px)
     if (Math.abs(diff) > 150) {
-      if (diff < 0 && currentSlide < totalSlides - 1) {
-        // Drag left - next slide
-        setCurrentSlide((prev) => prev + 1)
-      } else if (diff > 0 && currentSlide > 0) {
-        // Drag right - previous slide
-        setCurrentSlide((prev) => prev - 1)
-      }
+      if (diff < 0 && currentSlide < totalSlides - 1) setCurrentSlide(prev => prev + 1)
+      else if (diff > 0 && currentSlide > 0) setCurrentSlide(prev => prev - 1)
     }
 
     setTranslateX(0)
   }
 
   const handleTouchStart = (e) => {
+    if (e.target.closest('.institute-filter-section')) return
     setIsDragging(true)
     setStartX(e.touches[0].clientX)
     setTranslateX(0)
@@ -106,40 +123,34 @@ const InstitutePage = () => {
 
   const handleTouchMove = (e) => {
     if (!isDragging) return
-
     const currentX = e.touches[0].clientX
-    const diff = currentX - startX
-    setTranslateX(diff)
+    setTranslateX(currentX - startX)
   }
 
   const handleTouchEnd = (e) => {
     if (!isDragging) return
-
     setIsDragging(false)
-    const currentX = e.changedTouches[0].clientX
-    const diff = currentX - startX
+    const diff = e.changedTouches[0].clientX - startX
 
     if (Math.abs(diff) > 150) {
-      if (diff < 0 && currentSlide < totalSlides - 1) {
-        setCurrentSlide((prev) => prev + 1)
-      } else if (diff > 0 && currentSlide > 0) {
-        setCurrentSlide((prev) => prev - 1)
-      }
+      if (diff < 0 && currentSlide < totalSlides - 1) setCurrentSlide(prev => prev + 1)
+      else if (diff > 0 && currentSlide > 0) setCurrentSlide(prev => prev - 1)
     }
 
     setTranslateX(0)
   }
 
-  const handleReadClick = (projectId) => {
+  const handleReadClick = (e, projectId) => {
+    e.preventDefault()
+    e.stopPropagation()
     navigate(`/project/${projectId}`)
   }
 
-  // Get all project pairs for smooth sliding
   const getAllProjectPairs = () => {
     const pairs = []
     for (let i = 0; i < totalSlides; i++) {
       const startIndex = i * 2
-      const pair = instituteProjects.slice(startIndex, startIndex + 2)
+      const pair = filteredProjects.slice(startIndex, startIndex + 2)
       pairs.push(pair)
     }
     return pairs
@@ -147,29 +158,10 @@ const InstitutePage = () => {
 
   const projectPairs = getAllProjectPairs()
 
-  // Clear all filters
-  const clearFilters = () => {
-    setSelectedYear("")
-    setSelectedLocation("")
-    setSelectedCategory("")
-  }
-
-  // Close all dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowYearDropdown(false)
-      setShowLocationDropdown(false)
-      setShowCategoryDropdown(false)
-    }
-
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
-  }, [])
-
   return (
-    <div className="design-page">
+    <div className="institute-page">
       <div
-        className="slider-container"
+        className="institute-slider-container"
         ref={sliderRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -180,21 +172,21 @@ const InstitutePage = () => {
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="projects-slider"
+          className="institute-projects-slider"
           style={{
             transform: `translateX(${-currentSlide * 100 + (translateX / window.innerWidth) * 100}%)`,
             transition: isDragging ? "none" : "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
           }}
         >
           {projectPairs.map((pair, slideIndex) => (
-            <div key={slideIndex} className="projects-display">
+            <div key={slideIndex} className="institute-projects-display">
               {pair.map((project, index) => (
-                <div key={`${project.id}-${slideIndex}-${index}`} className="project-half">
-                  <div className="project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
-                    <div className="project-overlay">
-                      <div className="project-content">
-                        <h2 className="project-title">{project.title}</h2>
-                        <span className="read-text" onClick={() => handleReadClick(project.id)}>
+                <div key={`${project.id}-${slideIndex}-${index}`} className="institute-project-half">
+                                  <div className="institute-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                    <div className="institute-project-overlay-content">
+                      <div className="institute-project-text-content">
+                        <h2 className="institute-project-title">{project.title}</h2>
+                        <span onClick={(e) => handleReadClick(e, project.id)} className="institute-read-link">
                           READ
                         </span>
                       </div>
@@ -207,67 +199,79 @@ const InstitutePage = () => {
         </div>
       </div>
 
-      <div className="filter-section">
-        <div className="filter-controls">
-          <div className="filter-item" onClick={(e) => {e.stopPropagation(); setShowYearDropdown(!showYearDropdown); setShowLocationDropdown(false); setShowCategoryDropdown(false)}}>
-            <span>{selectedYear || "YEAR"}</span>
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {showYearDropdown && (
-              <div className="filter-dropdown">
-                <div className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedYear(""); setShowYearDropdown(false)}}>
-                  All Years
-                </div>
-                {availableYears.map(year => (
-                  <div key={year} className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedYear(year); setShowYearDropdown(false)}}>
-                    {year}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="filter-item" onClick={(e) => {e.stopPropagation(); setShowLocationDropdown(!showLocationDropdown); setShowYearDropdown(false); setShowCategoryDropdown(false)}}>
-            <span>{selectedLocation || "LOCATION"}</span>
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {showLocationDropdown && (
-              <div className="filter-dropdown">
-                <div className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedLocation(""); setShowLocationDropdown(false)}}>
-                  All Locations
-                </div>
-                {availableLocations.map(location => (
-                  <div key={location} className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedLocation(location); setShowLocationDropdown(false)}}>
-                    {location}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="filter-item" onClick={(e) => {e.stopPropagation(); setShowCategoryDropdown(!showCategoryDropdown); setShowYearDropdown(false); setShowLocationDropdown(false)}}>
-            <span>{selectedCategory || "CATEGORY"}</span>
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {showCategoryDropdown && (
-              <div className="filter-dropdown">
-                <div className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedCategory(""); setShowCategoryDropdown(false)}}>
-                  All Categories
-                </div>
-                {availableCategories.map(category => (
-                  <div key={category} className="filter-option" onClick={(e) => {e.stopPropagation(); setSelectedCategory(category); setShowCategoryDropdown(false)}}>
-                    {category}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {(selectedYear || selectedLocation || selectedCategory) && (
-            <div className="clear-filters" onClick={clearFilters}>
-              Clear Filters
+      <div className="institute-filter-section">
+        <div className="institute-filter-controls">
+          {/* YEAR */}
+          <div className="institute-filter-item">
+            <div onClick={(e) => handleDropdownToggle(e, 'year')} className="institute-filter-dropdown-trigger">
+              <span>{filters.year || 'YEAR'}</span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" className={`institute-dropdown-arrow ${openDropdown === 'year' ? 'institute-rotated' : ''}`}>
+                <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
-          )}
+            {openDropdown === 'year' && (
+              <div className="institute-dropup">
+                <div className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'year', '')}>All Years</div>
+                {getUniqueValues('year').map(year => (
+                  <div key={year} className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'year', year)}>{year}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* LOCATION */}
+          <div className="institute-filter-item">
+            <div onClick={(e) => handleDropdownToggle(e, 'location')} className="institute-filter-dropdown-trigger">
+              <span>{filters.location || 'LOCATION'}</span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" className={`institute-dropdown-arrow ${openDropdown === 'location' ? 'institute-rotated' : ''}`}>
+                <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            {openDropdown === 'location' && (
+              <div className="institute-dropup">
+                <div className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'location', '')}>All Locations</div>
+                {getUniqueValues('location').map(loc => (
+                  <div key={loc} className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'location', loc)}>{loc}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* CATEGORY */}
+          <div className="institute-filter-item">
+            <div onClick={(e) => handleDropdownToggle(e, 'category')} className="institute-filter-dropdown-trigger">
+              <span>{filters.category || 'CATEGORY'}</span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" className={`institute-dropdown-arrow ${openDropdown === 'category' ? 'institute-rotated' : ''}`}>
+                <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            {openDropdown === 'category' && (
+              <div className="institute-dropup">
+                <div className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'category', '')}>All Categories</div>
+                {getUniqueValues('category').map(cat => (
+                  <div key={cat} className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'category', cat)}>{cat}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* STATUS */}
+          <div className="institute-filter-item">
+            <div onClick={(e) => handleDropdownToggle(e, 'status')} className="institute-filter-dropdown-trigger">
+              <span>{filters.status || 'STATUS'}</span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" className={`institute-dropdown-arrow ${openDropdown === 'status' ? 'institute-rotated' : ''}`}>
+                <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            {openDropdown === 'status' && (
+              <div className="institute-dropup">
+                <div className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'status', '')}>All Status</div>
+                {getUniqueValues('status').map(stat => (
+                  <div key={stat} className="institute-dropup-item" onClick={(e) => handleDropdownItemClick(e, 'status', stat)}>{stat}</div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
