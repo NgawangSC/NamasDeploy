@@ -4,6 +4,24 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.html [QSA,L]
 
+# Ensure proper MIME types for assets
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType image/jpeg .jpg .jpeg
+    AddType image/png .png
+    AddType image/svg+xml .svg
+    AddType font/woff .woff
+    AddType font/woff2 .woff2
+</IfModule>
+
+# Force proper loading of CSS and JS files
+<FilesMatch "\.(css|js)$">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+    Header always set Content-Type "text/css" env=CSS
+    Header always set Content-Type "application/javascript" env=JS
+</FilesMatch>
+
 # Security Headers
 Header always set X-Content-Type-Options nosniff
 Header always set X-Frame-Options DENY
