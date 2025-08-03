@@ -84,6 +84,9 @@ function AboutPage() {
   // Recalculate statistics when data changes
   useEffect(() => {
     const calculateStats = () => {
+      const currentYear = new Date().getFullYear()
+      const foundingYear = 2021 // Based on your about section text
+      
       // Calculate total projects done
       const totalProjects = data.projects?.length || 0
       

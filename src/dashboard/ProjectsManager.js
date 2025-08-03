@@ -660,7 +660,7 @@ const toggleFeatured = async (project) => {
                   <div className="current-images-grid">
                     {managingProject.images.map((imageUrl, index) => (
                       <div key={index} className="current-image-item">
-                        <img src={getImageUrl(imageUrl)} alt={`${managingProject.title} - ${index + 1}`}
+                        <img src={getImageUrl(imageUrl)} alt={`${managingProject.title} - image ${index + 1}`}
                           onError={(e) => {
                             console.warn('Image failed to load:', getImageUrl(imageUrl));
                             e.target.src = "/placeholder.svg?height=150&width=200&text=Image+Not+Found";

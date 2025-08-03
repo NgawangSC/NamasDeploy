@@ -6,7 +6,7 @@ import { getImageUrl } from "../utils/imageUtils"
 import "./HeroBannerManager.css"
 
 const HeroBannerManager = () => {
-  const { projects, featuredProjects, loading, addProject, fetchProjects, fetchFeaturedProjects } = useData()
+  const { projects, featuredProjects, loading, updateProject, addProject, fetchProjects, fetchFeaturedProjects } = useData()
   const [searchTerm, setSearchTerm] = useState("")
   const [updatingProject, setUpdatingProject] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -37,6 +37,12 @@ const HeroBannerManager = () => {
     try {
       setUpdatingProject(project.id)
       const action = project.featured ? 'removed from' : 'added to'
+      
+      // Create updated project object with toggled featured status
+      const updatedProjectData = {
+        ...project,
+        featured: !project.featured
+      }
       
       // Force refresh both projects and featured projects lists
       await Promise.all([
