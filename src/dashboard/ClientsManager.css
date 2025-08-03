@@ -170,25 +170,27 @@
 
 .clients-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  max-width: 100%;
   gap: 1.5rem;
+  /* Force exactly 3 columns maximum, responsive */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-/* Ensure maximum 3 clients per row */
-@media (min-width: 1200px) {
+/* Override to ensure max 3 columns on larger screens */
+@media (min-width: 1050px) {
   .clients-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (min-width: 900px) and (max-width: 1199px) {
+/* 2 columns on medium screens */
+@media (min-width: 700px) and (max-width: 1049px) {
   .clients-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 899px) {
+/* 1 column on small screens */
+@media (max-width: 699px) {
   .clients-grid {
     grid-template-columns: 1fr;
   }
@@ -349,10 +351,6 @@
   
   .form-actions {
     flex-direction: column;
-  }
-  
-  .clients-grid {
-    grid-template-columns: 1fr;
   }
   
   .client-actions {
