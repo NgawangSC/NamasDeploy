@@ -6,17 +6,14 @@
 }
 
 .experience-box {
-  border: 30px solid transparent;
+  border: 30px solid;
+  border-image: url('../../public/images/experience-bg.jpeg') 30;
   border-radius: 0;
   width: 300px;
   height: 250px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  background: 
-    white padding-box,
-    url('../../public/images/experience-bg.jpeg') border-box;
-  background-size: auto, cover;
-  background-position: center, center;
+  background: white;
   position: relative;
   z-index: 10;
   transition: all 0.3s ease;
@@ -89,7 +86,8 @@
   .experience-box {
     width: 280px;
     height: 220px;
-    border: 20px solid transparent;
+    border: 20px solid;
+    border-image: url('../../public/images/experience-bg.jpeg') 20;
   }
   
   .experience-content {
@@ -126,7 +124,8 @@
   .experience-box {
     width: 250px;
     height: 200px;
-    border: 15px solid transparent;
+    border: 15px solid;
+    border-image: url('../../public/images/experience-bg.jpeg') 15;
   }
   
   .experience-content {
