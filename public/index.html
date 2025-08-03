@@ -18,6 +18,7 @@
         align-items: center !important;
         justify-content: center !important;
         width: 100% !important;
+        min-height: 300px !important;
       }
       
       .experience-box {
@@ -27,59 +28,66 @@
         width: 400px !important;
         height: 500px !important;
         background: white !important;
-        border: 30px solid #ddd !important;
-        border-radius: 0 !important;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
         position: relative !important;
         z-index: 10 !important;
-        transition: all 0.3s ease !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+        /* Fallback border in case border-image fails */
+        border: 30px solid #8B4513 !important;
+        /* Use background-image as fallback for border-image */
+        background-clip: padding-box !important;
       }
       
+      /* Ensure the content is always visible */
       .experience-content {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
         align-items: center !important;
+        justify-content: center !important;
         text-align: center !important;
         padding: 40px 30px !important;
-      }
-      
-      .experience-content h4 {
-        font-size: 20rem !important;
-        font-weight: 700 !important;
-        margin: 0 0 15px 0 !important;
-        line-height: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
         color: #333 !important;
+        background: rgba(255, 255, 255, 0.95) !important;
       }
       
-      .experience-content p {
-        font-size: 1rem !important;
-        margin: 0 !important;
-        line-height: 1.4 !important;
+      .experience-years {
+        font-size: 120px !important;
+        font-weight: bold !important;
+        line-height: 1 !important;
+        margin-bottom: 20px !important;
+        color: #8B4513 !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1) !important;
+      }
+      
+      .experience-label {
+        font-size: 24px !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+        letter-spacing: 2px !important;
         color: #333 !important;
       }
       
+      /* Ensure experience box is not replaced by image */
+      .experience-box img {
+        display: none !important;
+      }
+      
+      /* Mobile responsive fallback */
       @media (max-width: 768px) {
         .experience-box {
           width: 280px !important;
           height: 220px !important;
-          border: 20px solid #ddd !important;
+          border: 20px solid #8B4513 !important;
         }
         
-        .experience-content {
-          padding: 30px 20px !important;
+        .experience-years {
+          font-size: 80px !important;
+          margin-bottom: 15px !important;
         }
         
-        .experience-content h4 {
-          font-size: 3rem !important;
-          margin: 0 0 10px 0 !important;
-        }
-        
-        .experience-content p {
-          font-size: 0.9rem !important;
+        .experience-label {
+          font-size: 18px !important;
         }
       }
       
@@ -87,23 +95,103 @@
         .experience-box {
           width: 250px !important;
           height: 200px !important;
-          border: 15px solid #ddd !important;
+          border: 15px solid #8B4513 !important;
         }
         
-        .experience-content {
-          padding: 25px 15px !important;
+        .experience-years {
+          font-size: 60px !important;
+          margin-bottom: 10px !important;
         }
         
-        .experience-content h4 {
-          font-size: 2.5rem !important;
-        }
-        
-        .experience-content p {
-          font-size: 0.8rem !important;
-          letter-spacing: 0.5px !important;
+        .experience-label {
+          font-size: 16px !important;
         }
       }
     </style>
+    
+    <!-- Experience Box Fallback Script -->
+    <script>
+      // Ensure experience box displays properly after page load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Wait for React to render
+        setTimeout(function() {
+          checkAndFixExperienceBox();
+        }, 500);
+      });
+      
+      // Check again after a longer delay to handle async content loading
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          checkAndFixExperienceBox();
+        }, 1000);
+      });
+      
+      function checkAndFixExperienceBox() {
+        const experienceContainer = document.querySelector('.experience-box-container');
+        if (experienceContainer) {
+          const experienceBox = experienceContainer.querySelector('.experience-box');
+          
+          if (experienceBox) {
+            // Check if the experience box only contains an image or is empty
+            const hasContent = experienceBox.querySelector('.experience-content');
+            const hasOnlyImage = experienceBox.querySelector('img') && !hasContent;
+            const isEmpty = experienceBox.children.length === 0;
+            
+            if (hasOnlyImage || isEmpty) {
+              console.log('Experience box issue detected, applying fix...');
+              
+              // Clear any problematic content
+              experienceBox.innerHTML = '';
+              
+              // Create the proper content structure
+              const contentDiv = document.createElement('div');
+              contentDiv.className = 'experience-content';
+              
+              const yearsDiv = document.createElement('div');
+              yearsDiv.className = 'experience-years';
+              yearsDiv.textContent = '10+';
+              
+              const labelDiv = document.createElement('div');
+              labelDiv.className = 'experience-label';
+              labelDiv.textContent = 'YEARS OF EXPERIENCE';
+              
+              contentDiv.appendChild(yearsDiv);
+              contentDiv.appendChild(labelDiv);
+              experienceBox.appendChild(contentDiv);
+              
+              console.log('Experience box content restored successfully');
+            }
+          } else {
+            // If experience box doesn't exist, create it
+            console.log('Experience box missing, creating fallback...');
+            createFallbackExperienceBox(experienceContainer);
+          }
+        }
+      }
+      
+      function createFallbackExperienceBox(container) {
+        const experienceBox = document.createElement('div');
+        experienceBox.className = 'experience-box';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'experience-content';
+        
+        const yearsDiv = document.createElement('div');
+        yearsDiv.className = 'experience-years';
+        yearsDiv.textContent = '10+';
+        
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'experience-label';
+        labelDiv.textContent = 'YEARS OF EXPERIENCE';
+        
+        contentDiv.appendChild(yearsDiv);
+        contentDiv.appendChild(labelDiv);
+        experienceBox.appendChild(contentDiv);
+        container.appendChild(experienceBox);
+        
+        console.log('Fallback experience box created successfully');
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
