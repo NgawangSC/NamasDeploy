@@ -170,25 +170,20 @@
 
 .clients-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  max-width: 100%;
   gap: 1.5rem;
+  /* Default: maximum 3 columns */
+  grid-template-columns: repeat(3, 1fr);
 }
 
-/* Ensure maximum 3 clients per row */
-@media (min-width: 1200px) {
-  .clients-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 900px) and (max-width: 1199px) {
+/* Responsive: 2 columns on tablets */
+@media (max-width: 900px) {
   .clients-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 899px) {
+/* Responsive: 1 column on mobile */
+@media (max-width: 600px) {
   .clients-grid {
     grid-template-columns: 1fr;
   }
