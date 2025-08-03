@@ -168,10 +168,46 @@
   color: #6b7280;
 }
 
-.clients-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+.clients-container {
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
+}
+
+.clients-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: nowrap;
+}
+
+.clients-row .client-card {
+  flex: 1;
+  min-width: 0; /* Allows flex items to shrink below their content size */
+  height: 320px; /* Fixed height for uniformity */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive: stack cards vertically on tablets */
+@media (max-width: 900px) {
+  .clients-row {
+    flex-wrap: wrap;
+  }
+  
+  .clients-row .client-card {
+    flex: 1 1 calc(50% - 0.75rem);
+    min-width: 300px;
+    height: 320px; /* Maintain same height */
+  }
+}
+
+/* Responsive: full width on mobile */
+@media (max-width: 600px) {
+  .clients-row .client-card {
+    flex: 1 1 100%;
+    min-width: 0;
+    height: 280px; /* Slightly smaller on mobile */
+  }
 }
 
 .client-card {
@@ -182,6 +218,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 320px; /* Fixed height for all cards */
 }
 
 .client-card:hover {
@@ -193,6 +232,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
+  flex-shrink: 0; /* Don't shrink the logo area */
 }
 
 .client-logo img {
@@ -204,11 +244,19 @@
   padding: 0.5rem;
 }
 
+.client-info {
+  flex: 1; /* Take up remaining space */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent content overflow */
+}
+
 .client-info h4 {
   margin: 0 0 0.5rem 0;
   color: #1f2937;
   font-size: 1.2rem;
   font-weight: 600;
+  flex-shrink: 0; /* Don't shrink the title */
 }
 
 .client-description {
@@ -216,6 +264,11 @@
   margin: 0 0 1rem 0;
   font-size: 0.9rem;
   line-height: 1.5;
+  flex: 1; /* Take up available space */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  -webkit-box-orient: vertical;
 }
 
 .client-meta {
@@ -223,6 +276,7 @@
   gap: 0.5rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
+  flex-shrink: 0; /* Don't shrink the meta info */
 }
 
 .status {
@@ -263,6 +317,7 @@
   text-decoration: none;
   font-size: 0.9rem;
   margin-bottom: 1rem;
+  flex-shrink: 0; /* Don't shrink the website link */
 }
 
 .client-website:hover {
@@ -273,6 +328,8 @@
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  margin-top: auto; /* Push to bottom */
+  flex-shrink: 0; /* Don't shrink the action buttons */
 }
 
 .edit-btn,
@@ -329,10 +386,6 @@
   
   .form-actions {
     flex-direction: column;
-  }
-  
-  .clients-grid {
-    grid-template-columns: 1fr;
   }
   
   .client-actions {
