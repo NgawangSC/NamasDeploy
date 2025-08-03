@@ -100,7 +100,7 @@ const BlogDetailPage = () => {
                   <div key={index} className="blog-detail-image-item">
                     <img 
                       src={getImageUrl(image) || "/placeholder.svg"} 
-                      alt={`${blog.title} - Image ${index + 1}`}
+                      alt={`${blog.title} - ${index + 1}`}
                       onError={(e) => {
                         e.target.src = "/placeholder.svg?height=200&width=300&text=No+Image"
                       }}

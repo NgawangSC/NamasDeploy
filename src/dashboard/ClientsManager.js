@@ -96,6 +96,17 @@ const ClientsManager = () => {
     return dateB - dateA
   })
 
+  // Helper function to chunk clients into groups of 3
+  const chunkClients = (clients, chunkSize = 3) => {
+    const chunks = []
+    for (let i = 0; i < clients.length; i += chunkSize) {
+      chunks.push(clients.slice(i, i + chunkSize))
+    }
+    return chunks
+  }
+
+  const clientRows = chunkClients(sortedClients, 3)
+
   return (
     <div className="clients-manager">
       <div className="manager-header">
@@ -213,52 +224,56 @@ const ClientsManager = () => {
             <p>No clients found. Add your first client to get started!</p>
           </div>
         ) : (
-          <div className="clients-grid">
-            {sortedClients.map((client) => (
-              <div key={client.id} className="client-card">
-                <div className="client-logo">
-                  <img 
-                    src={getImageUrl(client.logo) || "/images/placeholder-logo.png"} 
-                    alt={client.name}
-                    onError={(e) => {
-                      e.target.src = "/images/placeholder-logo.png"
-                    }}
-                  />
-                </div>
-                <div className="client-info">
-                  <h4>{client.name}</h4>
-                  <p className="client-description">{client.description}</p>
-                  <div className="client-meta">
-                    <span className={`status ${client.status?.toLowerCase()}`}>
-                      {client.status}
-                    </span>
-                    <span className="category">{client.category}</span>
+          <div className="clients-container">
+            {clientRows.map((row, rowIndex) => (
+              <div key={rowIndex} className="clients-row">
+                {row.map((client) => (
+                  <div key={client.id} className="client-card">
+                    <div className="client-logo">
+                      <img 
+                        src={getImageUrl(client.logo) || "/images/placeholder-logo.png"} 
+                        alt={client.name}
+                        onError={(e) => {
+                          e.target.src = "/images/placeholder-logo.png"
+                        }}
+                      />
+                    </div>
+                    <div className="client-info">
+                      <h4>{client.name}</h4>
+                      <p className="client-description">{client.description}</p>
+                      <div className="client-meta">
+                        <span className={`status ${client.status?.toLowerCase()}`}>
+                          {client.status}
+                        </span>
+                        <span className="category">{client.category}</span>
+                      </div>
+                      {client.website && (
+                        <a 
+                          href={client.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="client-website"
+                        >
+                          Visit Website
+                        </a>
+                      )}
+                    </div>
+                    <div className="client-actions">
+                      <button 
+                        onClick={() => handleEdit(client)} 
+                        className="edit-btn"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(client.id)} 
+                        className="delete-btn"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  {client.website && (
-                    <a 
-                      href={client.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="client-website"
-                    >
-                      Visit Website
-                    </a>
-                  )}
-                </div>
-                <div className="client-actions">
-                  <button 
-                    onClick={() => handleEdit(client)} 
-                    className="edit-btn"
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(client.id)} 
-                    className="delete-btn"
-                  >
-                    Delete
-                  </button>
-                </div>
+                ))}
               </div>
             ))}
           </div>
