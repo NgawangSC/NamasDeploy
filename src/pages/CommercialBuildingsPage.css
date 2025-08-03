@@ -395,21 +395,18 @@
   }
 
   .commercial-buildings-projects-display {
-    flex-direction: column;
-    gap: 10px;
-    padding-right: 0;
-    padding-bottom: 10px;
+    flex-direction: row;
+    gap: 0;
   }
 
   .commercial-buildings-project-half {
     width: 100%;
-    height: calc(50% - 5px);
+    height: 100%;
     margin-right: 0;
   }
 
-  .commercial-buildings-project-half:last-child {
-    margin-right: 0;
-    margin-bottom: 10px;
+  .commercial-buildings-project-half:nth-child(2) {
+    display: none;
   }
 
   .commercial-buildings-filter-section {
