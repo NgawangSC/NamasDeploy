@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
+import ExperienceBox from "../components/ExperienceBox"
 import "./HomePage.css"
 
 function HomePage() {
@@ -137,7 +138,7 @@ function HomePage() {
         <div className="about-container">
           <div className="about-content">
             <div className="experience-card">
-              <img src="/images/experience-bg.jpeg" alt="5 Years of Experience" className="cutout-image" />
+              <ExperienceBox />
             </div>
             <div className="about-text-side">
               <div className="about-header">ABOUT US</div>
