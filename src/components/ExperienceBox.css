@@ -13,11 +13,10 @@
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)) padding-box,
+    white padding-box,
     url('../../public/images/experience-bg.jpeg') border-box;
   background-size: auto, cover;
   background-position: center, center;
-  backdrop-filter: blur(10px);
   position: relative;
   z-index: 10;
   transition: all 0.3s ease;
@@ -25,19 +24,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.experience-box::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('../../public/images/experience-bg.jpeg');
-  background-size: cover;
-  background-position: center;
-  z-index: -1;
 }
 
 .experience-box:hover {
