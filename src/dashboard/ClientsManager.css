@@ -170,27 +170,25 @@
 
 .clients-grid {
   display: grid;
-  gap: 1.5rem;
-  /* Force exactly 3 columns maximum, responsive */
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  max-width: 100%;
+  gap: 1.5rem;
 }
 
-/* Override to ensure max 3 columns on larger screens */
-@media (min-width: 1050px) {
+/* Ensure maximum 3 clients per row */
+@media (min-width: 1200px) {
   .clients-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* 2 columns on medium screens */
-@media (min-width: 700px) and (max-width: 1049px) {
+@media (min-width: 900px) and (max-width: 1199px) {
   .clients-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* 1 column on small screens */
-@media (max-width: 699px) {
+@media (max-width: 899px) {
   .clients-grid {
     grid-template-columns: 1fr;
   }
