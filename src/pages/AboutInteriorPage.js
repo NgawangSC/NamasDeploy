@@ -15,6 +15,10 @@ function AboutInteriorPage() {
           <div className="hero-overlay"></div>
         </div>
         <div className="hero-content">
+          <div className="hero-text">
+            <h1 className="hero-title">Interior Design</h1>
+            <p className="hero-subtitle">Bespoke, stylish, and functional environments</p>
+          </div>
           <button className="back-button" onClick={() => navigate('/about')}>
             ← Back to About
           </button>
