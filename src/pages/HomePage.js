@@ -6,6 +6,7 @@ import { getImageUrl } from "../utils/imageUtils"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import SimpleFallbackLoading from "../components/SimpleFallbackLoading"
 import "./HomePage.css"
 
 function HomePage() {
@@ -170,6 +171,7 @@ function HomePage() {
           <div className="projects-grid">
             {loading.projects ? (
               <div className="projects-loading">
+                {console.log('HomePage: Showing projects loading animation')}
                 <MiniLoadingAnimation 
                   size="large" 
                   text="Loading projects..." 
@@ -274,6 +276,7 @@ function HomePage() {
           <div className="clients-carousel">
             {loading.clients ? (
               <div className="clients-loading">
+                {console.log('HomePage: Showing clients loading animation')}
                 <MiniLoadingAnimation 
                   size="medium" 
                   text="Loading clients..." 

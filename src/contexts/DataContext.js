@@ -107,6 +107,7 @@ export const DataProvider = ({ children }) => {
 
   const fetchProjects = useCallback(async () => {
     try {
+      console.log('DataContext: Starting to fetch projects - setting loading to true');
       setLoading(prev => ({ ...prev, projects: true }));
       setError(prev => ({ ...prev, projects: null }));
       
@@ -121,6 +122,7 @@ export const DataProvider = ({ children }) => {
       console.error('Error fetching projects:', err);
       setError(prev => ({ ...prev, projects: err.message }));
     } finally {
+      console.log('DataContext: Finished fetching projects - setting loading to false');
       setLoading(prev => ({ ...prev, projects: false }));
     }
   }, []);
