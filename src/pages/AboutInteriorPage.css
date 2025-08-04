@@ -62,6 +62,32 @@
   transform: translateX(-2px);
 }
 
+/* Hero Text Styling */
+.hero-text {
+  max-width: 600px;
+  color: white;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 300;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: white;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 300;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  opacity: 0.9;
+  line-height: 1.4;
+  margin-bottom: 0;
+}
+
 /* Content Section */
 .interior-content {
   padding: 80px 0;
