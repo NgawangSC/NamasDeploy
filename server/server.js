@@ -28,6 +28,28 @@ const blogPosts = loadData(BLOGS_FILE)
 const clients = loadData(CLIENTS_FILE)
 const contacts = loadData(CONTACTS_FILE)
 
+// Migration: Fix existing projects without cover images
+function migrateProjectCoverImages() {
+  let needsSave = false
+  
+  projects.forEach(project => {
+    // If project has images but no cover image, set the first image as cover
+    if (!project.image && project.images && Array.isArray(project.images) && project.images.length > 0) {
+      project.image = project.images[0]
+      needsSave = true
+      console.log(`🔧 Fixed cover image for project: ${project.title}`)
+    }
+  })
+  
+  if (needsSave) {
+    saveData(PROJECTS_FILE, projects)
+    console.log(`✅ Migration completed: Fixed cover images for existing projects`)
+  }
+}
+
+// Run migration on startup
+migrateProjectCoverImages()
+
 function loadData(filePath) {
   try {
     if (fs.existsSync(filePath)) {
@@ -296,8 +318,11 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
     // Handle uploaded images
     if (req.files && req.files.length > 0) {
       projectData.images = req.files.map(file => `/uploads/${file.filename}`)
+      // Set the first uploaded image as the cover image
+      projectData.image = projectData.images[0]
     } else {
       projectData.images = []
+      projectData.image = null
     }
     
     // Validate required fields
@@ -369,6 +394,11 @@ app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
       const newImages = req.files.map(file => `/uploads/${file.filename}`)
       // Keep existing images and add new ones
       updatedData.images = [...(existingProject.images || []), ...newImages]
+      
+      // If no cover image exists, set the first image as cover
+      if (!updatedData.image && updatedData.images.length > 0) {
+        updatedData.image = updatedData.images[0]
+      }
     }
     
     // Update the project in the array
