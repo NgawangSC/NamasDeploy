@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { getImageUrl } from '../utils/imageUtils';
+import MiniLoadingAnimation from './MiniLoadingAnimation';
 
 const OptimizedImage = ({ 
   src, 
@@ -102,12 +103,14 @@ const OptimizedImage = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'rgba(240, 240, 240, 0.8)',
-            color: '#666',
-            fontSize: '14px'
+            backgroundColor: 'rgba(0, 0, 0, 0.8)'
           }}
         >
-          Loading...
+          <MiniLoadingAnimation 
+            size="small" 
+            showText={false}
+            variant="dots-only"
+          />
         </div>
       )}
     </div>

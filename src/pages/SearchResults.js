@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useSearch } from "../hooks/useApi"
+import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import "./SearchResults.css"
 
 const SearchResults = () => {
@@ -80,7 +81,16 @@ const SearchResults = () => {
         </div>
 
         <div className="search-results">
-          {loading && <div className="loading">Searching...</div>}
+          {loading && (
+            <div className="loading">
+              <MiniLoadingAnimation 
+                size="medium" 
+                text="Searching..." 
+                variant="minimal"
+                className="mini-loading-inline"
+              />
+            </div>
+          )}
 
           {error && <div className="error">Error: {error}</div>}
 

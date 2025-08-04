@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import ApiService from "../services/api"
+import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import "./AboutPage.css"
 
 // Custom hook for counter animation
@@ -374,7 +375,14 @@ function AboutPage() {
           </div>
           <div className="team-grid">
             {loading.teamMembers ? (
-              <div className="team-loading">Loading team members...</div>
+              <div className="team-loading">
+                <MiniLoadingAnimation 
+                  size="medium" 
+                  text="Loading team members..." 
+                  variant="minimal"
+                  className="mini-loading-inline"
+                />
+              </div>
             ) : data.teamMembers && data.teamMembers.length > 0 ? (
               data.teamMembers.map((member) => (
                 <div key={member.id} className="team-member-card">
