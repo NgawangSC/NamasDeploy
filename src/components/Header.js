@@ -290,6 +290,13 @@ const Header = () => {
             >
               BLOG
             </RouterLink>
+            <RouterLink
+              to="/contact"
+              className={`nav-link ${location.pathname === "/contact" ? "active" : ""}`}
+              onClick={closeAllDropdowns}
+            >
+              CONTACT
+            </RouterLink>
           </nav>
 
           <div className="settings-dropdown-container" ref={settingsDropdownRef}>
@@ -430,6 +437,13 @@ const Header = () => {
               onClick={closeMobileMenuAndDropdowns}
             >
               BLOG
+            </RouterLink>
+            <RouterLink
+              to="/contact"
+              className={`nav-mobile-link ${location.pathname === "/contact" ? "active" : ""}`}
+              onClick={closeMobileMenuAndDropdowns}
+            >
+              CONTACT
             </RouterLink>
           </nav>
         )}

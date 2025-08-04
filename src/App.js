@@ -27,6 +27,7 @@ import RenovationPage from "./pages/RenovationPage"
 import AboutExteriorPage from "./pages/AboutExteriorPage"
 import AboutInteriorPage from "./pages/AboutInteriorPage"
 import AboutPlanningPage from "./pages/AboutPlanningPage"
+import ContactPage from "./pages/ContactPage"
 import DashboardLayout from "./dashboard/DashboardLayout"
 import DashboardHome from "./dashboard/DashboardHome"
 import ProjectsManager from "./dashboard/ProjectsManager"
@@ -198,6 +199,7 @@ function App() {
                   <Route path="/about/about-exterior" element={<AboutExteriorPage />} />
                   <Route path="/about/about-interior" element={<AboutInteriorPage />} />
                   <Route path="/about/about-planning" element={<AboutPlanningPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
                 </Routes>
               </main>
               <Footer />
