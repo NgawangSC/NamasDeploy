@@ -18,6 +18,10 @@ function AboutExteriorPage() {
           <button className="back-button" onClick={() => navigate('/about')}>
             ← Back to About
           </button>
+          <div className="hero-text">
+            <h1 className="hero-title">Exterior Design</h1>
+            <p className="hero-description">Where architecture meets nature in perfect harmony</p>
+          </div>
         </div>
       </section>
 

@@ -18,6 +18,10 @@ function AboutPlanningPage() {
           <button className="back-button" onClick={() => navigate('/about')}>
             ← Back to About
           </button>
+          <div className="hero-text">
+            <h1 className="hero-title">Planning Services</h1>
+            <p className="hero-description">Strategic planning that transforms visions into reality</p>
+          </div>
         </div>
       </section>
 

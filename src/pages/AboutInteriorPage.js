@@ -18,6 +18,10 @@ function AboutInteriorPage() {
           <button className="back-button" onClick={() => navigate('/about')}>
             ← Back to About
           </button>
+          <div className="hero-text">
+            <h1 className="hero-title">Interior Design</h1>
+            <p className="hero-description">Bespoke, stylish, and functional environments</p>
+          </div>
         </div>
       </section>
 
