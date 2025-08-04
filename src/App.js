@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, Navigate } from "react-router-dom"
 import { DataProvider } from "./contexts/DataContext" // Add this import
 import Header from "./components/Header"
 import Footer from "./components/Footer"
+import LoadingScreen from "./components/LoadingScreen"
 import HomePage from "./pages/HomePage"
 import AboutPage from "./pages/AboutPage"
 import ProjectDetailPage from "./pages/ProjectDetailPage"
@@ -93,6 +94,15 @@ function DashboardRoute({ isAuthenticated, setIsAuthenticated }) {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false)
+
+  // Check if user has seen loading screen before
+  useEffect(() => {
+    const hasSeenLoading = localStorage.getItem("hasSeenLoading")
+    if (!hasSeenLoading) {
+      setShowLoadingScreen(true)
+    }
+  }, [])
 
   // Check authentication status
   useEffect(() => {
@@ -126,6 +136,24 @@ function App() {
 
     checkAuth()
   }, [])
+
+  const handleLoadingComplete = () => {
+    localStorage.setItem("hasSeenLoading", "true")
+    setShowLoadingScreen(false)
+  }
+
+  // Add utility function to reset loading screen (for testing)
+  useEffect(() => {
+    window.resetLoadingScreen = () => {
+      localStorage.removeItem("hasSeenLoading")
+      setShowLoadingScreen(true)
+    }
+  }, [])
+
+  // Show loading screen on first visit
+  if (showLoadingScreen) {
+    return <LoadingScreen onLoadingComplete={handleLoadingComplete} />
+  }
 
   // Show loading while checking authentication
   if (isLoading) {

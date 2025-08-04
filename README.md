@@ -2,6 +2,26 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Loading Screen Feature
+
+The application includes a beautiful loading screen that appears when users first visit the website. The loading screen features:
+
+- **Animated Logo**: The company logo with floating and pulsing animations
+- **Progress Bar**: A smooth progress indicator with shimmer effect
+- **Welcome Message**: Friendly text welcoming users
+- **Responsive Design**: Adapts to different screen sizes
+- **One-time Display**: Only shows on first visit (stored in localStorage)
+
+### Testing the Loading Screen
+
+To test the loading screen again after the first visit, you can:
+
+1. Open the browser console (F12)
+2. Run: `resetLoadingScreen()`
+3. Refresh the page
+
+This will reset the loading screen and show it again on the next page load.
+
 ## Available Scripts
 
 In the project directory, you can run:
