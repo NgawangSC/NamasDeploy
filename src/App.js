@@ -1,47 +1,50 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense, lazy } from "react"
 import { Routes, Route, useLocation, Navigate } from "react-router-dom"
 import { DataProvider, useData } from "./contexts/DataContext" // Modified import
 import Header from "./components/Header"
 import Footer from "./components/Footer"
 import LoadingAnimation from "./components/LoadingAnimation"
-import HomePage from "./pages/HomePage"
-import AboutPage from "./pages/AboutPage"
-import ProjectDetailPage from "./pages/ProjectDetailPage"
-import BlogDetailPage from "./pages/BlogDetailPage"
-import BlogPage from "./pages/BlogPage"
-import DesignPage from "./pages/DesignPage"
-import BuildPage from "./pages/BuildPage"
-import PlanningPage from "./pages/PlanningPage"
-import InteriorBuildPage from "./pages/InteriorBuildPage"
-import ArchitecturePage from "./pages/ArchitecturePage"
-import LandscapePage from "./pages/LandscapePage"
-import SupervisionPage from "./pages/SupervisionPage"
-import ManagementPage from "./pages/ManagementPage"
-import RealEstatePage from "./pages/RealEstatePage"
-import PrivateHomesPage from "./pages/PrivateHomesPage"
-import CommercialBuildingsPage from "./pages/CommercialBuildingsPage"
-import OfficePage from "./pages/OfficePage"
-import InstitutePage from "./pages/InstitutePage"
-import HospitalityPage from "./pages/HospitalityPage"
-import InteriorDesignPage from "./pages/InteriorDesignPage"
-import RenovationPage from "./pages/RenovationPage"
-import AboutExteriorPage from "./pages/AboutExteriorPage"
-import AboutInteriorPage from "./pages/AboutInteriorPage"
-import AboutPlanningPage from "./pages/AboutPlanningPage"
-import ContactPage from "./pages/ContactPage"
-import DashboardLayout from "./dashboard/DashboardLayout"
-import DashboardHome from "./dashboard/DashboardHome"
-import ProjectsManager from "./dashboard/ProjectsManager"
-import HeroBannerManager from "./dashboard/HeroBannerManager"
-import RecentProjectsManager from "./dashboard/RecentProjectsManager"
-import BlogsManager from "./dashboard/BlogsManager"
-import ClientsManager from "./dashboard/ClientsManager"
-import TeamManager from "./dashboard/TeamManager"
-import MediaManager from "./dashboard/MediaManager"
-
-import DashboardLogin from "./dashboard/DashboardLogin"
-import "./App.css"
 import MiniLoadingAnimation from "./components/MiniLoadingAnimation"
+import "./App.css"
+
+// Lazy load all page components for code splitting
+const HomePage = lazy(() => import("./pages/HomePage"))
+const AboutPage = lazy(() => import("./pages/AboutPage"))
+const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"))
+const BlogDetailPage = lazy(() => import("./pages/BlogDetailPage"))
+const BlogPage = lazy(() => import("./pages/BlogPage"))
+const DesignPage = lazy(() => import("./pages/DesignPage"))
+const BuildPage = lazy(() => import("./pages/BuildPage"))
+const PlanningPage = lazy(() => import("./pages/PlanningPage"))
+const InteriorBuildPage = lazy(() => import("./pages/InteriorBuildPage"))
+const ArchitecturePage = lazy(() => import("./pages/ArchitecturePage"))
+const LandscapePage = lazy(() => import("./pages/LandscapePage"))
+const SupervisionPage = lazy(() => import("./pages/SupervisionPage"))
+const ManagementPage = lazy(() => import("./pages/ManagementPage"))
+const RealEstatePage = lazy(() => import("./pages/RealEstatePage"))
+const PrivateHomesPage = lazy(() => import("./pages/PrivateHomesPage"))
+const CommercialBuildingsPage = lazy(() => import("./pages/CommercialBuildingsPage"))
+const OfficePage = lazy(() => import("./pages/OfficePage"))
+const InstitutePage = lazy(() => import("./pages/InstitutePage"))
+const HospitalityPage = lazy(() => import("./pages/HospitalityPage"))
+const InteriorDesignPage = lazy(() => import("./pages/InteriorDesignPage"))
+const RenovationPage = lazy(() => import("./pages/RenovationPage"))
+const AboutExteriorPage = lazy(() => import("./pages/AboutExteriorPage"))
+const AboutInteriorPage = lazy(() => import("./pages/AboutInteriorPage"))
+const AboutPlanningPage = lazy(() => import("./pages/AboutPlanningPage"))
+const ContactPage = lazy(() => import("./pages/ContactPage"))
+
+// Lazy load dashboard components
+const DashboardLayout = lazy(() => import("./dashboard/DashboardLayout"))
+const DashboardHome = lazy(() => import("./dashboard/DashboardHome"))
+const ProjectsManager = lazy(() => import("./dashboard/ProjectsManager"))
+const HeroBannerManager = lazy(() => import("./dashboard/HeroBannerManager"))
+const RecentProjectsManager = lazy(() => import("./dashboard/RecentProjectsManager"))
+const BlogsManager = lazy(() => import("./dashboard/BlogsManager"))
+const ClientsManager = lazy(() => import("./dashboard/ClientsManager"))
+const TeamManager = lazy(() => import("./dashboard/TeamManager"))
+const MediaManager = lazy(() => import("./dashboard/MediaManager"))
+const DashboardLogin = lazy(() => import("./dashboard/DashboardLogin"))
 
 // ScrollToTop component
 function ScrollToTop() {
@@ -73,16 +76,18 @@ function DashboardRoute({ isAuthenticated, setIsAuthenticated }) {
     return (
       <DataProvider>
         <DashboardLayout setIsAuthenticated={setIsAuthenticated}>
-          <Routes>
-            <Route path="/" element={<DashboardHome />} />
-            <Route path="/projects" element={<ProjectsManager />} />
-            <Route path="/hero-banner" element={<HeroBannerManager />} />
-            <Route path="/recent-projects" element={<RecentProjectsManager />} />
-            <Route path="/blogs" element={<BlogsManager />} />
-            <Route path="/clients" element={<ClientsManager />} />
-            <Route path="/team" element={<TeamManager />} />
-            <Route path="/media" element={<MediaManager />} />
-          </Routes>
+          <Suspense fallback={<LoadingAnimation />}>
+            <Routes>
+              <Route path="/" element={<DashboardHome />} />
+              <Route path="/projects" element={<ProjectsManager />} />
+              <Route path="/hero-banner" element={<HeroBannerManager />} />
+              <Route path="/recent-projects" element={<RecentProjectsManager />} />
+              <Route path="/blogs" element={<BlogsManager />} />
+              <Route path="/clients" element={<ClientsManager />} />
+              <Route path="/team" element={<TeamManager />} />
+              <Route path="/media" element={<MediaManager />} />
+            </Routes>
+          </Suspense>
         </DashboardLayout>
       </DataProvider>
     )
@@ -235,40 +240,42 @@ function App() {
             <DataProvider>
               <Header />
               <main>
-                <Routes>
-                  <Route path="/" element={<HomePageWithLoading />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/design" element={<DesignPage />} />
-                  <Route path="/build" element={<BuildPage />} />
-                  <Route path="/architecture" element={<ArchitecturePage />} />
-                  <Route path="/planning" element={<PlanningPage />} />
-                  <Route path="/interior" element={<InteriorDesignPage />} />
-                  <Route path="/landscape" element={<LandscapePage />} />
-                  <Route path="/supervision" element={<SupervisionPage />} />
-                  <Route path="/management" element={<ManagementPage />} />
-                  <Route path="/real-estate" element={<RealEstatePage />} />
-                  <Route path="/project/:id" element={<ProjectDetailPage />} />
-                  <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/blog/:id" element={<BlogDetailPage />} />
-                  <Route path="/private-homes" element={<PrivateHomesPage />} />
-                  <Route path="/commercial-buildings" element={<CommercialBuildingsPage />} />
-                  <Route path="/office" element={<OfficePage />} />
-                  <Route path="/institute" element={<InstitutePage />} />
-                  <Route path="/hospitality" element={<HospitalityPage />} />
-                  <Route path="/interior-design" element={<InteriorDesignPage />} />
-                  <Route path="/renovation" element={<RenovationPage />} />
-                  <Route path="/construction/private-homes" element={<PrivateHomesPage />} />
-                  <Route path="/construction/commercial-buildings" element={<CommercialBuildingsPage />} />
-                  <Route path="/construction/office" element={<OfficePage />} />
-                  <Route path="/construction/institute" element={<InstitutePage />} />
-                  <Route path="/construction/hospitality" element={<HospitalityPage />} />
-                  <Route path="/construction/interior" element={<InteriorBuildPage />} />
-                  <Route path="/construction/renovation" element={<RenovationPage />} />
-                  <Route path="/about/about-exterior" element={<AboutExteriorPage />} />
-                  <Route path="/about/about-interior" element={<AboutInteriorPage />} />
-                  <Route path="/about/about-planning" element={<AboutPlanningPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                </Routes>
+                <Suspense fallback={<LoadingAnimation />}>
+                  <Routes>
+                    <Route path="/" element={<HomePageWithLoading />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/design" element={<DesignPage />} />
+                    <Route path="/build" element={<BuildPage />} />
+                    <Route path="/architecture" element={<ArchitecturePage />} />
+                    <Route path="/planning" element={<PlanningPage />} />
+                    <Route path="/interior" element={<InteriorDesignPage />} />
+                    <Route path="/landscape" element={<LandscapePage />} />
+                    <Route path="/supervision" element={<SupervisionPage />} />
+                    <Route path="/management" element={<ManagementPage />} />
+                    <Route path="/real-estate" element={<RealEstatePage />} />
+                    <Route path="/project/:id" element={<ProjectDetailPage />} />
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/blog/:id" element={<BlogDetailPage />} />
+                    <Route path="/private-homes" element={<PrivateHomesPage />} />
+                    <Route path="/commercial-buildings" element={<CommercialBuildingsPage />} />
+                    <Route path="/office" element={<OfficePage />} />
+                    <Route path="/institute" element={<InstitutePage />} />
+                    <Route path="/hospitality" element={<HospitalityPage />} />
+                    <Route path="/interior-design" element={<InteriorDesignPage />} />
+                    <Route path="/renovation" element={<RenovationPage />} />
+                    <Route path="/construction/private-homes" element={<PrivateHomesPage />} />
+                    <Route path="/construction/commercial-buildings" element={<CommercialBuildingsPage />} />
+                    <Route path="/construction/office" element={<OfficePage />} />
+                    <Route path="/construction/institute" element={<InstitutePage />} />
+                    <Route path="/construction/hospitality" element={<HospitalityPage />} />
+                    <Route path="/construction/interior" element={<InteriorBuildPage />} />
+                    <Route path="/construction/renovation" element={<RenovationPage />} />
+                    <Route path="/about/about-exterior" element={<AboutExteriorPage />} />
+                    <Route path="/about/about-interior" element={<AboutInteriorPage />} />
+                    <Route path="/about/about-planning" element={<AboutPlanningPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                  </Routes>
+                </Suspense>
               </main>
               <Footer />
             </DataProvider>

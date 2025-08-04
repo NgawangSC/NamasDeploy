@@ -2,14 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    
+    <!-- DNS prefetch for external domains -->
+    <link rel="dns-prefetch" href="//namasdeploy-production.up.railway.app">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" as="image" href="%PUBLIC_URL%/images/optimized/hero-banner.webp" type="image/webp">
+    <link rel="preload" as="image" href="%PUBLIC_URL%/images/optimized/logo.webp" type="image/webp">
+    
+    <!-- Favicon and icons -->
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.png" type="image/png" />
     <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-96x96.png" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    
+    <!-- Viewport and theme -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+    
+    <!-- SEO Meta Tags -->
     <meta name="description" content="NAMAS Design and Build - Integrated architectural, planning, and construction solutions in Bhutan" />
+    <meta name="keywords" content="architecture, construction, design, build, Bhutan, planning, interior design" />
+    <meta name="author" content="NAMAS Architecture Studio" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="NAMAS Architecture Studio - Design & Build" />
+    <meta property="og:description" content="Integrated architectural, planning, and construction solutions in Bhutan" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="%PUBLIC_URL%/images/optimized/hero-banner.webp" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NAMAS Architecture Studio - Design & Build" />
+    <meta name="twitter:description" content="Integrated architectural, planning, and construction solutions in Bhutan" />
+    <meta name="twitter:image" content="%PUBLIC_URL%/images/optimized/hero-banner.webp" />
 
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>NAMAS Architecture Studio - Design & Build</title>
