@@ -128,7 +128,7 @@ function HomePageWithLoading() {
     // Show loading if never visited, or if last visit was more than 30 minutes ago
     const shouldShowLoadingBasedOnVisit = !hasVisited || !lastVisit || (now - parseInt(lastVisit)) > 30 * 60 * 1000
     
-    if (!shouldShowLoadingBasedOnVisit && !isHomepageLoading) {
+    if (!shouldShowLoadingBasedOnVisit && !isHomepageLoading && !forceLoading) {
       // Skip loading animation if user has visited recently and data is already loaded
       setShowInitialLoading(false)
       setHasCompletedInitialLoad(true)
@@ -151,8 +151,8 @@ function HomePageWithLoading() {
 
   // Show loading animation while data is loading or during minimum display time
   if (showInitialLoading || (isHomepageLoading && !hasCompletedInitialLoad)) {
-    console.log('Showing MiniLoadingAnimation - Homepage data loading:', isHomepageLoading)
-    return <MiniLoadingAnimation size="large" text="Loading projects..." />
+    console.log('Showing LoadingAnimation - Homepage data loading:', isHomepageLoading)
+    return <LoadingAnimation />
   }
 
   return <HomePage />

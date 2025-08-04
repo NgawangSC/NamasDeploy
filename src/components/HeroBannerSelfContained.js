@@ -103,7 +103,9 @@ const HeroBannerSelfContained = () => {
     return (
       <section className="hero-banner hero-banner-empty">
         <div className="hero-content">
-          <MiniLoadingAnimation size="large" text="Loading featured projects..." />
+          <div className="hero-loading-container">
+            <MiniLoadingAnimation size="medium" text="Loading featured projects..." variant="minimal" />
+          </div>
         </div>
       </section>
     )
