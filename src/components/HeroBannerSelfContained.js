@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getImageUrl } from "../utils/imageUtils"
 import { heroUtils } from "../utils/heroFix"
 import "./HeroBanner.css"
+import MiniLoadingAnimation from "./MiniLoadingAnimation"
 
 const HeroBannerSelfContained = () => {
   const navigate = useNavigate()
@@ -102,18 +103,7 @@ const HeroBannerSelfContained = () => {
     return (
       <section className="hero-banner hero-banner-empty">
         <div className="hero-content">
-          <h1>Welcome to Our Architecture Studio</h1>
-          <p>Loading featured projects...</p>
-          <div style={{ 
-            marginTop: '20px', 
-            padding: '10px', 
-            backgroundColor: '#f0f0f0', 
-            borderRadius: '5px',
-            fontSize: '12px',
-            textAlign: 'center'
-          }}>
-            🔄 Fetching featured projects from server...
-          </div>
+          <MiniLoadingAnimation size="large" text="Loading featured projects..." />
         </div>
       </section>
     )
