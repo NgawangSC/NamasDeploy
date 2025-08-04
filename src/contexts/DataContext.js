@@ -59,10 +59,10 @@ export const DataProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState({
-    projects: false,
-    featuredProjects: false,
+    projects: true,
+    featuredProjects: true,
     blogs: false,
-    clients: false,
+    clients: true,
     teamMembers: false
   });
 
@@ -635,10 +635,11 @@ export const DataProvider = ({ children }) => {
   // Fetch data from API on mount (after all functions are defined)
   useEffect(() => {
     fetchProjects();
+    fetchFeaturedProjects();
     fetchBlogs();
     fetchClients();
     fetchTeamMembers();
-  }, [fetchProjects, fetchBlogs, fetchClients, fetchTeamMembers]);
+  }, [fetchProjects, fetchFeaturedProjects, fetchBlogs, fetchClients, fetchTeamMembers]);
 
   const contextValue = {
     data,
