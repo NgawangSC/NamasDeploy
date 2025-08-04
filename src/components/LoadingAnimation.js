@@ -3,11 +3,20 @@ import './LoadingAnimation.css'
 import logo from '../logo.svg'
 
 const LoadingAnimation = () => {
+  console.log('LoadingAnimation component is rendering')
+  console.log('Logo path:', logo)
+  
   return (
     <div className="loading-container">
       <div className="loading-content">
         <div className="logo-container">
-          <img src={logo} alt="Namas Architecture" className="loading-logo" />
+          <img 
+            src={logo} 
+            alt="Namas Architecture" 
+            className="loading-logo"
+            onLoad={() => console.log('Logo loaded successfully')}
+            onError={(e) => console.error('Logo failed to load:', e)}
+          />
           <div className="logo-glow"></div>
         </div>
         
