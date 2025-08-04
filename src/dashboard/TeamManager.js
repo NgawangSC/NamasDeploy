@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
+import MiniLoadingAnimation from '../components/MiniLoadingAnimation';
 import './TeamManager.css';
 
 // Component for handling image loading
@@ -239,7 +240,16 @@ const TeamManager = () => {
 
         <div className="team-list-section">
           <h2>Current Team Members</h2>
-          {loading && <div className="loading">Loading...</div>}
+          {loading && (
+            <div className="loading">
+              <MiniLoadingAnimation 
+                size="small" 
+                text="Loading..." 
+                variant="dots-only"
+                className="mini-loading-inline"
+              />
+            </div>
+          )}
           
           <div className="team-grid">
             {teamMembers.map((member) => (

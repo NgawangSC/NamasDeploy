@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import ApiService from "../services/api"
+import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import "./ProjectDetailPage.css"
 
 const ProjectDetailPage = () => {
@@ -89,13 +90,17 @@ const ProjectDetailPage = () => {
   if ((loading.projects && projects.length === 0) || singleProjectLoading) {
     return (
       <div className="project-loading">
-        <div>{singleProjectLoading ? 'Loading project...' : 'Loading projects...'}</div>
+        <MiniLoadingAnimation 
+          size="large" 
+          text={singleProjectLoading ? 'Loading project...' : 'Loading projects...'} 
+          className="mini-loading-inline"
+        />
         {!singleProjectLoading && (
           <button 
             onClick={() => {
               fetchProjects()
             }}
-            style={{ marginTop: '10px', padding: '8px 16px' }}
+            style={{ marginTop: '20px', padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', cursor: 'pointer' }}
           >
             Retry Loading
           </button>

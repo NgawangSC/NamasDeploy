@@ -1,104 +1,116 @@
-import React, { useState, useEffect } from 'react';
-import { getImageUrl, validateImageUrl } from '../utils/imageUtils';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { getImageUrl } from '../utils/imageUtils';
+import MiniLoadingAnimation from './MiniLoadingAnimation';
 
 const OptimizedImage = ({ 
   src, 
   alt, 
   className = '', 
-  fallback = '/images/placeholder-logo.png',
+  placeholder = '/images/placeholder.png',
   onLoad,
   onError,
   ...props 
 }) => {
-  const [imageUrl, setImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const [imageSrc, setImageSrc] = useState(placeholder);
+  const imgRef = useRef(null);
+  const loadedImageSrc = useRef(null);
 
+  // Get optimized image URL
+  const imageUrl = getImageUrl(src);
+
+  const handleImageLoad = useCallback(() => {
+    setIsLoading(false);
+    setHasError(false);
+    if (onLoad) onLoad();
+  }, [onLoad]);
+
+  const handleImageError = useCallback(() => {
+    setIsLoading(false);
+    setHasError(true);
+    setImageSrc(placeholder);
+    if (onError) onError();
+  }, [onError, placeholder]);
+
+  // Preload the actual image
   useEffect(() => {
-    if (!src) {
-      setImageUrl(fallback);
+    if (!imageUrl || imageUrl === placeholder) {
       setIsLoading(false);
       return;
     }
 
-    const loadImage = async () => {
-      setIsLoading(true);
-      setHasError(false);
+    // If we've already loaded this image URL, don't reload it
+    if (loadedImageSrc.current === imageUrl) {
+      setIsLoading(false);
+      setImageSrc(imageUrl);
+      return;
+    }
 
-      try {
-        // Get the optimized image URL
-        const optimizedUrl = getImageUrl(src, retryCount > 0);
-        
-        // Validate the URL is accessible
-        const isValid = await validateImageUrl(optimizedUrl);
-        
-        if (isValid) {
-          setImageUrl(optimizedUrl);
-        } else {
-          throw new Error('Image not accessible');
-        }
-      } catch (error) {
-        console.warn('Image loading failed:', src, error);
-        
-        // Retry once with cache busting
-        if (retryCount === 0) {
-          setRetryCount(1);
-          return;
-        }
-        
-        // Use fallback after retry
-        setHasError(true);
-        setImageUrl(fallback);
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    setHasError(false);
+
+    const img = new Image();
+    
+    img.onload = () => {
+      // Only update if the component is still mounted and the URL hasn't changed
+      if (loadedImageSrc.current !== imageUrl) {
+        loadedImageSrc.current = imageUrl;
+        setImageSrc(imageUrl);
+        handleImageLoad();
       }
     };
 
-    loadImage();
-  }, [src, fallback, retryCount]);
+    img.onerror = () => {
+      if (loadedImageSrc.current !== imageUrl) {
+        handleImageError();
+      }
+    };
 
-  const handleImageLoad = (e) => {
-    setIsLoading(false);
-    setHasError(false);
-    if (onLoad) onLoad(e);
-  };
+    // Start loading the image
+    img.src = imageUrl;
 
-  const handleImageError = (e) => {
-    console.warn('Image failed to load:', imageUrl);
-    
-    // Try fallback if not already using it
-    if (imageUrl !== fallback && !hasError) {
-      setHasError(true);
-      setImageUrl(fallback);
-    }
-    
-    if (onError) onError(e);
-  };
+    // Cleanup function
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [imageUrl, handleImageLoad, handleImageError, placeholder]);
 
   return (
-    <div className={`image-container ${className}`} {...props}>
-      {isLoading && !hasError && (
-        <div className="image-loading-placeholder">
-          <div className="loading-spinner"></div>
-        </div>
-      )}
-      
+    <div className={`optimized-image-container ${className}`} style={{ position: 'relative' }}>
       <img
-        src={imageUrl}
+        ref={imgRef}
+        src={imageSrc}
         alt={alt}
-        onLoad={handleImageLoad}
-        onError={handleImageError}
+        className={`${isLoading ? 'loading' : ''} ${hasError ? 'error' : ''}`}
         style={{
-          display: isLoading ? 'none' : 'block',
-          opacity: hasError ? 0.7 : 1,
+          opacity: isLoading ? 0.7 : 1,
+          transition: 'opacity 0.3s ease-in-out',
+          ...props.style
         }}
         {...props}
       />
-      
-      {hasError && (
-        <div className="image-error-indicator" title="Image failed to load">
-          ⚠️
+      {isLoading && (
+        <div 
+          className="image-loading-overlay"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)'
+          }}
+        >
+          <MiniLoadingAnimation 
+            size="small" 
+            showText={false}
+            variant="dots-only"
+          />
         </div>
       )}
     </div>
