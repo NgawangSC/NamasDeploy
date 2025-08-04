@@ -15,13 +15,29 @@ const OptimizedImage = ({
 
   // Get optimized image paths
   const getOptimizedSrc = (originalSrc) => {
-    const baseName = originalSrc.replace(/\.(jpg|jpeg|png)$/i, '');
-    const extension = originalSrc.match(/\.(jpg|jpeg|png)$/i)?.[1] || 'jpg';
-    
-    return {
-      webp: `/images/optimized/${baseName.replace('/images/', '')}.webp`,
-      fallback: `/images/optimized/${baseName.replace('/images/', '')}.jpg`
-    };
+    try {
+      // Handle both absolute and relative paths
+      let cleanSrc = originalSrc;
+      if (cleanSrc.startsWith('/')) {
+        cleanSrc = cleanSrc.substring(1);
+      }
+      
+      // Extract the filename without extension
+      const pathParts = cleanSrc.split('/');
+      const filename = pathParts[pathParts.length - 1];
+      const baseName = filename.replace(/\.(jpg|jpeg|png)$/i, '');
+      
+      return {
+        webp: `/images/optimized/${baseName}.webp`,
+        fallback: `/images/optimized/${baseName}.jpg`
+      };
+    } catch (error) {
+      console.warn('Error processing image path:', originalSrc, error);
+      return {
+        webp: originalSrc,
+        fallback: originalSrc
+      };
+    }
   };
 
   const optimizedSrcs = getOptimizedSrc(src);
@@ -54,8 +70,11 @@ const OptimizedImage = ({
   };
 
   const handleError = (e) => {
+    console.warn('Failed to load optimized image, falling back to original:', e.target.src);
     // Fallback to original image if optimized version fails
-    e.target.src = src;
+    if (e.target.src !== src) {
+      e.target.src = src;
+    }
   };
 
   return (

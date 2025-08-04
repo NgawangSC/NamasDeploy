@@ -1,10 +1,6 @@
 const CACHE_NAME = 'namas-architecture-v1';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/images/optimized/logo.webp',
-  '/images/optimized/hero-banner.webp',
   '/manifest.json'
 ];
 
@@ -14,13 +10,34 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        // Try to cache each URL individually and handle failures gracefully
+        return Promise.allSettled(
+          urlsToCache.map(url => 
+            cache.add(url).catch(err => {
+              console.warn(`Failed to cache ${url}:`, err);
+              return null;
+            })
+          )
+        );
+      })
+      .then(() => {
+        console.log('Service worker installed successfully');
+        // Skip waiting to activate immediately
+        self.skipWaiting();
+      })
+      .catch(err => {
+        console.error('Service worker installation failed:', err);
       })
   );
 });
 
 // Fetch event - serve cached content when offline
 self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -35,15 +52,37 @@ self.addEventListener('fetch', (event) => {
             return response;
           }
 
-          // Clone the response
-          const responseToCache = response.clone();
+          // Only cache certain types of requests
+          const url = new URL(event.request.url);
+          const shouldCache = 
+            url.pathname.endsWith('.js') ||
+            url.pathname.endsWith('.css') ||
+            url.pathname.endsWith('.png') ||
+            url.pathname.endsWith('.jpg') ||
+            url.pathname.endsWith('.jpeg') ||
+            url.pathname.endsWith('.webp') ||
+            url.pathname.endsWith('.svg') ||
+            url.pathname === '/' ||
+            url.pathname.endsWith('.html');
 
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+          if (shouldCache) {
+            // Clone the response
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              })
+              .catch(err => {
+                console.warn('Failed to cache response:', err);
+              });
+          }
 
           return response;
+        }).catch(err => {
+          console.warn('Fetch failed:', err);
+          // Return a fallback response or rethrow
+          throw err;
         });
       })
   );
@@ -58,10 +97,17 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      console.log('Service worker activated');
+      // Take control of all pages immediately
+      return self.clients.claim();
+    }).catch(err => {
+      console.error('Service worker activation failed:', err);
     })
   );
 });
