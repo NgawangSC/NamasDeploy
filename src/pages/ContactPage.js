@@ -9,7 +9,6 @@ function ContactPage() {
     name: "",
     email: "",
     phone: "",
-    subject: "",
     message: ""
   })
 
@@ -39,7 +38,6 @@ function ContactPage() {
         name: "",
         email: "",
         phone: "",
-        subject: "",
         message: ""
       })
     } catch (error) {
@@ -148,37 +146,16 @@ function ContactPage() {
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="+975 XXXX XXXX"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="subject">Subject *</label>
-                    <select
-                      id="subject"
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Select a subject</option>
-                      <option value="planning">Planning Services</option>
-                      <option value="interior">Interior Design</option>
-                      <option value="exterior">Exterior Design</option>
-                      <option value="architecture">Architecture</option>
-                      <option value="construction">Construction</option>
-                      <option value="consultation">General Consultation</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
+                <div className="form-group">
+                  <label htmlFor="phone">Phone Number</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+975 XXXX XXXX"
+                  />
                 </div>
 
                 <div className="form-group">
@@ -224,24 +201,6 @@ function ContactPage() {
                   </div>
                 )}
               </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="contact-cta">
-        <div className="container">
-          <div className="cta-content">
-            <h3>Ready to Start Your Project?</h3>
-            <p>Schedule a consultation to discuss your architectural needs and explore how we can bring your vision to life.</p>
-            <div className="cta-buttons">
-              <a href="tel:+975XXXXXXXX" className="cta-button primary">
-                Call Now
-              </a>
-              <a href="mailto:info@yourarchitecture.bt" className="cta-button secondary">
-                Email Us
-              </a>
             </div>
           </div>
         </div>
