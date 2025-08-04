@@ -56,7 +56,15 @@ function constructImageUrl(imagePath, bustCache = false) {
   }
   // For uploaded images, prepend the server base URL
   else {
-    fullUrl = `${SERVER_BASE_URL}${imagePath}`;
+    // In production, ensure we're using the correct server URL
+    const serverUrl = SERVER_BASE_URL;
+    
+    // Handle case where imagePath already starts with /uploads
+    if (imagePath.startsWith('/uploads')) {
+      fullUrl = `${serverUrl}${imagePath}`;
+    } else {
+      fullUrl = `${serverUrl}/uploads/${imagePath}`;
+    }
   }
   
   // Add cache-busting parameter if requested (but not for blob or data URLs)
@@ -69,10 +77,19 @@ function constructImageUrl(imagePath, bustCache = false) {
 }
 
 /**
- * Determines if cache should be busted for an image
- * @param {string} imagePath - The image path
- * @returns {boolean} - Whether to bust cache
+ * Validates if an image URL is accessible
+ * @param {string} imageUrl - The image URL to validate
+ * @returns {Promise<boolean>} - Promise that resolves to true if accessible
  */
+export const validateImageUrl = async (imageUrl) => {
+  try {
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.warn('Image URL validation failed:', imageUrl, error);
+    return false;
+  }
+};
 
 /**
  * Preloads an image to prevent flickering on display
