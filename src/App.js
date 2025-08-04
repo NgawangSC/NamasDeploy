@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, Navigate } from "react-router-dom"
 import { DataProvider } from "./contexts/DataContext" // Add this import
 import Header from "./components/Header"
 import Footer from "./components/Footer"
+import LoadingAnimation from "./components/LoadingAnimation"
 import HomePage from "./pages/HomePage"
 import AboutPage from "./pages/AboutPage"
 import ProjectDetailPage from "./pages/ProjectDetailPage"
@@ -93,6 +94,7 @@ function DashboardRoute({ isAuthenticated, setIsAuthenticated }) {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // Check authentication status
   useEffect(() => {
@@ -126,6 +128,28 @@ function App() {
 
     checkAuth()
   }, [])
+
+  // Handle initial loading animation
+  useEffect(() => {
+    // Show loading animation for at least 2 seconds on first visit
+    const hasVisited = sessionStorage.getItem("hasVisited")
+    
+    if (!hasVisited) {
+      const timer = setTimeout(() => {
+        setIsInitialLoad(false)
+        sessionStorage.setItem("hasVisited", "true")
+      }, 2500) // Show for 2.5 seconds
+      
+      return () => clearTimeout(timer)
+    } else {
+      setIsInitialLoad(false)
+    }
+  }, [])
+
+  // Show initial loading animation on first visit
+  if (isInitialLoad) {
+    return <LoadingAnimation />
+  }
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -212,5 +236,3 @@ function App() {
 }
 
 export default App
-
-
