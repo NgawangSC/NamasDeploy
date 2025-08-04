@@ -88,16 +88,8 @@ function AboutPage() {
       // Calculate total projects done
       const totalProjects = data.projects?.length || 0
       
-      // Calculate happy clients - 1 client per project
-      let happyClients = 0
-      if (data.clients && data.clients.length > 0) {
-        happyClients = data.clients.length
-      } else if (totalProjects > 0) {
-        // 1 happy client per project
-        happyClients = totalProjects
-      } else {
-        happyClients = 0
-      }
+      // Calculate happy clients - always 1 client per project
+      const happyClients = totalProjects
       
       // Calculate working hours (1 project = 100 working hours)
       const hoursPerProject = 100
@@ -118,7 +110,7 @@ function AboutPage() {
     
     const newStats = calculateStats()
     setStatistics(newStats)
-  }, [data.projects, data.clients])
+  }, [data.projects])
 
   // Navigation handlers for service pages
   const handlePlanningClick = () => {
@@ -420,7 +412,7 @@ function AboutPage() {
                   {loading.projects ? (
                     <span>...</span>
                   ) : (
-                    <AnimatedCounter end={statistics.projects} suffix="" startAnimation={startCounters} />
+                    <AnimatedCounter end={statistics.projects} suffix="+" startAnimation={startCounters} />
                   )}
                 </h4>
                 <p>Projects Done</p>
@@ -430,7 +422,7 @@ function AboutPage() {
                   {loading.clients ? (
                     <span>...</span>
                   ) : (
-                    <AnimatedCounter end={statistics.clients} suffix="" startAnimation={startCounters} />
+                    <AnimatedCounter end={statistics.clients} suffix="+" startAnimation={startCounters} />
                   )}
                 </h4>
                 <p>Happy Clients</p>
@@ -448,7 +440,7 @@ function AboutPage() {
               </div>
               <div className="box-section">
                 <h4>
-                  <AnimatedCounter end={statistics.years} suffix="" startAnimation={startCounters} />
+                  <AnimatedCounter end={statistics.years} suffix="+" startAnimation={startCounters} />
                 </h4>
                 <p>Years</p>
               </div>
