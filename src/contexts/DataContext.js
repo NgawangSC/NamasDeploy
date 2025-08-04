@@ -66,6 +66,8 @@ export const DataProvider = ({ children }) => {
     teamMembers: false
   });
 
+  // Computed loading state for homepage - true if any homepage-critical data is still loading
+  const isHomepageLoading = loading.projects || loading.featuredProjects || loading.clients;
 
 
   const [error, setError] = useState({
@@ -641,6 +643,7 @@ export const DataProvider = ({ children }) => {
   const contextValue = {
     data,
     loading,
+    isHomepageLoading, // Add this new computed state
     error,
     setData,
     updateSiteSettings,

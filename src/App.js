@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Routes, Route, useLocation, Navigate } from "react-router-dom"
-import { DataProvider } from "./contexts/DataContext" // Add this import
+import { DataProvider, useData } from "./contexts/DataContext" // Modified import
 import Header from "./components/Header"
 import Footer from "./components/Footer"
 import LoadingAnimation from "./components/LoadingAnimation"
@@ -91,10 +91,75 @@ function DashboardRoute({ isAuthenticated, setIsAuthenticated }) {
   return <DashboardLogin setIsAuthenticated={setIsAuthenticated} />
 }
 
+// Homepage Loading Wrapper Component
+function HomePageWithLoading() {
+  const { isHomepageLoading } = useData()
+  const [showInitialLoading, setShowInitialLoading] = useState(true)
+  const [hasCompletedInitialLoad, setHasCompletedInitialLoad] = useState(false)
+
+  useEffect(() => {
+    // Check for force loading parameter
+    const urlParams = new URLSearchParams(window.location.search)
+    const forceLoading = urlParams.get('loading') === 'true'
+    const resetVisited = urlParams.get('reset') === 'true'
+    
+    // Reset visited status if requested
+    if (resetVisited) {
+      sessionStorage.removeItem('hasVisited')
+      sessionStorage.removeItem('lastVisit')
+      console.log('Reset visited status')
+    }
+    
+    if (forceLoading) {
+      console.log('Force loading animation enabled via URL parameter')
+      // Force show loading animation for at least 2.5 seconds
+      const timer = setTimeout(() => {
+        setShowInitialLoading(false)
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+
+    // Check session storage for first visit logic
+    const hasVisited = sessionStorage.getItem("hasVisited")
+    const lastVisit = sessionStorage.getItem("lastVisit")
+    const now = Date.now()
+    
+    // Show loading if never visited, or if last visit was more than 30 minutes ago
+    const shouldShowLoadingBasedOnVisit = !hasVisited || !lastVisit || (now - parseInt(lastVisit)) > 30 * 60 * 1000
+    
+    if (!shouldShowLoadingBasedOnVisit && !isHomepageLoading) {
+      // Skip loading animation if user has visited recently and data is already loaded
+      setShowInitialLoading(false)
+      setHasCompletedInitialLoad(true)
+      return
+    }
+
+    // Show loading animation until data is loaded
+    if (!isHomepageLoading && !hasCompletedInitialLoad) {
+      // Data has finished loading, but show loading for minimum time
+      const timer = setTimeout(() => {
+        setShowInitialLoading(false)
+        setHasCompletedInitialLoad(true)
+        sessionStorage.setItem("hasVisited", "true")
+        sessionStorage.setItem("lastVisit", now.toString())
+      }, 1500) // Minimum loading time
+      
+      return () => clearTimeout(timer)
+    }
+  }, [isHomepageLoading, hasCompletedInitialLoad])
+
+  // Show loading animation while data is loading or during minimum display time
+  if (showInitialLoading || (isHomepageLoading && !hasCompletedInitialLoad)) {
+    console.log('Showing LoadingAnimation - Homepage data loading:', isHomepageLoading)
+    return <LoadingAnimation />
+  }
+
+  return <HomePage />
+}
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // Check authentication status
   useEffect(() => {
@@ -128,64 +193,6 @@ function App() {
 
     checkAuth()
   }, [])
-
-  // Handle initial loading animation
-  useEffect(() => {
-    // Check for force loading parameter
-    const urlParams = new URLSearchParams(window.location.search)
-    const forceLoading = urlParams.get('loading') === 'true'
-    const resetVisited = urlParams.get('reset') === 'true'
-    
-    // Reset visited status if requested
-    if (resetVisited) {
-      sessionStorage.removeItem('hasVisited')
-      sessionStorage.removeItem('lastVisit')
-      console.log('Reset visited status')
-    }
-    
-    if (forceLoading) {
-      console.log('Force loading animation enabled via URL parameter')
-      // Force show loading animation
-      const timer = setTimeout(() => {
-        setIsInitialLoad(false)
-      }, 2500)
-      return () => clearTimeout(timer)
-    }
-    
-    // Show loading animation for at least 2 seconds on first visit
-    const hasVisited = sessionStorage.getItem("hasVisited")
-    const lastVisit = sessionStorage.getItem("lastVisit")
-    const now = Date.now()
-    
-    // Show loading if never visited, or if last visit was more than 30 minutes ago
-    // For testing: always show loading (uncomment next line to always show)
-    // const shouldShowLoading = true
-    
-    // Alternative: Show loading on every page load (uncomment next line)
-    // const shouldShowLoading = true
-    
-    const shouldShowLoading = !hasVisited || !lastVisit || (now - parseInt(lastVisit)) > 30 * 60 * 1000
-    
-    console.log('Loading animation decision:', { hasVisited, lastVisit, shouldShowLoading, forceLoading: false })
-    
-    if (shouldShowLoading) {
-      const timer = setTimeout(() => {
-        setIsInitialLoad(false)
-        sessionStorage.setItem("hasVisited", "true")
-        sessionStorage.setItem("lastVisit", now.toString())
-      }, 2500) // Show for 2.5 seconds
-      
-      return () => clearTimeout(timer)
-    } else {
-      setIsInitialLoad(false)
-    }
-  }, [])
-
-  // Show initial loading animation on first visit
-  if (isInitialLoad) {
-    console.log('Showing LoadingAnimation component')
-    return <LoadingAnimation />
-  }
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -228,7 +235,7 @@ function App() {
               <Header />
               <main>
                 <Routes>
-                  <Route path="/" element={<HomePage />} />
+                  <Route path="/" element={<HomePageWithLoading />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/design" element={<DesignPage />} />
                   <Route path="/build" element={<BuildPage />} />
