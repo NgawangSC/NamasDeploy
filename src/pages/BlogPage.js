@@ -16,7 +16,7 @@ const BlogPage = () => {
   }, [fetchBlogs])
 
   const heroStyle = {
-    backgroundImage: `url("/images/about-hero-bg.jpg")`,
+    backgroundColor: 'black',
   }
 
   const handleReadMore = (blogId) => {
