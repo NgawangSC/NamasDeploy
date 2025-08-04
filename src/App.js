@@ -160,6 +160,7 @@ function HomePageWithLoading() {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // Check authentication status
   useEffect(() => {
@@ -193,6 +194,64 @@ function App() {
 
     checkAuth()
   }, [])
+
+  // Handle initial loading animation
+  useEffect(() => {
+    // Check for force loading parameter
+    const urlParams = new URLSearchParams(window.location.search)
+    const forceLoading = urlParams.get('loading') === 'true'
+    const resetVisited = urlParams.get('reset') === 'true'
+    
+    // Reset visited status if requested
+    if (resetVisited) {
+      sessionStorage.removeItem('hasVisited')
+      sessionStorage.removeItem('lastVisit')
+      console.log('Reset visited status')
+    }
+    
+    if (forceLoading) {
+      console.log('Force loading animation enabled via URL parameter')
+      // Force show loading animation
+      const timer = setTimeout(() => {
+        setIsInitialLoad(false)
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+    
+    // Show loading animation for at least 2 seconds on first visit
+    const hasVisited = sessionStorage.getItem("hasVisited")
+    const lastVisit = sessionStorage.getItem("lastVisit")
+    const now = Date.now()
+    
+    // Show loading if never visited, or if last visit was more than 30 minutes ago
+    // For testing: always show loading (uncomment next line to always show)
+    // const shouldShowLoading = true
+    
+    // Alternative: Show loading on every page load (uncomment next line)
+    // const shouldShowLoading = true
+    
+    const shouldShowLoading = !hasVisited || !lastVisit || (now - parseInt(lastVisit)) > 30 * 60 * 1000
+    
+    console.log('Loading animation decision:', { hasVisited, lastVisit, shouldShowLoading, forceLoading: false })
+    
+    if (shouldShowLoading) {
+      const timer = setTimeout(() => {
+        setIsInitialLoad(false)
+        sessionStorage.setItem("hasVisited", "true")
+        sessionStorage.setItem("lastVisit", now.toString())
+      }, 2500) // Show for 2.5 seconds
+      
+      return () => clearTimeout(timer)
+    } else {
+      setIsInitialLoad(false)
+    }
+  }, [])
+
+  // Show initial loading animation on first visit
+  if (isInitialLoad) {
+    console.log('Showing LoadingAnimation component')
+    return <LoadingAnimation />
+  }
 
   // Show loading while checking authentication
   if (isLoading) {
