@@ -105,7 +105,16 @@ app.use((req, res, next) => {
 // Then apply other middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use("/uploads", express.static(UPLOADS_DIR))
+
+// Serve uploaded files with proper CORS headers
+app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR, {
+  setHeaders: (res, path, stat) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.set('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+  }
+}))
 
 // Add explicit preflight handler
 app.options("*", cors(corsOptions))

@@ -1,6 +1,12 @@
 # React Router - Single Page Application Support
 Options -MultiViews
 RewriteEngine On
+
+# Proxy uploaded images to Railway backend
+RewriteCond %{REQUEST_URI} ^/uploads/(.*)$
+RewriteRule ^uploads/(.*)$ https://namasdeploy-production.up.railway.app/uploads/$1 [P,L]
+
+# Handle all other routes for React Router
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.html [QSA,L]
 
