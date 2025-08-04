@@ -41,6 +41,38 @@
   z-index: 10;
 }
 
+.hero-title {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 800px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive styles for hero text */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+    max-width: 90%;
+    padding: 0 1rem;
+  }
+}
+
 .back-button {
   position: absolute;
   top: 40px;

@@ -15,6 +15,8 @@ function AboutExteriorPage() {
           <div className="hero-overlay"></div>
         </div>
         <div className="hero-content">
+          <h1 className="hero-title">Exterior Design</h1>
+          <p className="hero-subtitle">Where architecture meets nature in perfect harmony</p>
         </div>
       </section>
 
