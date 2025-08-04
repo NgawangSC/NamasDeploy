@@ -75,10 +75,10 @@ function HomePage() {
   const testimonials = [
     {
       id: 1,
-      name: "Jennifer Hilbertson",
+      name: "Neten Sherab",
       quote:
-        "The Seascape Villas project constitutes one of the first urban interventions in this very unique context, a landscape dominated by mountains and sea.",
-      title: "Architecture Critic",
+        "Well established office with required professionals. The firm built my dream house without any hindrance.",
+      title: "Client",
     },
     {
       id: 2,

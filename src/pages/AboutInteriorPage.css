@@ -20,12 +20,13 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+  display: none; /* Hide the background image to show black background */
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+  background: #000000; /* Solid black background */
 }
 
 .hero-content {
@@ -133,11 +134,10 @@
 }
 
 .cta-button {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  background: linear-gradient(135deg, #000000, #000000);
   color: white;
   border: none;
   padding: 16px 32px;
-  border-radius: 8px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -147,7 +147,7 @@
 }
 
 .cta-button:hover {
-  background: linear-gradient(135deg, #c0392b, #a93226);
+  background: linear-gradient(135deg, #454545, #454545);
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
 }

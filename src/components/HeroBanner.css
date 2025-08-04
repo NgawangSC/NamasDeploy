@@ -69,7 +69,6 @@
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.8s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -81,14 +80,7 @@
   opacity: 1;
 }
 
-.hero-slide:hover .hero-overlay {
-  background: linear-gradient(
-    135deg, 
-    rgba(0, 0, 0, 0.6) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.4) 100%
-  );
-}
+
 
 .hero-overlay {
   position: absolute;

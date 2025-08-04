@@ -3,7 +3,7 @@ import "./Footer.css"
 
 function Footer() {
   const footerStyle = {
-    background: `url('/images/footer-bg.jpg')`,
+    background: "black",
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundAttachment: "fixed",

@@ -11,11 +11,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: black;
 }
 
 .hero-background {
   position: absolute;
   inset: 0;
+  display: none; /* Hide background image to show black background */
 }
 
 .hero-background img {

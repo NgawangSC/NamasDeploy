@@ -15,9 +15,6 @@ function AboutExteriorPage() {
           <div className="hero-overlay"></div>
         </div>
         <div className="hero-content">
-          <button className="back-button" onClick={() => navigate('/about')}>
-            ← Back to About
-          </button>
         </div>
       </section>
 
