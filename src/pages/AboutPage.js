@@ -100,17 +100,17 @@ function AboutPage() {
       const foundingYear = 2022
       const yearsOfExperience = currentYear - foundingYear + 1 // +1 to include the founding year
       
-              return {
-          projects: Math.max(totalProjects, 0),
-          clients: Math.max(happyClients, 0),
-          workingHours: Math.max(totalWorkingHours, 0),
-          years: Math.max(yearsOfExperience, 0)
-        }
+      return {
+        projects: Math.max(totalProjects, 0),
+        clients: Math.max(happyClients, 0),
+        workingHours: Math.max(totalWorkingHours, 0),
+        years: Math.max(yearsOfExperience, 0)
+      }
     }
     
     const newStats = calculateStats()
     setStatistics(newStats)
-  }, [data.projects])
+  }, [data.projects, data.clients, data.teamMembers])
 
   // Navigation handlers for service pages
   const handlePlanningClick = () => {
