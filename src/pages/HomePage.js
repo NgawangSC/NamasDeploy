@@ -146,10 +146,13 @@ function HomePage() {
               <h2 className="about-title">Awesome Design for Bhutan</h2>
               <div className="about-description">
                 <p>
-                  Namas Design & Build is a Bhutan-based architecture and construction studio shaped by dialogue—with clients, with context, and within our team. 
+                  Based on collective work and shared knowledge, Architecture-Studio aims to favour dialogue and debate,
+                  to transform individual knowledge into increased creative potential.
                 </p>
                 <p>
-                 We listen deeply to the needs of people and place, allowing each project to emerge from its unique cultural and environmental setting. Our strength lies in a multidisciplinary team that works in close, respectful collaboration—blending design, engineering, and execution into a unified process. At Namas, we believe thoughtful architecture is born not from individual vision alone, but from collective insight.
+                  Our Studio is a architecture practice based in Prague, Czech and Venice. Today, it includes 150
+                  architects, urban planners, landscape and interior designers of 25 different nationalities. The
+                  company principle of Architecture-Studio is the collective conception.
                 </p>
               </div>
             </div>
