@@ -196,7 +196,7 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(135deg, #000000, #000000);
   color: white;
   border: none;
   padding: 16px 32px;
@@ -213,7 +213,7 @@
 }
 
 .submit-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2980b9, #1f5582);
+  background: linear-gradient(135deg, #454545, #454545);
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
 }

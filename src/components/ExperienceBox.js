@@ -80,7 +80,6 @@ const ExperienceBox = () => {
           <h4>
             <AnimatedCounter 
               end={yearsOfExperience} 
-
               startAnimation={startAnimation} 
             />
           </h4>

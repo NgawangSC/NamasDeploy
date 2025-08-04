@@ -15,6 +15,8 @@ function AboutInteriorPage() {
           <div className="hero-overlay"></div>
         </div>
         <div className="hero-content">
+          <h1 className="hero-title">Interior Design</h1>
+          <p className="hero-subtitle">Creating beautiful, functional spaces that enhance your daily life</p>
         </div>
       </section>
 
