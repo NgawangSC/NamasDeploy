@@ -41,6 +41,7 @@ import MediaManager from "./dashboard/MediaManager"
 
 import DashboardLogin from "./dashboard/DashboardLogin"
 import "./App.css"
+import MiniLoadingAnimation from "./components/MiniLoadingAnimation"
 
 // ScrollToTop component
 function ScrollToTop() {
@@ -150,8 +151,8 @@ function HomePageWithLoading() {
 
   // Show loading animation while data is loading or during minimum display time
   if (showInitialLoading || (isHomepageLoading && !hasCompletedInitialLoad)) {
-    console.log('Showing LoadingAnimation - Homepage data loading:', isHomepageLoading)
-    return <LoadingAnimation />
+    console.log('Showing MiniLoadingAnimation - Homepage data loading:', isHomepageLoading)
+    return <MiniLoadingAnimation size="large" text="Loading projects..." />
   }
 
   return <HomePage />
