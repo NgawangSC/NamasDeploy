@@ -933,6 +933,7 @@
   padding: 60px 20px;
   text-align: center;
   grid-column: 1 / -1;
+  min-height: 200px;
 }
 
 .projects-loading p,
@@ -959,6 +960,7 @@
   padding: 60px 20px;
   text-align: center;
   width: 100%;
+  min-height: 150px;
 }
 
 .clients-loading p,

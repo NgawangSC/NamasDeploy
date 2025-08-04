@@ -5,6 +5,7 @@ import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
+import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import "./HomePage.css"
 
 function HomePage() {
@@ -169,7 +170,12 @@ function HomePage() {
           <div className="projects-grid">
             {loading.projects ? (
               <div className="projects-loading">
-                <p>Loading projects...</p>
+                <MiniLoadingAnimation 
+                  size="large" 
+                  text="Loading projects..." 
+                  variant="default"
+                  className="mini-loading-inline"
+                />
               </div>
             ) : recentProjects.length > 0 ? (
               recentProjects.map((project, index) => (
@@ -268,7 +274,12 @@ function HomePage() {
           <div className="clients-carousel">
             {loading.clients ? (
               <div className="clients-loading">
-                <p>Loading clients...</p>
+                <MiniLoadingAnimation 
+                  size="medium" 
+                  text="Loading clients..." 
+                  variant="minimal"
+                  className="mini-loading-inline"
+                />
               </div>
             ) : clients.length > 0 ? (
               <>
