@@ -79,7 +79,7 @@ function AboutPage() {
     projects: 0,
     clients: 0,
     workingHours: 0,
-    awards: 0
+    years: 0
   })
   
   // Recalculate statistics when data changes
@@ -88,13 +88,13 @@ function AboutPage() {
       // Calculate total projects done
       const totalProjects = data.projects?.length || 0
       
-      // Calculate happy clients - try to get from clients data, fallback to estimation
+      // Calculate happy clients - 1 client per project
       let happyClients = 0
       if (data.clients && data.clients.length > 0) {
         happyClients = data.clients.length
       } else if (totalProjects > 0) {
-        // Estimate clients as 75% of projects (some clients may have multiple projects)
-        happyClients = Math.max(Math.ceil(totalProjects * 0.75), 1)
+        // 1 happy client per project
+        happyClients = totalProjects
       } else {
         happyClients = 0
       }
@@ -103,17 +103,16 @@ function AboutPage() {
       const hoursPerProject = 100
       const totalWorkingHours = totalProjects * hoursPerProject
       
-      // Calculate awards - count from the awards timeline section (6 awards currently listed)
-      // Can be enhanced to pull from awards data if made dynamic
-      const baseAwards = 6 // Current awards in timeline
-      const additionalAwards = Math.floor(totalProjects / 15) // Bonus awards for project milestones
-      const totalAwards = baseAwards + additionalAwards
+      // Calculate years of experience since 2022 (same as ExperienceBox)
+      const currentYear = new Date().getFullYear()
+      const foundingYear = 2022
+      const yearsOfExperience = currentYear - foundingYear + 1 // +1 to include the founding year
       
               return {
           projects: Math.max(totalProjects, 0),
           clients: Math.max(happyClients, 0),
           workingHours: Math.max(totalWorkingHours, 0),
-          awards: Math.max(totalAwards, 0)
+          years: Math.max(yearsOfExperience, 0)
         }
     }
     
@@ -449,9 +448,9 @@ function AboutPage() {
               </div>
               <div className="box-section">
                 <h4>
-                  <AnimatedCounter end={statistics.awards} suffix="+" startAnimation={startCounters} />
+                  <AnimatedCounter end={statistics.years} suffix="+" startAnimation={startCounters} />
                 </h4>
-                <p>Awards</p>
+                <p>Years</p>
               </div>
             </div>
             <div className="statistics-text">
