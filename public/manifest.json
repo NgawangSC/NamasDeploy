@@ -1,6 +1,7 @@
 {
   "short_name": "NAMAS Architecture",
   "name": "NAMAS Architecture Studio",
+  "description": "Integrated architectural, planning, and construction solutions in Bhutan",
   "icons": [
     {
       "src": "favicon.ico",
@@ -28,18 +29,22 @@
       "sizes": "180x180"
     },
     {
-      "src": "logo192.png",
+      "src": "android-chrome-192x192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "android-chrome-512x512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "categories": ["architecture", "construction", "design"],
+  "lang": "en",
+  "scope": "/"
 }

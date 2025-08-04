@@ -1,117 +1,114 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { getImageUrl } from '../utils/imageUtils';
-import MiniLoadingAnimation from './MiniLoadingAnimation';
+import React, { useState, useRef, useEffect } from 'react';
 
 const OptimizedImage = ({ 
   src, 
   alt, 
   className = '', 
-  placeholder = '/images/placeholder.png',
-  onLoad,
-  onError,
+  style = {}, 
+  loading = 'lazy',
+  placeholder = null,
   ...props 
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [imageSrc, setImageSrc] = useState(placeholder);
-  const imgRef = useRef(null);
-  const loadedImageSrc = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef();
 
-  // Get optimized image URL
-  const imageUrl = getImageUrl(src);
-
-  const handleImageLoad = useCallback(() => {
-    setIsLoading(false);
-    setHasError(false);
-    if (onLoad) onLoad();
-  }, [onLoad]);
-
-  const handleImageError = useCallback(() => {
-    setIsLoading(false);
-    setHasError(true);
-    setImageSrc(placeholder);
-    if (onError) onError();
-  }, [onError, placeholder]);
-
-  // Preload the actual image
-  useEffect(() => {
-    if (!imageUrl || imageUrl === placeholder) {
-      setIsLoading(false);
-      return;
-    }
-
-    // If we've already loaded this image URL, don't reload it
-    if (loadedImageSrc.current === imageUrl) {
-      setIsLoading(false);
-      setImageSrc(imageUrl);
-      return;
-    }
-
-    setIsLoading(true);
-    setHasError(false);
-
-    const img = new Image();
+  // Get optimized image paths
+  const getOptimizedSrc = (originalSrc) => {
+    const baseName = originalSrc.replace(/\.(jpg|jpeg|png)$/i, '');
+    const extension = originalSrc.match(/\.(jpg|jpeg|png)$/i)?.[1] || 'jpg';
     
-    img.onload = () => {
-      // Only update if the component is still mounted and the URL hasn't changed
-      if (loadedImageSrc.current !== imageUrl) {
-        loadedImageSrc.current = imageUrl;
-        setImageSrc(imageUrl);
-        handleImageLoad();
+    return {
+      webp: `/images/optimized/${baseName.replace('/images/', '')}.webp`,
+      fallback: `/images/optimized/${baseName.replace('/images/', '')}.jpg`
+    };
+  };
+
+  const optimizedSrcs = getOptimizedSrc(src);
+
+  // Intersection Observer for lazy loading
+  useEffect(() => {
+    if (loading === 'lazy') {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '50px' }
+      );
+
+      if (imgRef.current) {
+        observer.observe(imgRef.current);
       }
-    };
 
-    img.onerror = () => {
-      if (loadedImageSrc.current !== imageUrl) {
-        handleImageError();
-      }
-    };
+      return () => observer.disconnect();
+    } else {
+      setIsInView(true);
+    }
+  }, [loading]);
 
-    // Start loading the image
-    img.src = imageUrl;
+  const handleLoad = () => {
+    setIsLoaded(true);
+  };
 
-    // Cleanup function
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
-  }, [imageUrl, handleImageLoad, handleImageError, placeholder]);
+  const handleError = (e) => {
+    // Fallback to original image if optimized version fails
+    e.target.src = src;
+  };
 
   return (
-    <div className={`optimized-image-container ${className}`} style={{ position: 'relative' }}>
-      <img
-        ref={imgRef}
-        src={imageSrc}
-        alt={alt}
-        className={`${isLoading ? 'loading' : ''} ${hasError ? 'error' : ''}`}
-        style={{
-          opacity: isLoading ? 0.7 : 1,
-          transition: 'opacity 0.3s ease-in-out',
-          ...props.style
-        }}
-        {...props}
-      />
-      {isLoading && (
+    <div 
+      ref={imgRef}
+      className={`optimized-image-container ${className}`}
+      style={{ 
+        position: 'relative',
+        overflow: 'hidden',
+        ...style 
+      }}
+    >
+      {/* Placeholder while loading */}
+      {!isLoaded && placeholder && (
         <div 
-          className="image-loading-overlay"
+          className="image-placeholder"
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
-            right: 0,
-            bottom: 0,
+            width: '100%',
+            height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)'
+            backgroundColor: '#f0f0f0',
+            color: '#999'
           }}
         >
-          <MiniLoadingAnimation 
-            size="small" 
-            showText={false}
-            variant="dots-only"
-          />
+          {placeholder}
         </div>
+      )}
+
+      {/* Main image with WebP support */}
+      {isInView && (
+        <picture>
+          <source srcSet={optimizedSrcs.webp} type="image/webp" />
+          <source srcSet={optimizedSrcs.fallback} type="image/jpeg" />
+          <img
+            src={optimizedSrcs.fallback}
+            alt={alt}
+            onLoad={handleLoad}
+            onError={handleError}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: isLoaded ? 1 : 0,
+              transition: 'opacity 0.3s ease-in-out'
+            }}
+            {...props}
+          />
+        </picture>
       )}
     </div>
   );

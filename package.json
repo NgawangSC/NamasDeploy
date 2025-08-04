@@ -12,13 +12,23 @@
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
-    "env-cmd": "^10.1.0"
+    "compression-webpack-plugin": "^11.1.0",
+    "env-cmd": "^10.1.0",
+    "imagemin": "^9.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "imagemin-webp-webpack-plugin": "^3.3.6",
+    "sharp": "^0.34.3",
+    "terser-webpack-plugin": "^5.3.14",
+    "webp-converter": "^2.3.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:production": "env-cmd -f .env.production react-scripts build && cp public/.htaccess build/.htaccess",
+    "build:production": "env-cmd -f .env.production react-scripts build && cp public/.htaccess build/.htaccess && cp public/sw.js build/sw.js && node scripts/post-build.js",
     "build:cpanel": "npm run build:production && npm run optimize:cpanel",
+    "build:analyze": "npm run build:production && npx webpack-bundle-analyzer build/static/js/*.js",
     "optimize:cpanel": "echo 'Build completed for cPanel deployment. Upload the build folder contents to your cPanel public_html directory.'",
     "eject": "react-scripts eject"
   },
