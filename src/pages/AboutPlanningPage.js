@@ -15,6 +15,8 @@ function AboutPlanningPage() {
           <div className="hero-overlay"></div>
         </div>
         <div className="hero-content">
+          <h1 className="hero-title">Planning Services</h1>
+          <p className="hero-subtitle">Strategic planning that transforms visions into reality</p>
         </div>
       </section>
 
