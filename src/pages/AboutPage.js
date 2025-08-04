@@ -88,16 +88,8 @@ function AboutPage() {
       // Calculate total projects done
       const totalProjects = data.projects?.length || 0
       
-      // Calculate happy clients - 1 client per project
-      let happyClients = 0
-      if (data.clients && data.clients.length > 0) {
-        happyClients = data.clients.length
-      } else if (totalProjects > 0) {
-        // 1 happy client per project
-        happyClients = totalProjects
-      } else {
-        happyClients = 0
-      }
+      // Calculate happy clients - always 1 client per project
+      const happyClients = totalProjects
       
       // Calculate working hours (1 project = 100 working hours)
       const hoursPerProject = 100
@@ -118,7 +110,7 @@ function AboutPage() {
     
     const newStats = calculateStats()
     setStatistics(newStats)
-  }, [data.projects, data.clients])
+  }, [data.projects])
 
   // Navigation handlers for service pages
   const handlePlanningClick = () => {

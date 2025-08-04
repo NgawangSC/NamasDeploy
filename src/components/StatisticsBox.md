@@ -60,7 +60,7 @@ const customStats = [
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `projectsDone` | number | 157 | Number of completed projects |
-| `happyClients` | number | 86 | Number of satisfied clients |
+| `happyClients` | number | 157 | Number of satisfied clients (1 per project) |
 | `workingHours` | number | 924 | Total working hours |
 | `years` | number | 3 | Number of years in business |
 | `customStats` | array | null | Custom statistics array (overrides default props) |
