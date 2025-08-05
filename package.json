@@ -13,10 +13,11 @@
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "env-cmd": "^10.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation react-scripts start",
     "build": "react-scripts build",
     "build:production": "env-cmd -f .env.production react-scripts build && cp public/.htaccess build/.htaccess",
     "build:cpanel": "npm run build:production && npm run optimize:cpanel",
