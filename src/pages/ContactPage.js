@@ -84,7 +84,7 @@ function ContactPage() {
                   </div>
                   <div className="contact-text">
                     <h4>Visit Our Office</h4>
-                    <p>Thimphu, Bhutan<br />Architecture & Design Studio</p>
+                    <p>Babesa, Thimphu, Bhutan<br />Namas Design and Build</p>
                   </div>
                 </div>
 
@@ -94,7 +94,7 @@ function ContactPage() {
                   </div>
                   <div className="contact-text">
                     <h4>Call Us</h4>
-                    <p>+975 XXXX XXXX<br />Mon - Fri: 9:00 AM - 6:00 PM</p>
+                    <p>+975 17786124 <br />+975 77986124</p>
                   </div>
                 </div>
 
@@ -104,17 +104,7 @@ function ContactPage() {
                   </div>
                   <div className="contact-text">
                     <h4>Email Us</h4>
-                    <p>info@yourarchitecture.bt<br />projects@yourarchitecture.bt</p>
-                  </div>
-                </div>
-
-                <div className="contact-item">
-                  <div className="contact-icon">
-                    <Clock size={24} />
-                  </div>
-                  <div className="contact-text">
-                    <h4>Business Hours</h4>
-                    <p>Monday - Friday: 9:00 AM - 6:00 PM<br />Saturday: 10:00 AM - 4:00 PM</p>
+                    <p>namasdesign2021@gmail.com</p>
                   </div>
                 </div>
               </div>
