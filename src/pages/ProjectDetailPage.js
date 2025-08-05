@@ -270,7 +270,7 @@ const ProjectDetailPage = () => {
               <div className="design-team-info">
                 <div className="team-members">
                   <h3>Team Members</h3>
-                  <p>{project.designTeam || 'NAMAS Architecture'}</p>
+                  <p>{project.designTeam || 'Not specified'}</p>
                 </div>
               </div>
             </div>

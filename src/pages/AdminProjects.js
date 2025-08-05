@@ -21,7 +21,7 @@ const AdminProjects = () => {
     year: "",
     status: "Ongoing",
     client: "",
-    designTeam: "NAMAS Architecture",
+    designTeam: "",
     description: "",
   })
   const [selectedImages, setSelectedImages] = useState([])
@@ -55,7 +55,7 @@ const AdminProjects = () => {
         year: "",
         status: "Ongoing",
         client: "",
-        designTeam: "NAMAS Architecture",
+        designTeam: "",
         description: "",
       })
       setSelectedImages([])
@@ -78,7 +78,7 @@ const AdminProjects = () => {
       year: project.year,
       status: project.status,
       client: project.client || "",
-      designTeam: project.designTeam || "NAMAS Architecture",
+      designTeam: project.designTeam || "",
       description: project.description || "",
     })
     setShowForm(true)
@@ -120,7 +120,7 @@ const AdminProjects = () => {
       year: "",
       status: "Ongoing",
       client: "",
-      designTeam: "NAMAS Architecture",
+      designTeam: "",
       description: "",
     })
     setSelectedImages([])
