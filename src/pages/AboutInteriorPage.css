@@ -1,6 +1,8 @@
 /* About Interior Page Styles */
 .about-interior-page {
   padding-top: 0;
+  background: #ffffff;
+  min-height: 100vh;
 }
 
 /* Hero Section */

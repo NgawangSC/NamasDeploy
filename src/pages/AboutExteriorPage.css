@@ -1,6 +1,8 @@
 /* About Exterior Page Styles */
 .about-exterior-page {
   padding-top: 0;
+  background: #ffffff;
+  min-height: 100vh;
 }
 
 /* Hero Section */
@@ -166,6 +168,7 @@
 }
 
 .cta-button {
+  background: linear-gradient(135deg, #000000, #000000);
   color: white;
   border: none;
   padding: 16px 32px;
