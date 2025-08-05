@@ -196,7 +196,7 @@ function ContactPage() {
 
                 {submitStatus === "success" && (
                   <div className="form-message success">
-                    Thank you for your message! We'll get back to you within 24 hours.
+                    Thank you for your message! We'll get back to you soon.
                   </div>
                 )}
 
