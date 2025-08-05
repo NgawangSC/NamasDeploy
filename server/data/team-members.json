@@ -106,5 +106,14 @@
     "image": null,
     "createdAt": "2025-07-30T16:34:12.064Z",
     "updatedAt": "2025-07-30T16:34:12.064Z"
+  },
+  {
+    "id": 1754400023825,
+    "name": "Updated Test User",
+    "title": "Updated Test Title",
+    "position": "Updated Test Position",
+    "image": null,
+    "createdAt": "2025-08-05T13:20:23.825Z",
+    "updatedAt": "2025-08-05T13:20:28.293Z"
   }
 ]
