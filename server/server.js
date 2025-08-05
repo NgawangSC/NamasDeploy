@@ -28,11 +28,33 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER || 'your-email@gmail.com',
     pass: process.env.EMAIL_PASS || 'your-app-password'
+  },
+  // Add additional configuration for better reliability
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  tls: {
+    rejectUnauthorized: false
   }
 })
 
 // Target email for contact form submissions
 const CONTACT_EMAIL = 'zensukinsc@gmail.com'
+
+// Verify email connection on startup
+const verifyEmailConnection = async () => {
+  try {
+    await transporter.verify()
+    console.log('✅ Email server connection verified successfully')
+    return true
+  } catch (error) {
+    console.error('❌ Email server connection failed:', error.message)
+    console.error('Email configuration:', {
+      user: process.env.EMAIL_USER ? '***configured***' : 'NOT SET',
+      pass: process.env.EMAIL_PASS ? '***configured***' : 'NOT SET'
+    })
+    return false
+  }
+}
 
 // Load data from files
 const teamMembers = loadData(TEAM_MEMBERS_FILE)
@@ -1133,10 +1155,21 @@ app.post("/api/contact", async (req, res) => {
         `
       }
 
-      await transporter.sendMail(mailOptions)
-      console.log("📧 Contact form submitted and email sent:", newContact.name)
+      console.log('📧 Attempting to send email to:', CONTACT_EMAIL)
+      console.log('📧 From:', mailOptions.from)
+      console.log('📧 Subject:', mailOptions.subject)
+      
+      const info = await transporter.sendMail(mailOptions)
+      console.log("✅ Contact form submitted and email sent successfully:", newContact.name)
+      console.log("📧 Email info:", info.messageId)
     } catch (emailError) {
-      console.error("❌ Error sending email notification:", emailError)
+      console.error("❌ Error sending email notification:", emailError.message)
+      console.error("❌ Email error details:", {
+        code: emailError.code,
+        command: emailError.command,
+        response: emailError.response,
+        responseCode: emailError.responseCode
+      })
       // Don't fail the request if email fails - still save the contact
     }
     
@@ -1152,6 +1185,59 @@ app.post("/api/contact", async (req, res) => {
       success: false,
       error: "Failed to submit contact form",
       details: error.message
+    })
+  }
+})
+
+// Test email endpoint (for debugging)
+app.post("/api/test-email", async (req, res) => {
+  try {
+    console.log('🧪 Testing email configuration...')
+    
+    // First verify connection
+    await transporter.verify()
+    console.log('✅ Email connection verified')
+    
+    // Send test email
+    const testMailOptions = {
+      from: process.env.EMAIL_USER || 'noreply@namasarchitecture.com',
+      to: CONTACT_EMAIL,
+      subject: 'Test Email from Namas Architecture Server',
+      html: `
+        <h2>Email Test</h2>
+        <p>This is a test email to verify the email configuration is working.</p>
+        <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>Environment:</strong> ${process.env.NODE_ENV}</p>
+        <p><strong>Server URL:</strong> ${req.protocol}://${req.get('host')}</p>
+      `
+    }
+    
+    const info = await transporter.sendMail(testMailOptions)
+    
+    res.json({
+      success: true,
+      message: "Test email sent successfully",
+      details: {
+        messageId: info.messageId,
+        from: testMailOptions.from,
+        to: testMailOptions.to,
+        timestamp: new Date().toISOString()
+      }
+    })
+    
+    console.log('✅ Test email sent successfully:', info.messageId)
+    
+  } catch (error) {
+    console.error('❌ Test email failed:', error)
+    res.status(500).json({
+      success: false,
+      error: "Test email failed",
+      details: {
+        message: error.message,
+        code: error.code,
+        command: error.command,
+        response: error.response
+      }
     })
   }
 })
@@ -1327,7 +1413,7 @@ app.use("*", (req, res) => {
 })
 
 // Start server
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, "0.0.0.0", async () => {
   console.log(`🚀 NAMAS Architecture API Server running on port ${PORT}`)
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`)
   console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
@@ -1335,4 +1421,8 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(
     `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${teamMembers.length} team members, ${contacts.length} contacts`,
   )
+  
+  // Verify email connection
+  console.log('📧 Verifying email configuration...')
+  await verifyEmailConnection()
 })
