@@ -348,16 +348,7 @@ class ApiService {
     })
   }
 
-  // Health check method
-  static async healthCheck() {
-    try {
-      const response = await this.request("")
-      return response
-    } catch (error) {
-      console.error("Health check failed:", error)
-      throw error
-    }
-  }
+
 }
 
 export default ApiService
