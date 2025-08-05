@@ -939,6 +939,7 @@ app.post("/api/team-members", upload.single('image'), (req, res) => {
     const newMember = {
       id: Date.now(),
       name: req.body.name,
+      title: req.body.title,
       position: req.body.position,
       bio: req.body.bio,
       email: req.body.email,
@@ -987,6 +988,7 @@ app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
     const updatedMember = {
       ...existingMember,
       name: req.body.name || existingMember.name,
+      title: req.body.title || existingMember.title,
       position: req.body.position || existingMember.position,
       bio: req.body.bio || existingMember.bio,
       email: req.body.email || existingMember.email,
