@@ -1,8 +1,9 @@
 const express = require("express")
+const cors = require("cors")
 const multer = require("multer")
 const path = require("path")
 const fs = require("fs")
-const cors = require("cors")
+const nodemailer = require("nodemailer")
 require("dotenv").config() // Load environment variables
 
 const app = express()
@@ -20,6 +21,18 @@ const PROJECTS_FILE = path.join(DATA_DIR, "projects.json")
 const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
 const CLIENTS_FILE = path.join(DATA_DIR, "clients.json")
 const CONTACTS_FILE = path.join(DATA_DIR, "contacts.json")
+
+// Email configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'your-email@gmail.com',
+    pass: process.env.EMAIL_PASS || 'your-app-password'
+  }
+})
+
+// Target email for contact form submissions
+const CONTACT_EMAIL = 'zensukinsc@gmail.com'
 
 // Load data from files
 const teamMembers = loadData(TEAM_MEMBERS_FILE)
@@ -1084,7 +1097,7 @@ app.post("/api/media/upload", upload.array('images', 10), (req, res) => {
 })
 
 // POST contact form submission
-app.post("/api/contact", (req, res) => {
+app.post("/api/contact", async (req, res) => {
   try {
     const newContact = {
       id: Date.now(),
@@ -1100,7 +1113,32 @@ app.post("/api/contact", (req, res) => {
     contacts.push(newContact)
     saveData(CONTACTS_FILE, contacts)
     
-    console.log("📧 Contact form submitted:", newContact.name)
+    // Send email notification
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER || 'noreply@namasarchitecture.com',
+        to: CONTACT_EMAIL,
+        subject: `New Contact Form Submission from ${newContact.name}`,
+        html: `
+          <h2>New Contact Form Submission</h2>
+          <p><strong>Name:</strong> ${newContact.name}</p>
+          <p><strong>Email:</strong> ${newContact.email}</p>
+          <p><strong>Phone:</strong> ${newContact.phone || 'Not provided'}</p>
+          <p><strong>Subject:</strong> ${newContact.subject || 'General Inquiry'}</p>
+          <p><strong>Message:</strong></p>
+          <p>${newContact.message.replace(/\n/g, '<br>')}</p>
+          <p><strong>Submitted:</strong> ${new Date(newContact.createdAt).toLocaleString()}</p>
+          <hr>
+          <p><em>This message was sent from the Namas Architecture website contact form.</em></p>
+        `
+      }
+
+      await transporter.sendMail(mailOptions)
+      console.log("📧 Contact form submitted and email sent:", newContact.name)
+    } catch (emailError) {
+      console.error("❌ Error sending email notification:", emailError)
+      // Don't fail the request if email fails - still save the contact
+    }
     
     res.json({
       success: true,

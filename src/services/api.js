@@ -329,6 +329,25 @@ class ApiService {
     })
   }
 
+  // Contacts API
+  static async getContacts() {
+    return this.request("/contacts")
+  }
+
+  static async createContact(contactData) {
+    return this.request("/contact", {
+      method: "POST",
+      body: JSON.stringify(contactData),
+    })
+  }
+
+  static async updateContact(id, updates) {
+    return this.request(`/contacts/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(updates),
+    })
+  }
+
   // Health check method
   static async healthCheck() {
     try {
