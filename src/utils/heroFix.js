@@ -92,7 +92,7 @@ export const heroUtils = {
         year: "2023",
         status: "Completed",
         client: "Private Client",
-        designTeam: "NAMAS Architecture",
+        designTeam: "Design Team",
         description: "A traditional Bhutanese residential project combining modern amenities with cultural heritage.",
         featured: true,
         createdAt: new Date().toISOString(),
