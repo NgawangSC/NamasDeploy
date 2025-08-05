@@ -166,11 +166,10 @@
 }
 
 .cta-button {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(135deg, #000000, #000000);
   color: white;
   border: none;
   padding: 16px 32px;
-  border-radius: 8px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -180,9 +179,9 @@
 }
 
 .cta-button:hover {
-  background: linear-gradient(135deg, #2980b9, #1f5582);
+  background: linear-gradient(135deg, #454545, #454545);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
 }
 
 /* Responsive Design */
