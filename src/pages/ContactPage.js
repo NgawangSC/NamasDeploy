@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
+import ApiService from "../services/api"
 import "./ContactPage.css"
 
 function ContactPage() {
@@ -29,18 +30,22 @@ function ContactPage() {
     setSubmitStatus(null)
 
     try {
-      // Here you would typically send the form data to your backend
-      // For now, we'll simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Submit the form data to the backend API
+      const response = await ApiService.createContact(formData)
       
-      setSubmitStatus("success")
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        message: ""
-      })
+      if (response.success) {
+        setSubmitStatus("success")
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: ""
+        })
+      } else {
+        setSubmitStatus("error")
+      }
     } catch (error) {
+      console.error("Error submitting contact form:", error)
       setSubmitStatus("error")
     } finally {
       setIsSubmitting(false)
