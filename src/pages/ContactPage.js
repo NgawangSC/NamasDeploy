@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
 import ApiService from "../services/api"
+import SEO from "../components/SEO"
 import "./ContactPage.css"
 
 function ContactPage() {
@@ -52,8 +53,37 @@ function ContactPage() {
     }
   }
 
+  const contactPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact NAMAS Architecture Studio",
+    "description": "Get in touch with NAMAS Architecture Studio for your architectural, construction, and design needs in Bhutan.",
+    "url": "https://namasarchitecture.com/contact",
+    "mainEntity": {
+      "@type": "ArchitecturalFirm",
+      "name": "NAMAS Architecture Studio",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "Bhutan"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": ["English", "Dzongkha"]
+      }
+    }
+  };
+
   return (
     <div className="contact-page">
+      <SEO 
+        title="Contact NAMAS Architecture Studio - Get Your Design Quote Today"
+        description="Get in touch with NAMAS Architecture Studio for your architectural, construction, interior design, and planning needs in Bhutan. Contact us for a consultation."
+        keywords="contact NAMAS, architecture consultation Bhutan, design quote, construction inquiry, architectural services contact"
+        url="https://namasarchitecture.com/contact"
+        schemaData={contactPageSchema}
+      />
+      
       {/* Hero Section */}
       <section className="contact-hero">
         <div className="hero-background">

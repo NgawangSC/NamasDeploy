@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Routes, Route, useLocation, Navigate } from "react-router-dom"
+import { HelmetProvider } from "react-helmet-async"
 import { DataProvider, useData } from "./contexts/DataContext" // Modified import
 import Header from "./components/Header"
 import Footer from "./components/Footer"
@@ -211,9 +212,10 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <ScrollToTop />
-      <Routes>
+    <HelmetProvider>
+      <div className="App">
+        <ScrollToTop />
+        <Routes>
         {/* Dashboard Routes */}
         <Route 
           path="/dashboard/login" 
@@ -274,8 +276,9 @@ function App() {
             </DataProvider>
           }
         />
-      </Routes>
-    </div>
+        </Routes>
+      </div>
+    </HelmetProvider>
   )
 }
 

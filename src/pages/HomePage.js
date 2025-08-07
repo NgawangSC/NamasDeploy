@@ -6,6 +6,7 @@ import { getImageUrl } from "../utils/imageUtils"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import SEO from "../components/SEO"
 import "./HomePage.css"
 
 function HomePage() {
@@ -129,8 +130,40 @@ function HomePage() {
     navigate(`/project/${projectId}`)
   }
 
+  const homePageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "NAMAS Architecture Studio - Home",
+    "description": "Leading architectural firm in Bhutan providing integrated design, planning, and construction services. Expert solutions for residential, commercial, and institutional projects.",
+    "url": "https://namasarchitecture.com",
+    "mainEntity": {
+      "@type": "ArchitecturalFirm",
+      "name": "NAMAS Architecture Studio",
+      "description": "Leading architectural firm in Bhutan",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "Bhutan"
+      },
+      "services": [
+        "Architectural Design",
+        "Interior Design", 
+        "Landscape Design",
+        "Construction Management",
+        "Planning Services"
+      ]
+    }
+  };
+
   return (
     <div className="homepage">
+      <SEO 
+        title="NAMAS Architecture Studio - Design & Build Solutions in Bhutan"
+        description="Leading architectural firm in Bhutan providing integrated design, planning, and construction services. Expert solutions for residential, commercial, and institutional projects."
+        keywords="architecture Bhutan, construction Bhutan, interior design, landscape design, architectural planning, building construction, NAMAS, design build, Thimphu architecture"
+        url="https://namasarchitecture.com"
+        schemaData={homePageSchema}
+      />
+      
       {/* Hero Banner Section with Featured Projects - Self-Contained Version */}
       <HeroBannerSelfContained />
 

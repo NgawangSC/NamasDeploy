@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import ApiService from "../services/api"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import SEO from "../components/SEO"
 import "./AboutPage.css"
 
 // Custom hook for counter animation
@@ -235,8 +236,37 @@ function AboutPage() {
     }
   }, [startCounters])
 
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About NAMAS Architecture Studio",
+    "description": "Learn about NAMAS Architecture Studio - a leading architectural firm in Bhutan with expertise in design, construction, and planning services.",
+    "url": "https://namasarchitecture.com/about",
+    "mainEntity": {
+      "@type": "ArchitecturalFirm",
+      "name": "NAMAS Architecture Studio",
+      "foundingDate": "2010",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "Bhutan"
+      },
+      "serviceArea": {
+        "@type": "Country",
+        "name": "Bhutan"
+      }
+    }
+  };
+
   return (
     <div className="about-page">
+      <SEO 
+        title="About NAMAS Architecture Studio - Leading Architectural Firm in Bhutan"
+        description="Learn about NAMAS Architecture Studio - a leading architectural firm in Bhutan with expertise in design, construction, interior design, landscape design, and planning services."
+        keywords="about NAMAS, architecture firm Bhutan, architectural services, construction company Bhutan, design studio"
+        url="https://namasarchitecture.com/about"
+        schemaData={aboutPageSchema}
+      />
+      
       {/* Hero Banner */}
       <section className="about-hero-banner">
         <div className="hero-background">
