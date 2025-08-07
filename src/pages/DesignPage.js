@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import SEO from "../components/SEO"
 import "./DesignPage.css"
 
 const DesignPage = () => {
@@ -172,8 +173,32 @@ const DesignPage = () => {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
+  const designPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Architectural Design Services",
+    "description": "Professional architectural design services by NAMAS Architecture Studio in Bhutan. Expert design solutions for residential, commercial, and institutional projects.",
+    "provider": {
+      "@type": "ArchitecturalFirm",
+      "name": "NAMAS Architecture Studio"
+    },
+    "serviceType": "Architectural Design",
+    "areaServed": {
+      "@type": "Country",
+      "name": "Bhutan"
+    }
+  };
+
   return (
     <div className="design-page">
+      <SEO 
+        title="Architectural Design Services | NAMAS Architecture Studio Bhutan"
+        description="Professional architectural design services by NAMAS Architecture Studio in Bhutan. Expert design solutions for residential, commercial, and institutional projects."
+        keywords="architectural design Bhutan, architecture services, building design, residential design, commercial design, NAMAS design"
+        url="https://namasarchitecture.com/design"
+        schemaData={designPageSchema}
+      />
+      
       <div
         className="slider-container"
         ref={sliderRef}
