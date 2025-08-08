@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  api:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - ALLOWED_ORIGINS=http://localhost:3000
+    volumes:
+      - ./:/app
+      - server_data:/data
+    command: sh -c "npm ci && node server.js"
+volumes:
+  server_data:

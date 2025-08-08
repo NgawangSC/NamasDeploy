@@ -5,7 +5,7 @@ const path = require("path")
 const fs = require("fs")
 const nodemailer = require("nodemailer")
 require("dotenv").config() // Load environment variables
-const { createBackup } = require("./data-backup")
+const { createBackup, startAutoBackup } = require("./data-backup")
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -1592,4 +1592,11 @@ app.listen(PORT, "0.0.0.0", async () => {
   // Verify email connection
   console.log('📧 Verifying email configuration...')
   await verifyEmailConnection()
+
+  // Start automated backups (daily in production, every 10 min in development)
+  try {
+    startAutoBackup()
+  } catch (err) {
+    console.error('Failed to start auto-backup:', err.message)
+  }
 })
