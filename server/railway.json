@@ -13,7 +13,10 @@
       "variables": {
         "NODE_ENV": "production",
         "ALLOWED_ORIGINS": "https://www.namasbhutan.com,https://namasbhutan.com",
-        "HOST": "0.0.0.0"
+        "HOST": "0.0.0.0",
+        "DATA_DIR": "/data/data",
+        "UPLOADS_DIR": "/data/uploads",
+        "BACKUP_DIR": "/data/backups"
       }
     }
   }

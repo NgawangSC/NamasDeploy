@@ -5,7 +5,7 @@ const path = require("path")
 const fs = require("fs")
 const nodemailer = require("nodemailer")
 require("dotenv").config() // Load environment variables
-const { createBackup } = require("./data-backup")
+const { createBackup, startAutoBackup } = require("./data-backup")
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -15,8 +15,25 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
   : ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
 
-const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, "data")
-const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : path.join(__dirname, "uploads")
+// When deploying backend on the same cPanel host as the frontend, you can opt-in to save inside the build folder
+// by setting SAVE_IN_BUILD=1 and CPANEL_USER=<your_cpanel_username> in the environment.
+const useBuildStorage = process.env.SAVE_IN_BUILD === "1" && !!process.env.CPANEL_USER
+const buildRoot = useBuildStorage
+  ? path.resolve(`/home/${process.env.CPANEL_USER}/public_html/build`)
+  : null
+
+const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : useBuildStorage
+    ? path.join(buildRoot, "data")
+    : path.join(__dirname, "data")
+
+const UPLOADS_DIR = process.env.UPLOADS_DIR
+  ? path.resolve(process.env.UPLOADS_DIR)
+  : useBuildStorage
+    ? path.join(buildRoot, "uploads")
+    : path.join(__dirname, "uploads")
+
 const TEAM_MEMBERS_FILE = path.join(DATA_DIR, "team-members.json")
 const PROJECTS_FILE = path.join(DATA_DIR, "projects.json")
 const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
@@ -132,6 +149,13 @@ try {
 // Setup uploads
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true })
+}
+
+// Start periodic backups (initial backup + scheduled)
+try {
+  startAutoBackup()
+} catch (backupErr) {
+  console.warn("Auto-backup could not be started:", backupErr.message)
 }
 
 const storage = multer.diskStorage({
