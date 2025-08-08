@@ -434,6 +434,7 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
       location: req.body.location,
       year: req.body.year,
       client: req.body.client,
+      designTeam: req.body.designTeam, 
       featured: req.body.featured === 'true' || req.body.featured === true,
       status: req.body.status || 'completed',
       createdAt: new Date().toISOString(),
@@ -509,6 +510,7 @@ app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
       location: req.body.location || existingProject.location,
       year: req.body.year || existingProject.year,
       client: req.body.client || existingProject.client,
+      designTeam: req.body.designTeam || existingProject.designTeam,
       featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
       status: req.body.status || existingProject.status,
       updatedAt: new Date().toISOString()
