@@ -29,9 +29,23 @@ const allowedOrigins = (() => {
 })()
 
 // Prefer external volume at /data when available unless explicitly overridden
-const DEFAULT_BASE_DIR = fs.existsSync('/data') ? '/data' : __dirname
-const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(DEFAULT_BASE_DIR, 'data'))
-const UPLOADS_DIR = path.resolve(process.env.UPLOADS_DIR || path.join(DEFAULT_BASE_DIR, 'uploads'))
+const DEFAULT_BASE_DIR = (() => {
+  if (fs.existsSync('/data')) return '/data'
+  // cPanel File Manager alias path (UI)
+  const CPANEL_ALIAS = '/MyFiles/domains/namasbhutan.com/storage'
+  if (fs.existsSync(CPANEL_ALIAS)) return CPANEL_ALIAS
+  // Likely real filesystem path on cPanel servers
+  const CPANEL_REAL = '/home/namasbhutan/domains/namasbhutan.com/storage'
+  if (fs.existsSync(CPANEL_REAL)) return CPANEL_REAL
+  return __dirname
+})()
+
+const DATA_DIR = path.resolve(
+  process.env.DATA_DIR || path.join(DEFAULT_BASE_DIR, 'data')
+)
+const UPLOADS_DIR = path.resolve(
+  process.env.UPLOADS_DIR || path.join(DEFAULT_BASE_DIR, 'uploads')
+)
 const TEAM_MEMBERS_FILE = path.join(DATA_DIR, "team-members.json")
 const PROJECTS_FILE = path.join(DATA_DIR, "projects.json")
 const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
