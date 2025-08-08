@@ -1,8 +1,17 @@
 const fs = require('fs')
 const path = require('path')
 
-const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data')
-const BACKUP_DIR = process.env.BACKUP_DIR ? path.resolve(process.env.BACKUP_DIR) : path.join(__dirname, 'backups')
+const DEFAULT_BASE_DIR = (() => {
+  if (fs.existsSync('/data')) return '/data'
+  const CPANEL_ALIAS = '/MyFiles/domains/namasbhutan.com/storage'
+  if (fs.existsSync(CPANEL_ALIAS)) return CPANEL_ALIAS
+  const CPANEL_REAL = '/home/namasbhutan/domains/namasbhutan.com/storage'
+  if (fs.existsSync(CPANEL_REAL)) return CPANEL_REAL
+  return __dirname
+})()
+
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(DEFAULT_BASE_DIR, 'data')
+const BACKUP_DIR = process.env.BACKUP_DIR ? path.resolve(process.env.BACKUP_DIR) : path.join(DEFAULT_BASE_DIR, 'backups')
 
 // Create backup with timestamp
 const createBackup = () => {
