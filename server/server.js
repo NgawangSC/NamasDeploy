@@ -6,6 +6,7 @@ const fs = require("fs")
 const nodemailer = require("nodemailer")
 require("dotenv").config() // Load environment variables
 const { createBackup } = require("./data-backup")
+const { isDbEnabled, initDb, query: dbQuery } = require('./db')
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -427,74 +428,96 @@ app.post("/api/backup", (req, res) => {
 
 // PROJECT ROUTES
 // GET all projects with optional pagination
-app.get("/api/projects", (req, res) => {
-  const page = Number.parseInt(req.query.page) || 1
-  const limit = Number.parseInt(req.query.limit) || 0 // 0 means no limit (return all)
-  const startIndex = (page - 1) * limit
+app.get("/api/projects", async (req, res) => {
+  try {
+    const page = Number.parseInt(req.query.page) || 1
+    const limit = Number.parseInt(req.query.limit) || 0
+    const startIndex = (page - 1) * (limit || 1)
 
-  let result = projects
-  let totalPages = 1
+    if (isDbEnabled) {
+      if (limit > 0) {
+        const [{ rows: totalRows }, { rows }] = await Promise.all([
+          dbQuery('SELECT COUNT(*)::int as total FROM projects'),
+          dbQuery('SELECT * FROM projects ORDER BY created_at DESC OFFSET $1 LIMIT $2', [startIndex, limit]),
+        ])
+        const total = totalRows[0].total
+        const totalPages = Math.ceil(total / limit)
+        return res.json({
+          success: true,
+          data: rows,
+          count: rows.length,
+          total,
+          page,
+          totalPages,
+          hasMore: page < totalPages,
+        })
+      } else {
+        const { rows } = await dbQuery('SELECT * FROM projects ORDER BY created_at DESC')
+        return res.json({ success: true, data: rows, count: rows.length, total: rows.length, page: 1, totalPages: 1, hasMore: false })
+      }
+    }
 
-  if (limit > 0) {
-    result = projects.slice(startIndex, startIndex + limit)
-    totalPages = Math.ceil(projects.length / limit)
+    // Fallback to JSON files
+    let result = projects
+    let totalPages = 1
+    if (limit > 0) {
+      result = projects.slice(startIndex, startIndex + limit)
+      totalPages = Math.ceil(projects.length / limit)
+    }
+    res.json({
+      success: true,
+      data: result,
+      count: result.length,
+      total: projects.length,
+      page: limit > 0 ? page : 1,
+      totalPages,
+      hasMore: limit > 0 ? page < totalPages : false,
+    })
+  } catch (error) {
+    console.error('❌ Error fetching projects:', error)
+    res.status(500).json({ success: false, error: 'Failed to fetch projects', details: error.message })
   }
-
-  res.json({
-    success: true,
-    data: result,
-    count: result.length,
-    total: projects.length,
-    page: limit > 0 ? page : 1,
-    totalPages: totalPages,
-    hasMore: limit > 0 ? page < totalPages : false,
-  })
 })
 
 // GET featured projects (for hero banner) - MUST come before /:id route
-app.get("/api/projects/featured", (req, res) => {
-  const featuredProjects = projects.filter((project) => project.featured === true).slice(0, 8)
-  res.json({
-    success: true,
-    data: featuredProjects,
-    count: featuredProjects.length,
-  })
+app.get("/api/projects/featured", async (req, res) => {
+  try {
+    if (isDbEnabled) {
+      const { rows } = await dbQuery('SELECT * FROM projects WHERE featured = TRUE ORDER BY created_at DESC LIMIT 8')
+      return res.json({ success: true, data: rows, count: rows.length })
+    }
+    const featuredProjects = projects.filter((project) => project.featured === true).slice(0, 8)
+    res.json({ success: true, data: featuredProjects, count: featuredProjects.length })
+  } catch (error) {
+    console.error('❌ Error fetching featured projects:', error)
+    res.status(500).json({ success: false, error: 'Failed to fetch featured projects', details: error.message })
+  }
 })
 
 // GET single project by ID - MUST come after /featured route
-app.get("/api/projects/:id", (req, res) => {
+app.get("/api/projects/:id", async (req, res) => {
   try {
     const projectId = req.params.id
-    
-    // Try to find project by both string and number ID for backward compatibility
+
+    if (isDbEnabled) {
+      const { rows } = await dbQuery('SELECT * FROM projects WHERE id = $1 LIMIT 1', [projectId])
+      if (rows.length === 0) return res.status(404).json({ success: false, error: 'Project not found' })
+      return res.json({ success: true, data: rows[0] })
+    }
+
     const project = projects.find(p => {
       return p.id === Number.parseInt(projectId) || p.id === projectId || p.id.toString() === projectId
     })
-    
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
-    }
-    
-    res.json({
-      success: true,
-      data: project
-    })
-    
+    if (!project) return res.status(404).json({ success: false, error: 'Project not found' })
+    res.json({ success: true, data: project })
   } catch (error) {
     console.error("❌ Error fetching project:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch project",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to fetch project", details: error.message })
   }
 })
 
 // POST new project
-app.post("/api/projects", upload.array('images', 10), (req, res) => {
+app.post("/api/projects", upload.array('images', 10), async (req, res) => {
   try {
     console.log("📝 Creating new project:", req.body)
     
@@ -532,11 +555,32 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
       })
     }
     
-    // Add to projects array
-    projects.push(projectData)
-    
-    // Save to file
-    saveData(PROJECTS_FILE, projects)
+    // Persist
+    if (isDbEnabled) {
+      await dbQuery(
+        `INSERT INTO projects (id, title, description, category, location, year, client, design_team, featured, status, image, images, created_at, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14)`,
+        [
+          projectData.id,
+          projectData.title,
+          projectData.description,
+          projectData.category || null,
+          projectData.location || null,
+          projectData.year || null,
+          projectData.client || null,
+          projectData.designTeam || null,
+          projectData.featured,
+          projectData.status || null,
+          projectData.image || null,
+          JSON.stringify(projectData.images || []),
+          new Date(projectData.createdAt),
+          new Date(projectData.updatedAt),
+        ]
+      )
+    } else {
+      projects.push(projectData)
+      saveData(PROJECTS_FILE, projects)
+    }
     
     console.log("✅ Project created successfully:", projectData.title)
     
@@ -557,24 +601,70 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
 })
 
 // PUT update existing project
-app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
+app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
-    const projectIndex = projects.findIndex(p => p.id === projectId)
-    
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
-    }
-    
+
     console.log("📝 Updating project:", projectId, req.body)
-    
-    // Get existing project
+
+    if (isDbEnabled) {
+      // Fetch existing from DB
+      const { rows: [existing] } = await dbQuery('SELECT * FROM projects WHERE id = $1', [projectId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Project not found' })
+
+      const updated = {
+        ...existing,
+        title: req.body.title || existing.title,
+        description: req.body.description || existing.description,
+        category: req.body.category || existing.category,
+        location: req.body.location || existing.location,
+        year: req.body.year || existing.year,
+        client: req.body.client || existing.client,
+        design_team: req.body.designTeam || existing.design_team,
+        featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existing.featured,
+        status: req.body.status || existing.status,
+        updated_at: new Date(),
+      }
+
+      // Handle uploaded images
+      let images = existing.images || []
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map(file => `/uploads/${file.filename}`)
+        images = [...images, ...newImages]
+        if (!updated.image && images.length > 0) updated.image = images[0]
+      } else {
+        images = Array.isArray(updated.images) ? updated.images : images
+      }
+
+      await dbQuery(
+        `UPDATE projects SET
+          title=$2, description=$3, category=$4, location=$5, year=$6, client=$7, design_team=$8, featured=$9, status=$10,
+          image=$11, images=$12::jsonb, updated_at=$13
+         WHERE id=$1`,
+        [
+          projectId,
+          updated.title,
+          updated.description,
+          updated.category || null,
+          updated.location || null,
+          updated.year || null,
+          updated.client || null,
+          updated.design_team || null,
+          updated.featured,
+          updated.status || null,
+          updated.image || null,
+          JSON.stringify(images),
+          updated.updated_at,
+        ]
+      )
+
+      return res.json({ success: true, data: { ...updated, images }, message: 'Project updated successfully' })
+    }
+
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    if (projectIndex === -1) return res.status(404).json({ success: false, error: 'Project not found' })
+
     const existingProject = projects[projectIndex]
-    
-    // Parse updated data from request body
     const updatedData = {
       ...existingProject,
       title: req.body.title || existingProject.title,
@@ -588,273 +678,158 @@ app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
       status: req.body.status || existingProject.status,
       updatedAt: new Date().toISOString()
     }
-    
-    // Handle uploaded images
+
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map(file => `/uploads/${file.filename}`)
-      // Keep existing images and add new ones
       updatedData.images = [...(existingProject.images || []), ...newImages]
-      
-      // If no cover image exists, set the first image as cover
       if (!updatedData.image && updatedData.images.length > 0) {
         updatedData.image = updatedData.images[0]
       }
     }
-    
-    // Update the project in the array
+
     projects[projectIndex] = updatedData
-    
-    // Save to file
     saveData(PROJECTS_FILE, projects)
-    
-    console.log("✅ Project updated successfully:", updatedData.title)
-    
-    res.json({
-      success: true,
-      data: updatedData,
-      message: "Project updated successfully"
-    })
-    
+
+    res.json({ success: true, data: updatedData, message: 'Project updated successfully' })
   } catch (error) {
     console.error("❌ Error updating project:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to update project",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to update project", details: error.message })
   }
 })
 
 // DELETE project
-app.delete("/api/projects/:id", (req, res) => {
+app.delete("/api/projects/:id", async (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
-    const projectIndex = projects.findIndex(p => p.id === projectId)
-    
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
+
+    if (isDbEnabled) {
+      const { rowCount } = await dbQuery('DELETE FROM projects WHERE id = $1', [projectId])
+      if (rowCount === 0) return res.status(404).json({ success: false, error: 'Project not found' })
+      return res.json({ success: true, message: 'Project deleted successfully', data: { id: projectId } })
     }
-    
-    // Get the project before deletion for cleanup
+
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    if (projectIndex === -1) return res.status(404).json({ success: false, error: 'Project not found' })
+
     const projectToDelete = projects[projectIndex]
-    
-    // Remove project from array
     projects.splice(projectIndex, 1)
-    
-    // Save updated data to file
     saveData(PROJECTS_FILE, projects)
-    
-    console.log("🗑️ Project deleted successfully:", projectToDelete.title)
-    
-    res.json({
-      success: true,
-      message: "Project deleted successfully",
-      data: { id: projectId }
-    })
-    
+
+    res.json({ success: true, message: 'Project deleted successfully', data: { id: projectId } })
   } catch (error) {
     console.error("❌ Error deleting project:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to delete project",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to delete project", details: error.message })
   }
 })
 
 // POST add images to existing project
-app.post("/api/projects/:id/images", upload.array('images', 10), (req, res) => {
+app.post("/api/projects/:id/images", upload.array('images', 10), async (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
-    const projectIndex = projects.findIndex(p => p.id === projectId)
-    
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
-    }
-    
+
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: "No images uploaded"
-      })
+      return res.status(400).json({ success: false, error: "No images uploaded" })
     }
-    
-    // Add new images to the project
+
     const newImages = req.files.map(file => `/uploads/${file.filename}`)
+
+    if (isDbEnabled) {
+      const { rows: [existing] } = await dbQuery('SELECT images, image, title FROM projects WHERE id = $1', [projectId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Project not found' })
+      const images = [...(existing.images || []), ...newImages]
+      const cover = existing.image || images[0] || null
+      await dbQuery('UPDATE projects SET images=$2::jsonb, image=$3, updated_at=NOW() WHERE id=$1', [projectId, JSON.stringify(images), cover])
+      return res.json({ success: true, message: 'Images added successfully', data: { projectId, newImages, totalImages: images.length } })
+    }
+
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    if (projectIndex === -1) return res.status(404).json({ success: false, error: 'Project not found' })
     projects[projectIndex].images = [...(projects[projectIndex].images || []), ...newImages]
     projects[projectIndex].updatedAt = new Date().toISOString()
-    
-    // Save to file
     saveData(PROJECTS_FILE, projects)
-    
-    console.log("📷 Images added to project:", projects[projectIndex].title)
-    
-    res.json({
-      success: true,
-      message: "Images added successfully",
-      data: {
-        projectId: projectId,
-        newImages: newImages,
-        totalImages: projects[projectIndex].images.length
-      }
-    })
-    
+    res.json({ success: true, message: 'Images added successfully', data: { projectId, newImages, totalImages: projects[projectIndex].images.length } })
   } catch (error) {
     console.error("❌ Error adding images to project:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to add images",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to add images", details: error.message })
   }
 })
 
 // DELETE remove image from project
-app.delete("/api/projects/:id/images", (req, res) => {
+app.delete("/api/projects/:id/images", async (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
     const { imageUrl } = req.body
-    
-    if (!imageUrl) {
-      return res.status(400).json({
-        success: false,
-        error: "Image URL is required"
-      })
+    if (!imageUrl) return res.status(400).json({ success: false, error: 'Image URL is required' })
+
+    if (isDbEnabled) {
+      const { rows: [existing] } = await dbQuery('SELECT images, image, title FROM projects WHERE id=$1', [projectId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Project not found' })
+      const images = Array.isArray(existing.images) ? existing.images.filter((u) => u !== imageUrl) : []
+      const cover = existing.image === imageUrl ? (images[0] || null) : existing.image
+      await dbQuery('UPDATE projects SET images=$2::jsonb, image=$3, updated_at=NOW() WHERE id=$1', [projectId, JSON.stringify(images), cover])
+      return res.json({ success: true, message: 'Image removed successfully', data: { projectId, removedImage: imageUrl, remainingImages: images.length } })
     }
-    
+
     const projectIndex = projects.findIndex(p => p.id === projectId)
-    
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
-    }
-    
-    // Remove image from project
+    if (projectIndex === -1) return res.status(404).json({ success: false, error: 'Project not found' })
     const project = projects[projectIndex]
     const imageIndex = project.images?.indexOf(imageUrl) || -1
-    
-    if (imageIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Image not found in project"
-      })
-    }
-    
+    if (imageIndex === -1) return res.status(404).json({ success: false, error: 'Image not found in project' })
     project.images.splice(imageIndex, 1)
     project.updatedAt = new Date().toISOString()
-    
-    // If this was the cover image, update it
-    if (project.image === imageUrl) {
-      project.image = project.images.length > 0 ? project.images[0] : null
-    }
-    
-    // Save to file
+    if (project.image === imageUrl) project.image = project.images.length > 0 ? project.images[0] : null
     saveData(PROJECTS_FILE, projects)
-    
-    console.log("🗑️ Image removed from project:", project.title)
-    
-    res.json({
-      success: true,
-      message: "Image removed successfully",
-      data: {
-        projectId: projectId,
-        removedImage: imageUrl,
-        remainingImages: project.images.length
-      }
-    })
-    
+    res.json({ success: true, message: 'Image removed successfully', data: { projectId, removedImage: imageUrl, remainingImages: project.images.length } })
   } catch (error) {
     console.error("❌ Error removing image from project:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to remove image",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to remove image", details: error.message })
   }
 })
 
 // PUT set cover image for project
-app.put("/api/projects/:id/cover", (req, res) => {
+app.put("/api/projects/:id/cover", async (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
     const { imageUrl } = req.body
-    
-    if (!imageUrl) {
-      return res.status(400).json({
-        success: false,
-        error: "Image URL is required"
-      })
+    if (!imageUrl) return res.status(400).json({ success: false, error: 'Image URL is required' })
+
+    if (isDbEnabled) {
+      const { rows: [existing] } = await dbQuery('SELECT images, title FROM projects WHERE id=$1', [projectId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Project not found' })
+      if (!Array.isArray(existing.images) || !existing.images.includes(imageUrl)) return res.status(400).json({ success: false, error: 'Image not found in project images' })
+      await dbQuery('UPDATE projects SET image=$2, updated_at=NOW() WHERE id=$1', [projectId, imageUrl])
+      return res.json({ success: true, message: 'Cover image set successfully', data: { projectId, coverImage: imageUrl } })
     }
-    
+
     const projectIndex = projects.findIndex(p => p.id === projectId)
-    
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
-    }
-    
-    // Check if the image exists in the project's images
+    if (projectIndex === -1) return res.status(404).json({ success: false, error: 'Project not found' })
     const project = projects[projectIndex]
-    if (!project.images || !project.images.includes(imageUrl)) {
-      return res.status(400).json({
-        success: false,
-        error: "Image not found in project images"
-      })
-    }
-    
-    // Set as cover image
+    if (!project.images || !project.images.includes(imageUrl)) return res.status(400).json({ success: false, error: 'Image not found in project images' })
     project.image = imageUrl
     project.updatedAt = new Date().toISOString()
-    
-    // Save to file
     saveData(PROJECTS_FILE, projects)
-    
-    console.log("🖼️ Cover image set for project:", project.title)
-    
-    res.json({
-      success: true,
-      message: "Cover image set successfully",
-      data: {
-        projectId: projectId,
-        coverImage: imageUrl
-      }
-    })
-    
+    res.json({ success: true, message: 'Cover image set successfully', data: { projectId, coverImage: imageUrl } })
   } catch (error) {
     console.error("❌ Error setting cover image:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to set cover image",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to set cover image", details: error.message })
   }
 })
 
 // Your existing blogs logic
-app.get("/api/blogs", (req, res) => {
+app.get("/api/blogs", async (req, res) => {
   try {
-    res.json({
-      success: true,
-      data: blogPosts,
-      count: blogPosts.length,
-    })
+    if (isDbEnabled) {
+      const { rows } = await dbQuery('SELECT * FROM blogs ORDER BY created_at DESC')
+      return res.json({ success: true, data: rows, count: rows.length })
+    }
+    res.json({ success: true, data: blogPosts, count: blogPosts.length })
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch blogs" })
   }
 })
 
 // POST create new blog
-app.post("/api/blogs", upload.single('image'), (req, res) => {
+app.post("/api/blogs", upload.single('image'), async (req, res) => {
   try {
     // Handle both 'status' and 'published' fields for backward compatibility
     let status = 'draft'; // Default to draft
@@ -878,8 +853,28 @@ app.post("/api/blogs", upload.single('image'), (req, res) => {
       updatedAt: new Date().toISOString()
     }
     
-    blogPosts.push(newBlog)
-    saveData(BLOGS_FILE, blogPosts)
+    if (isDbEnabled) {
+      await dbQuery(
+        `INSERT INTO blogs (id, title, content, author, excerpt, category, tags, status, image, created_at, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11)`,
+        [
+          newBlog.id,
+          newBlog.title,
+          newBlog.content,
+          newBlog.author,
+          newBlog.excerpt || null,
+          newBlog.category || null,
+          JSON.stringify(newBlog.tags || []),
+          newBlog.status,
+          newBlog.image || null,
+          new Date(newBlog.createdAt),
+          new Date(newBlog.updatedAt),
+        ]
+      )
+    } else {
+      blogPosts.push(newBlog)
+      saveData(BLOGS_FILE, blogPosts)
+    }
     
     console.log("✅ Blog created successfully:", newBlog.title)
     
@@ -900,28 +895,47 @@ app.post("/api/blogs", upload.single('image'), (req, res) => {
 })
 
 // PUT update existing blog
-app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
+app.put("/api/blogs/:id", upload.single('image'), async (req, res) => {
   try {
     const blogId = parseInt(req.params.id)
+
+    if (isDbEnabled) {
+      const { rows: [existing] } = await dbQuery('SELECT * FROM blogs WHERE id=$1', [blogId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Blog not found' })
+
+      let status = existing.status || 'draft'
+      if (req.body.status) status = req.body.status
+      else if (req.body.published !== undefined) status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft'
+
+      const tags = req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(Boolean) : req.body.tags) : (existing.tags || [])
+      const image = req.file ? `/uploads/${req.file.filename}` : existing.image
+
+      const updated = {
+        ...existing,
+        title: req.body.title || existing.title,
+        content: req.body.content || existing.content,
+        author: req.body.author || existing.author,
+        excerpt: req.body.excerpt || existing.excerpt,
+        category: req.body.category || existing.category,
+        tags,
+        status,
+        image,
+      }
+
+      await dbQuery(
+        `UPDATE blogs SET title=$2, content=$3, author=$4, excerpt=$5, category=$6, tags=$7::jsonb, status=$8, image=$9, updated_at=NOW() WHERE id=$1`,
+        [blogId, updated.title, updated.content, updated.author, updated.excerpt || null, updated.category || null, JSON.stringify(updated.tags || []), updated.status, updated.image || null]
+      )
+
+      return res.json({ success: true, data: updated, message: 'Blog updated successfully' })
+    }
+
     const blogIndex = blogPosts.findIndex(b => b.id === blogId)
-    
-    if (blogIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Blog not found"
-      })
-    }
-    
+    if (blogIndex === -1) return res.status(404).json({ success: false, error: 'Blog not found' })
     const existingBlog = blogPosts[blogIndex]
-    
-    // Handle both 'status' and 'published' fields for backward compatibility
-    let status = existingBlog.status || (existingBlog.published ? 'published' : 'draft');
-    if (req.body.status) {
-      status = req.body.status;
-    } else if (req.body.published !== undefined) {
-      status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft';
-    }
-    
+    let status = existingBlog.status || (existingBlog.published ? 'published' : 'draft')
+    if (req.body.status) status = req.body.status
+    else if (req.body.published !== undefined) status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft'
     const updatedBlog = {
       ...existingBlog,
       title: req.body.title || existingBlog.title,
@@ -930,82 +944,56 @@ app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
       excerpt: req.body.excerpt || existingBlog.excerpt,
       category: req.body.category || existingBlog.category,
       tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : req.body.tags) : (existingBlog.tags || []),
-      status: status,
+      status,
       image: req.file ? `/uploads/${req.file.filename}` : existingBlog.image,
       updatedAt: new Date().toISOString()
     }
-    
     blogPosts[blogIndex] = updatedBlog
     saveData(BLOGS_FILE, blogPosts)
-    
-    console.log("✅ Blog updated successfully:", updatedBlog.title)
-    
-    res.json({
-      success: true,
-      data: updatedBlog,
-      message: "Blog updated successfully"
-    })
-    
+    res.json({ success: true, data: updatedBlog, message: 'Blog updated successfully' })
   } catch (error) {
     console.error("❌ Error updating blog:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to update blog",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to update blog", details: error.message })
   }
 })
 
 // DELETE blog
-app.delete("/api/blogs/:id", (req, res) => {
+app.delete("/api/blogs/:id", async (req, res) => {
   try {
     const blogId = parseInt(req.params.id)
-    const blogIndex = blogPosts.findIndex(b => b.id === blogId)
-    
-    if (blogIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Blog not found"
-      })
+
+    if (isDbEnabled) {
+      const { rowCount } = await dbQuery('DELETE FROM blogs WHERE id = $1', [blogId])
+      if (rowCount === 0) return res.status(404).json({ success: false, error: 'Blog not found' })
+      return res.json({ success: true, message: 'Blog deleted successfully', data: { id: blogId } })
     }
-    
-    const deletedBlog = blogPosts[blogIndex]
+
+    const blogIndex = blogPosts.findIndex(b => b.id === blogId)
+    if (blogIndex === -1) return res.status(404).json({ success: false, error: 'Blog not found' })
     blogPosts.splice(blogIndex, 1)
     saveData(BLOGS_FILE, blogPosts)
-    
-    console.log("🗑️ Blog deleted successfully:", deletedBlog.title)
-    
-    res.json({
-      success: true,
-      message: "Blog deleted successfully",
-      data: { id: blogId }
-    })
-    
+    res.json({ success: true, message: 'Blog deleted successfully', data: { id: blogId } })
   } catch (error) {
     console.error("❌ Error deleting blog:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to delete blog",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to delete blog", details: error.message })
   }
 })
 
 // Your existing clients logic
-app.get("/api/clients", (req, res) => {
+app.get("/api/clients", async (req, res) => {
   try {
-    res.json({
-      success: true,
-      data: clients,
-      count: clients.length,
-    })
+    if (isDbEnabled) {
+      const { rows } = await dbQuery('SELECT * FROM clients ORDER BY created_at DESC')
+      return res.json({ success: true, data: rows, count: rows.length })
+    }
+    res.json({ success: true, data: clients, count: clients.length })
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch clients" })
   }
 })
 
 // POST create new client
-app.post("/api/clients", upload.single('logo'), (req, res) => {
+app.post("/api/clients", upload.single('logo'), async (req, res) => {
   try {
     const newClient = {
       id: Date.now(),
@@ -1018,8 +1006,25 @@ app.post("/api/clients", upload.single('logo'), (req, res) => {
       updatedAt: new Date().toISOString()
     }
     
-    clients.push(newClient)
-    saveData(CLIENTS_FILE, clients)
+    if (isDbEnabled) {
+      await dbQuery(
+        `INSERT INTO clients (id, name, description, website, contact, logo, created_at, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [
+          newClient.id,
+          newClient.name,
+          newClient.description || null,
+          newClient.website || null,
+          newClient.contact || null,
+          newClient.logo || null,
+          new Date(newClient.createdAt),
+          new Date(newClient.updatedAt),
+        ]
+      )
+    } else {
+      clients.push(newClient)
+      saveData(CLIENTS_FILE, clients)
+    }
     
     console.log("✅ Client created successfully:", newClient.name)
     
@@ -1040,20 +1045,29 @@ app.post("/api/clients", upload.single('logo'), (req, res) => {
 })
 
 // PUT update existing client
-app.put("/api/clients/:id", upload.single('logo'), (req, res) => {
+app.put("/api/clients/:id", upload.single('logo'), async (req, res) => {
   try {
     const clientId = parseInt(req.params.id)
-    const clientIndex = clients.findIndex(c => c.id === clientId)
-    
-    if (clientIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Client not found"
-      })
+    if (isDbEnabled) {
+      const { rows: [existing] } = await dbQuery('SELECT * FROM clients WHERE id=$1', [clientId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Client not found' })
+      const updated = {
+        ...existing,
+        name: req.body.name || existing.name,
+        description: req.body.description || existing.description,
+        website: req.body.website || existing.website,
+        contact: req.body.contact || existing.contact,
+        logo: req.file ? `/uploads/${req.file.filename}` : existing.logo,
+      }
+      await dbQuery(
+        `UPDATE clients SET name=$2, description=$3, website=$4, contact=$5, logo=$6, updated_at=NOW() WHERE id=$1`,
+        [clientId, updated.name, updated.description || null, updated.website || null, updated.contact || null, updated.logo || null]
+      )
+      return res.json({ success: true, data: updated, message: 'Client updated successfully' })
     }
-    
+    const clientIndex = clients.findIndex(c => c.id === clientId)
+    if (clientIndex === -1) return res.status(404).json({ success: false, error: 'Client not found' })
     const existingClient = clients[clientIndex]
-    
     const updatedClient = {
       ...existingClient,
       name: req.body.name || existingClient.name,
@@ -1063,78 +1077,50 @@ app.put("/api/clients/:id", upload.single('logo'), (req, res) => {
       logo: req.file ? `/uploads/${req.file.filename}` : existingClient.logo,
       updatedAt: new Date().toISOString()
     }
-    
     clients[clientIndex] = updatedClient
     saveData(CLIENTS_FILE, clients)
-    
-    console.log("✅ Client updated successfully:", updatedClient.name)
-    
-    res.json({
-      success: true,
-      data: updatedClient,
-      message: "Client updated successfully"
-    })
-    
+    res.json({ success: true, data: updatedClient, message: 'Client updated successfully' })
   } catch (error) {
     console.error("❌ Error updating client:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to update client",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to update client", details: error.message })
   }
 })
 
 // DELETE client
-app.delete("/api/clients/:id", (req, res) => {
+app.delete("/api/clients/:id", async (req, res) => {
   try {
     const clientId = parseInt(req.params.id)
-    const clientIndex = clients.findIndex(c => c.id === clientId)
-    
-    if (clientIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Client not found"
-      })
+    if (isDbEnabled) {
+      const { rowCount } = await dbQuery('DELETE FROM clients WHERE id=$1', [clientId])
+      if (rowCount === 0) return res.status(404).json({ success: false, error: 'Client not found' })
+      return res.json({ success: true, message: 'Client deleted successfully', data: { id: clientId } })
     }
-    
-    const deletedClient = clients[clientIndex]
+    const clientIndex = clients.findIndex(c => c.id === clientId)
+    if (clientIndex === -1) return res.status(404).json({ success: false, error: 'Client not found' })
     clients.splice(clientIndex, 1)
     saveData(CLIENTS_FILE, clients)
-    
-    console.log("🗑️ Client deleted successfully:", deletedClient.name)
-    
-    res.json({
-      success: true,
-      message: "Client deleted successfully",
-      data: { id: clientId }
-    })
-    
+    res.json({ success: true, message: 'Client deleted successfully', data: { id: clientId } })
   } catch (error) {
     console.error("❌ Error deleting client:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to delete client",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to delete client", details: error.message })
   }
 })
 
 // Your existing team members logic
-app.get("/api/team-members", (req, res) => {
+app.get("/api/team-members", async (req, res) => {
   try {
-    res.json({
-      success: true,
-      data: teamMembers,
-      count: teamMembers.length,
-    })
+    if (isDbEnabled) {
+      const { rows } = await dbQuery('SELECT * FROM team_members ORDER BY created_at DESC')
+      return res.json({ success: true, data: rows, count: rows.length })
+    }
+    res.json({ success: true, data: teamMembers, count: teamMembers.length })
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch team members" })
   }
 })
 
 // POST create new team member
-app.post("/api/team-members", upload.single('image'), (req, res) => {
+app.post("/api/team-members", upload.single('image'), async (req, res) => {
   try {
     const newMember = {
       id: Date.now(),
@@ -1149,8 +1135,27 @@ app.post("/api/team-members", upload.single('image'), (req, res) => {
       updatedAt: new Date().toISOString()
     }
     
-    teamMembers.push(newMember)
-    saveData(TEAM_MEMBERS_FILE, teamMembers)
+    if (isDbEnabled) {
+      await dbQuery(
+        `INSERT INTO team_members (id, name, title, position, bio, email, phone, image, created_at, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [
+          newMember.id,
+          newMember.name,
+          newMember.title || null,
+          newMember.position || null,
+          newMember.bio || null,
+          newMember.email || null,
+          newMember.phone || null,
+          newMember.image || null,
+          new Date(newMember.createdAt),
+          new Date(newMember.updatedAt),
+        ]
+      )
+    } else {
+      teamMembers.push(newMember)
+      saveData(TEAM_MEMBERS_FILE, teamMembers)
+    }
     
     console.log("✅ Team member created successfully:", newMember.name)
     
@@ -1171,20 +1176,31 @@ app.post("/api/team-members", upload.single('image'), (req, res) => {
 })
 
 // PUT update existing team member
-app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
+app.put("/api/team-members/:id", upload.single('image'), async (req, res) => {
   try {
     const memberId = parseInt(req.params.id)
-    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
-    
-    if (memberIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Team member not found"
-      })
+    if (isDbEnabled) {
+      const { rows: [existing] } = await dbQuery('SELECT * FROM team_members WHERE id=$1', [memberId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Team member not found' })
+      const updated = {
+        ...existing,
+        name: req.body.name || existing.name,
+        title: req.body.title || existing.title,
+        position: req.body.position || existing.position,
+        bio: req.body.bio || existing.bio,
+        email: req.body.email || existing.email,
+        phone: req.body.phone || existing.phone,
+        image: req.file ? `/uploads/${req.file.filename}` : existing.image,
+      }
+      await dbQuery(
+        `UPDATE team_members SET name=$2, title=$3, position=$4, bio=$5, email=$6, phone=$7, image=$8, updated_at=NOW() WHERE id=$1`,
+        [memberId, updated.name, updated.title || null, updated.position || null, updated.bio || null, updated.email || null, updated.phone || null, updated.image || null]
+      )
+      return res.json({ success: true, data: updated, message: 'Team member updated successfully' })
     }
-    
+    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
+    if (memberIndex === -1) return res.status(404).json({ success: false, error: 'Team member not found' })
     const existingMember = teamMembers[memberIndex]
-    
     const updatedMember = {
       ...existingMember,
       name: req.body.name || existingMember.name,
@@ -1196,60 +1212,32 @@ app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
       image: req.file ? `/uploads/${req.file.filename}` : existingMember.image,
       updatedAt: new Date().toISOString()
     }
-    
     teamMembers[memberIndex] = updatedMember
     saveData(TEAM_MEMBERS_FILE, teamMembers)
-    
-    console.log("✅ Team member updated successfully:", updatedMember.name)
-    
-    res.json({
-      success: true,
-      data: updatedMember,
-      message: "Team member updated successfully"
-    })
-    
+    res.json({ success: true, data: updatedMember, message: 'Team member updated successfully' })
   } catch (error) {
     console.error("❌ Error updating team member:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to update team member",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to update team member", details: error.message })
   }
 })
 
 // DELETE team member
-app.delete("/api/team-members/:id", (req, res) => {
+app.delete("/api/team-members/:id", async (req, res) => {
   try {
     const memberId = parseInt(req.params.id)
-    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
-    
-    if (memberIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Team member not found"
-      })
+    if (isDbEnabled) {
+      const { rowCount } = await dbQuery('DELETE FROM team_members WHERE id=$1', [memberId])
+      if (rowCount === 0) return res.status(404).json({ success: false, error: 'Team member not found' })
+      return res.json({ success: true, message: 'Team member deleted successfully', data: { id: memberId } })
     }
-    
-    const deletedMember = teamMembers[memberIndex]
+    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
+    if (memberIndex === -1) return res.status(404).json({ success: false, error: 'Team member not found' })
     teamMembers.splice(memberIndex, 1)
     saveData(TEAM_MEMBERS_FILE, teamMembers)
-    
-    console.log("🗑️ Team member deleted successfully:", deletedMember.name)
-    
-    res.json({
-      success: true,
-      message: "Team member deleted successfully",
-      data: { id: memberId }
-    })
-    
+    res.json({ success: true, message: 'Team member deleted successfully', data: { id: memberId } })
   } catch (error) {
     console.error("❌ Error deleting team member:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to delete team member",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to delete team member", details: error.message })
   }
 })
 
@@ -1297,8 +1285,25 @@ app.post("/api/contact", async (req, res) => {
       createdAt: new Date().toISOString()
     }
     
-    contacts.push(newContact)
-    saveData(CONTACTS_FILE, contacts)
+    if (isDbEnabled) {
+      await dbQuery(
+        `INSERT INTO contacts (id, name, email, phone, subject, message, status, created_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [
+          newContact.id,
+          newContact.name,
+          newContact.email || null,
+          newContact.phone || null,
+          newContact.subject || null,
+          newContact.message || null,
+          newContact.status,
+          new Date(newContact.createdAt),
+        ]
+      )
+    } else {
+      contacts.push(newContact)
+      saveData(CONTACTS_FILE, contacts)
+    }
     
     // Send email notification
     try {
@@ -1408,56 +1413,39 @@ app.post("/api/test-email", async (req, res) => {
 })
 
 // GET contacts (for admin)
-app.get("/api/contacts", (req, res) => {
+app.get("/api/contacts", async (req, res) => {
   try {
-    res.json({
-      success: true,
-      data: contacts,
-      count: contacts.length
-    })
+    if (isDbEnabled) {
+      const { rows } = await dbQuery('SELECT * FROM contacts ORDER BY created_at DESC')
+      return res.json({ success: true, data: rows, count: rows.length })
+    }
+    res.json({ success: true, data: contacts, count: contacts.length })
   } catch (error) {
     console.error("❌ Error fetching contacts:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch contacts"
-    })
+    res.status(500).json({ success: false, error: "Failed to fetch contacts" })
   }
 })
 
 // PUT update contact status
-app.put("/api/contacts/:id", (req, res) => {
+app.put("/api/contacts/:id", async (req, res) => {
   try {
     const contactId = parseInt(req.params.id)
+    const newStatus = req.body.status
+    if (isDbEnabled) {
+      const { rows: [existing] } = await dbQuery('SELECT * FROM contacts WHERE id=$1', [contactId])
+      if (!existing) return res.status(404).json({ success: false, error: 'Contact not found' })
+      const updatedAt = new Date()
+      await dbQuery('UPDATE contacts SET status=$2, updated_at=$3 WHERE id=$1', [contactId, newStatus || existing.status, updatedAt])
+      return res.json({ success: true, message: 'Contact updated successfully', data: { ...existing, status: newStatus || existing.status, updated_at: updatedAt } })
+    }
     const contactIndex = contacts.findIndex(c => c.id === contactId)
-    
-    if (contactIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Contact not found"
-      })
-    }
-    
-    contacts[contactIndex] = {
-      ...contacts[contactIndex],
-      status: req.body.status || contacts[contactIndex].status,
-      updatedAt: new Date().toISOString()
-    }
-    
+    if (contactIndex === -1) return res.status(404).json({ success: false, error: 'Contact not found' })
+    contacts[contactIndex] = { ...contacts[contactIndex], status: newStatus || contacts[contactIndex].status, updatedAt: new Date().toISOString() }
     saveData(CONTACTS_FILE, contacts)
-    
-    res.json({
-      success: true,
-      message: "Contact updated successfully",
-      data: contacts[contactIndex]
-    })
-    
+    res.json({ success: true, message: 'Contact updated successfully', data: contacts[contactIndex] })
   } catch (error) {
     console.error("❌ Error updating contact:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to update contact",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to update contact", details: error.message })
   }
 })
 
@@ -1588,6 +1576,193 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log(
     `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${teamMembers.length} team members, ${contacts.length} contacts`,
   )
+  if (isDbEnabled) {
+    try {
+      await initDb()
+      console.log('🗄️  Postgres connected and ready')
+
+      // Seed DB from JSON files if tables are empty
+      try {
+        const [{ rows: [{ count: prjCount }] }, { rows: [{ count: blogCount }] }, { rows: [{ count: cliCount }] }, { rows: [{ count: teamCount }] }, { rows: [{ count: contactCount }] }] = await Promise.all([
+          dbQuery('SELECT COUNT(*)::int as count FROM projects'),
+          dbQuery('SELECT COUNT(*)::int as count FROM blogs'),
+          dbQuery('SELECT COUNT(*)::int as count FROM clients'),
+          dbQuery('SELECT COUNT(*)::int as count FROM team_members'),
+          dbQuery('SELECT COUNT(*)::int as count FROM contacts'),
+        ])
+
+        if (projects.length > 0 && prjCount === 0) {
+          console.log(`⬆️ Seeding ${projects.length} projects to Postgres...`)
+          for (const p of projects) {
+            await dbQuery(
+              `INSERT INTO projects (id, title, description, category, location, year, client, design_team, featured, status, image, images, created_at, updated_at)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14)
+               ON CONFLICT (id) DO UPDATE SET
+                 title=EXCLUDED.title,
+                 description=EXCLUDED.description,
+                 category=EXCLUDED.category,
+                 location=EXCLUDED.location,
+                 year=EXCLUDED.year,
+                 client=EXCLUDED.client,
+                 design_team=EXCLUDED.design_team,
+                 featured=EXCLUDED.featured,
+                 status=EXCLUDED.status,
+                 image=EXCLUDED.image,
+                 images=EXCLUDED.images,
+                 updated_at=EXCLUDED.updated_at`,
+              [
+                p.id,
+                p.title,
+                p.description,
+                p.category || null,
+                p.location || null,
+                p.year || null,
+                p.client || null,
+                p.designTeam || null,
+                Boolean(p.featured),
+                p.status || null,
+                p.image || null,
+                JSON.stringify(p.images || []),
+                p.createdAt ? new Date(p.createdAt) : new Date(),
+                p.updatedAt ? new Date(p.updatedAt) : new Date(),
+              ]
+            )
+          }
+          console.log('✅ Projects seeded')
+        }
+
+        if (blogPosts.length > 0 && blogCount === 0) {
+          console.log(`⬆️ Seeding ${blogPosts.length} blogs to Postgres...`)
+          for (const b of blogPosts) {
+            await dbQuery(
+              `INSERT INTO blogs (id, title, content, author, excerpt, category, tags, status, image, created_at, updated_at)
+               VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11)
+               ON CONFLICT (id) DO UPDATE SET
+                 title=EXCLUDED.title,
+                 content=EXCLUDED.content,
+                 author=EXCLUDED.author,
+                 excerpt=EXCLUDED.excerpt,
+                 category=EXCLUDED.category,
+                 tags=EXCLUDED.tags,
+                 status=EXCLUDED.status,
+                 image=EXCLUDED.image,
+                 updated_at=EXCLUDED.updated_at`,
+              [
+                b.id,
+                b.title,
+                b.content,
+                b.author || 'Admin',
+                b.excerpt || null,
+                b.category || null,
+                JSON.stringify(b.tags || []),
+                b.status || (b.published ? 'published' : 'draft'),
+                b.image || null,
+                b.createdAt ? new Date(b.createdAt) : new Date(),
+                b.updatedAt ? new Date(b.updatedAt) : new Date(),
+              ]
+            )
+          }
+          console.log('✅ Blogs seeded')
+        }
+
+        if (clients.length > 0 && cliCount === 0) {
+          console.log(`⬆️ Seeding ${clients.length} clients to Postgres...`)
+          for (const c of clients) {
+            await dbQuery(
+              `INSERT INTO clients (id, name, description, website, contact, logo, created_at, updated_at)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+               ON CONFLICT (id) DO UPDATE SET
+                 name=EXCLUDED.name,
+                 description=EXCLUDED.description,
+                 website=EXCLUDED.website,
+                 contact=EXCLUDED.contact,
+                 logo=EXCLUDED.logo,
+                 updated_at=EXCLUDED.updated_at`,
+              [
+                c.id,
+                c.name,
+                c.description || null,
+                c.website || null,
+                c.contact || null,
+                c.logo || null,
+                c.createdAt ? new Date(c.createdAt) : new Date(),
+                c.updatedAt ? new Date(c.updatedAt) : new Date(),
+              ]
+            )
+          }
+          console.log('✅ Clients seeded')
+        }
+
+        if (teamMembers.length > 0 && teamCount === 0) {
+          console.log(`⬆️ Seeding ${teamMembers.length} team members to Postgres...`)
+          for (const m of teamMembers) {
+            await dbQuery(
+              `INSERT INTO team_members (id, name, title, position, bio, email, phone, image, created_at, updated_at)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+               ON CONFLICT (id) DO UPDATE SET
+                 name=EXCLUDED.name,
+                 title=EXCLUDED.title,
+                 position=EXCLUDED.position,
+                 bio=EXCLUDED.bio,
+                 email=EXCLUDED.email,
+                 phone=EXCLUDED.phone,
+                 image=EXCLUDED.image,
+                 updated_at=EXCLUDED.updated_at`,
+              [
+                m.id,
+                m.name,
+                m.title || null,
+                m.position || null,
+                m.bio || null,
+                m.email || null,
+                m.phone || null,
+                m.image || null,
+                m.createdAt ? new Date(m.createdAt) : new Date(),
+                m.updatedAt ? new Date(m.updatedAt) : new Date(),
+              ]
+            )
+          }
+          console.log('✅ Team members seeded')
+        }
+
+        if (contacts.length > 0 && contactCount === 0) {
+          console.log(`⬆️ Seeding ${contacts.length} contacts to Postgres...`)
+          for (const ct of contacts) {
+            await dbQuery(
+              `INSERT INTO contacts (id, name, email, phone, subject, message, status, created_at, updated_at)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+               ON CONFLICT (id) DO UPDATE SET
+                 name=EXCLUDED.name,
+                 email=EXCLUDED.email,
+                 phone=EXCLUDED.phone,
+                 subject=EXCLUDED.subject,
+                 message=EXCLUDED.message,
+                 status=EXCLUDED.status,
+                 updated_at=EXCLUDED.updated_at`,
+              [
+                ct.id,
+                ct.name,
+                ct.email || null,
+                ct.phone || null,
+                ct.subject || null,
+                ct.message || null,
+                ct.status || null,
+                ct.createdAt ? new Date(ct.createdAt) : new Date(),
+                ct.updatedAt ? new Date(ct.updatedAt) : null,
+              ]
+            )
+          }
+          console.log('✅ Contacts seeded')
+        }
+      } catch (seedErr) {
+        console.error('❌ Failed to seed Postgres from JSON files:', seedErr.message)
+      }
+    } catch (e) {
+      console.error('❌ Failed to init Postgres:', e.message)
+    }
+  } else {
+    console.warn('⚠️  Postgres not configured. Using JSON files only.')
+  }
   
   // Verify email connection
   console.log('📧 Verifying email configuration...')
