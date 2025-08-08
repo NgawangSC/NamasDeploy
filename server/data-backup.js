@@ -4,14 +4,14 @@ const path = require('path')
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data')
 const BACKUP_DIR = process.env.BACKUP_DIR ? path.resolve(process.env.BACKUP_DIR) : path.join(__dirname, 'backups')
 
-// Ensure backup directory exists
-if (!fs.existsSync(BACKUP_DIR)) {
-  fs.mkdirSync(BACKUP_DIR, { recursive: true })
-}
-
 // Create backup with timestamp
 const createBackup = () => {
   try {
+    // Ensure backup directory exists lazily
+    if (!fs.existsSync(BACKUP_DIR)) {
+      fs.mkdirSync(BACKUP_DIR, { recursive: true })
+    }
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const backupSubDir = path.join(BACKUP_DIR, timestamp)
     
@@ -42,6 +42,10 @@ const createBackup = () => {
 // Clean old backups (keep only last 10)
 const cleanOldBackups = () => {
   try {
+    if (!fs.existsSync(BACKUP_DIR)) {
+      return
+    }
+
     const backups = fs.readdirSync(BACKUP_DIR)
       .filter(name => fs.statSync(path.join(BACKUP_DIR, name)).isDirectory())
       .sort()
@@ -62,6 +66,14 @@ const cleanOldBackups = () => {
 
 // Auto backup every 24 hours (or 10 minutes in development)
 const startAutoBackup = () => {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) {
+      fs.mkdirSync(BACKUP_DIR, { recursive: true })
+    }
+  } catch (err) {
+    console.error('❌ Failed to initialize backup directory:', err.message)
+  }
+
   const isDevelopment = process.env.NODE_ENV === 'development'
   const backupInterval = isDevelopment ? 10 * 60 * 1000 : 24 * 60 * 60 * 1000 // 10 min dev, 24 hours prod
   

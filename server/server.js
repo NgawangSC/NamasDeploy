@@ -249,6 +249,21 @@ app.get("/api/config", (req, res) => {
   })
 })
 
+// Backward-compatible alias without /api prefix
+app.get("/config", (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      port: PORT,
+      dataDir: DATA_DIR,
+      uploadsDir: UPLOADS_DIR,
+      allowedOrigins,
+      usingExternalDataDir: !DATA_DIR.includes(__dirname),
+      usingExternalUploadsDir: !UPLOADS_DIR.includes(__dirname),
+    },
+  })
+})
+
 // Routes
 app.get("/", (req, res) => {
   res.json({
@@ -336,6 +351,11 @@ app.get("/api", (req, res) => {
     success: true,
     message: "NAMAS Architecture API",
     availableRoutes: [
+      "GET /",
+      "GET /api",
+      "GET /test",
+      "GET /config",
+      "GET /api/config",
       "GET /api/projects",
       "GET /api/projects/featured",
       "GET /api/projects/:id",
@@ -1513,6 +1533,8 @@ app.use("*", (req, res) => {
       "GET /",
       "GET /api",
       "GET /test",
+      "GET /config",
+      "GET /api/config",
       "GET /api/projects",
       "GET /api/projects/featured",
       "GET /api/projects/:id",
