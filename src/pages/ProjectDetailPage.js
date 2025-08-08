@@ -224,7 +224,7 @@ const ProjectDetailPage = () => {
                   <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-              <div className="image-indicators">
+              <div className="gallery-indicators">
                 {projectImages.map((_, index) => (
                   <button
                     key={index}
