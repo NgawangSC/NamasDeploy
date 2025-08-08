@@ -5,6 +5,8 @@
 /.pnp
 .pnp.js
 /server/data
+/server/uploads
+/server/backups
 
 # testing
 /coverage
