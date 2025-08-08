@@ -43,7 +43,7 @@ function Footer() {
               <div className="footer-contact-item">
                 <span className="footer-address">Babesa, Thimphu, Bhutan</span>
               </div>
-            </div>
+            </div> 
           </div>
         </div>
 
