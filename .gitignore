@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# server env & runtime data
+server/.env
+server/uploads/
+server/backups/
