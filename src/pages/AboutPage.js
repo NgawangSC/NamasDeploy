@@ -525,7 +525,7 @@ function AboutPage() {
               </div>
               <h3 className="service-title">Exterior</h3>
               <p className="service-description">
-                Working together with your architect, you will share your project needs, dreams and goalss.
+                Working together with your architect, you will share your project needs, dreams and goals.
               </p>
               <button className="service-btn" onClick={handleExteriorClick}>READ</button>
             </div>
