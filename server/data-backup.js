@@ -1,8 +1,22 @@
 const fs = require('fs')
 const path = require('path')
 
-const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data')
-const BACKUP_DIR = process.env.BACKUP_DIR ? path.resolve(process.env.BACKUP_DIR) : path.join(__dirname, 'backups')
+const useBuildStorage = process.env.SAVE_IN_BUILD === '1' && !!process.env.CPANEL_USER
+const buildRoot = useBuildStorage
+  ? path.resolve(`/home/${process.env.CPANEL_USER}/public_html/build`)
+  : null
+
+const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : useBuildStorage
+    ? path.join(buildRoot, 'data')
+    : path.join(__dirname, 'data')
+
+const BACKUP_DIR = process.env.BACKUP_DIR
+  ? path.resolve(process.env.BACKUP_DIR)
+  : useBuildStorage
+    ? path.join(buildRoot, 'backups')
+    : path.join(__dirname, 'backups')
 
 // Ensure backup directory exists
 if (!fs.existsSync(BACKUP_DIR)) {
