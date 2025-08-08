@@ -59,6 +59,11 @@ console.log("  DATA_DIR:", DATA_DIR, DATA_DIR.includes(__dirname) ? "(internal)"
 console.log("  UPLOADS_DIR:", UPLOADS_DIR, UPLOADS_DIR.includes(__dirname) ? "(internal)" : "(external)")
 console.log("  ALLOWED_ORIGINS:", allowedOrigins)
 
+if (process.env.NODE_ENV === 'production' && (DATA_DIR.includes(__dirname) || UPLOADS_DIR.includes(__dirname))) {
+  console.warn("⚠️ Using INTERNAL storage paths in production. Your data will be overwritten on deploys.")
+  console.warn("Set DATA_DIR and UPLOADS_DIR to a persistent path (or mount /data) and restart.")
+}
+
 // Email configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
