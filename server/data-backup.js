@@ -1,8 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 
-const DATA_DIR = path.join(__dirname, 'data')
-const BACKUP_DIR = path.join(__dirname, 'backups')
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data')
+const BACKUP_DIR = process.env.BACKUP_DIR ? path.resolve(process.env.BACKUP_DIR) : path.join(__dirname, 'backups')
 
 // Ensure backup directory exists
 if (!fs.existsSync(BACKUP_DIR)) {
@@ -20,7 +20,7 @@ const createBackup = () => {
     }
     
     // Copy all data files to backup directory
-    const dataFiles = ['projects.json', 'blogs.json', 'clients.json', 'contacts.json']
+    const dataFiles = ['projects.json', 'blogs.json', 'clients.json', 'contacts.json', 'team-members.json']
     
     dataFiles.forEach(file => {
       const sourcePath = path.join(DATA_DIR, file)
