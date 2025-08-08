@@ -27,8 +27,8 @@ const CONTACTS_FILE = path.join(DATA_DIR, "contacts.json")
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'your-email@gmail.com',
-    pass: process.env.EMAIL_PASS || 'your-app-password'
+    user: process.env.EMAIL_USER || 'namasdesign2021@gmail.com',
+    pass: process.env.EMAIL_PASS || 'ojsy ayyj igap htko'
   },
   // Add additional configuration for better reliability
   port: 587,
