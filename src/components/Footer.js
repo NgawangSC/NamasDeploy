@@ -50,7 +50,7 @@ function Footer() {
         {/* Footer Bottom */}
         <div className="footer-bottom">
           <div className="footer-copyright">
-            <span>Namas Design & Build (C) 2025 ALL RIGHTS RESERVED</span>
+            <span>Namas Design & Build (C) 20252 ALL RIGHTS RESERVED</span>
           </div>
           <div className="footer-social">
             <a href="https://www.facebook.com/nsogyel" className="footer-social-link" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
