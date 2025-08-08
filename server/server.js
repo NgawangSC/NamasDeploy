@@ -38,7 +38,7 @@ const transporter = nodemailer.createTransport({
 })
 
 // Target email for contact form submissions
-const CONTACT_EMAIL = 'zensukinsc@gmail.com'
+const CONTACT_EMAIL = 'namasdesign2021@gmail.com'
 
 // Verify email connection on startup
 const verifyEmailConnection = async () => {
