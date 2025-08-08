@@ -20,12 +20,13 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+  display: none; /* Hide the background image to show black background */
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: #000000; /* Solid black background */
 }
 
 .hero-content {
@@ -40,6 +41,38 @@
   z-index: 10;
 }
 
+.hero-title {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 800px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive styles for hero text */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+    max-width: 90%;
+    padding: 0 1rem;
+  }
+}
+
 .back-button {
   position: absolute;
   top: 40px;
@@ -50,546 +83,165 @@
   border-radius: 8px;
   color: white;
   font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .back-button:hover {
   background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  transform: translateX(-2px);
 }
 
-.hero-title {
-  font-size: 4rem;
-  font-weight: 300;
-  margin-bottom: 24px;
-  line-height: 1.2;
+/* Content Section */
+.interior-content {
+  padding: 80px 0;
+  background: #ffffff;
+  min-height: 100vh;
 }
 
-.hero-subtitle {
-  font-size: 1.2rem;
-  font-weight: 300;
-  opacity: 0.9;
-}
-
-/* Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 20px;
 }
 
-/* Introduction Section */
-.interior-intro {
-  padding: 120px 0;
-  background: white;
-}
-
-.intro-content {
-  text-align: center;
+.content-wrapper {
   max-width: 800px;
   margin: 0 auto;
-}
-
-.intro-title {
-  font-size: 3rem;
-  font-weight: 300;
-  color: #333;
-  margin-bottom: 40px;
-  line-height: 1.2;
-}
-
-.intro-description {
-  font-size: 18px;
-  line-height: 1.8;
-  color: #666;
-  margin-bottom: 32px;
-}
-
-.intro-description:last-child {
-  margin-bottom: 0;
-}
-
-/* Services Section */
-.interior-services {
-  padding: 120px 0;
-  background: #f8f9fa;
-}
-
-.services-header {
-  text-align: center;
-  margin-bottom: 80px;
-}
-
-.services-title {
-  font-size: 3rem;
-  font-weight: 300;
-  color: #333;
-  margin-bottom: 24px;
-  line-height: 1.2;
-}
-
-.services-subtitle {
-  font-size: 18px;
-  color: #666;
-  font-weight: 300;
-}
-
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 40px;
-}
-
-.about-interior-page .service-card {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
   text-align: center;
 }
 
-.service-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
-.service-icon {
-  font-size: 3rem;
-  margin-bottom: 24px;
-}
-
-.about-interior-page .service-title {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.about-interior-page .service-description {
-  color: #666;
-  line-height: 1.6;
-  font-size: 16px;
-}
-
-/* Categories Section */
-.interior-categories {
-  padding: 120px 0;
-  background: white;
-}
-
-.categories-header {
-  text-align: center;
-  margin-bottom: 80px;
-}
-
-.categories-title {
-  font-size: 3rem;
-  font-weight: 300;
-  color: #333;
-  margin-bottom: 24px;
-  line-height: 1.2;
-}
-
-.categories-subtitle {
-  font-size: 18px;
-  color: #666;
-  font-weight: 300;
-}
-
-.categories-navigation {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 60px;
-  flex-wrap: wrap;
-}
-
-.category-tab {
-  background: transparent;
-  border: 2px solid #e0e0e0;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.category-tab:hover {
-  border-color: #333;
-  color: #333;
-}
-
-.category-tab.active {
-  background: #333;
-  border-color: #333;
-  color: white;
-}
-
-.category-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-}
-
-.category-info {
-  padding: 40px 0;
-}
-
-.category-title {
-  font-size: 2.5rem;
-  font-weight: 300;
-  color: #333;
-  margin-bottom: 24px;
-  line-height: 1.2;
-}
-
-.category-description {
-  font-size: 18px;
-  line-height: 1.8;
-  color: #666;
-  margin-bottom: 32px;
-}
-
-.category-features h4 {
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.category-features ul {
-  list-style: none;
-  padding: 0;
-}
-
-.category-features li {
-  position: relative;
-  padding-left: 24px;
-  margin-bottom: 12px;
-  color: #666;
-  line-height: 1.6;
-}
-
-.category-features li:before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: #333;
-  font-weight: bold;
-}
-
-.category-image {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.category-image img {
-  width: 100%;
-  height: 400px;
-  object-fit: cover;
-  object-position: center;
-}
-
-/* Design Philosophy Section */
-.design-philosophy {
-  padding: 120px 0;
-  background: #f8f9fa;
-}
-
-.philosophy-header {
-  text-align: center;
-  margin-bottom: 80px;
-}
-
-.philosophy-title {
-  font-size: 3rem;
-  font-weight: 300;
-  color: #333;
-  margin-bottom: 24px;
-  line-height: 1.2;
-}
-
-.philosophy-subtitle {
-  font-size: 18px;
-  color: #666;
-  font-weight: 300;
-}
-
-.philosophy-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 40px;
-}
-
-.philosophy-item {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border-left: 4px solid #333;
-}
-
-.philosophy-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
-.philosophy-item-title {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.philosophy-description {
-  color: #666;
-  line-height: 1.6;
-  font-size: 16px;
-}
-
-/* Process Section */
-.interior-process {
-  padding: 120px 0;
-  background: white;
-}
-
-.process-header {
-  text-align: center;
-  margin-bottom: 80px;
-}
-
-.process-title {
-  font-size: 3rem;
-  font-weight: 300;
-  color: #333;
-  line-height: 1.2;
-}
-
-.process-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 40px;
-}
-
-.process-step {
-  background: #f8f9fa;
-  padding: 40px;
-  border-radius: 12px;
-  text-align: center;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.process-step:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.step-number {
-  font-size: 1.5rem;
-  font-weight: 300;
-  color: #333;
+.page-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #2c3e50;
   margin-bottom: 20px;
-  opacity: 0.7;
-}
-
-.step-content h3 {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.step-content p {
-  color: #666;
-  line-height: 1.6;
-  font-size: 16px;
-}
-
-/* CTA Section */
-.interior-cta {
-  padding: 120px 0;
-  background: #333;
-  color: white;
-}
-
-.cta-content {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.cta-title {
-  font-size: 3rem;
-  font-weight: 300;
-  margin-bottom: 24px;
   line-height: 1.2;
 }
 
-.cta-description {
-  font-size: 18px;
+.page-subtitle {
+  font-size: 1.3rem;
+  color: #7f8c8d;
+  margin-bottom: 60px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.content-text {
+  text-align: left;
+  margin-bottom: 60px;
+}
+
+.content-text p {
+  font-size: 1.1rem;
   line-height: 1.8;
-  margin-bottom: 40px;
-  opacity: 0.9;
+  color: #34495e;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+.cta-section {
+  text-align: center;
+  padding: 40px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-top: 40px;
+}
+
+.cta-section h3 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.cta-section p {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+  margin-bottom: 30px;
+  line-height: 1.6;
 }
 
 .cta-button {
-  background: white;
+  background: linear-gradient(135deg, #000000, #000000);
+  color: white;
   border: none;
   padding: 16px 32px;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .cta-button:hover {
-  background: #f0f0f0;
+  background: linear-gradient(135deg, #454545, #454545);
   transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
 }
 
 /* Responsive Design */
-@media (max-width: 968px) {
-  .hero-title {
-    font-size: 3rem;
-  }
-
-  .intro-title,
-  .services-title,
-  .categories-title,
-  .philosophy-title,
-  .process-title,
-  .cta-title {
-    font-size: 2.5rem;
-  }
-
-  .category-content {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .categories-navigation {
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 8px;
-  }
-
-  .category-tab {
-    flex-shrink: 0;
-  }
-
-  .services-grid,
-  .philosophy-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .process-steps {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 768px) {
   .back-button {
     top: 20px;
     left: 20px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 14px;
   }
 
-  .hero-title {
+  .page-title {
     font-size: 2.5rem;
   }
 
-  .hero-subtitle {
+  .page-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+  }
+
+  .content-text p {
     font-size: 1rem;
+    line-height: 1.7;
   }
 
-  .intro-title,
-  .services-title,
-  .categories-title,
-  .philosophy-title,
-  .process-title,
-  .cta-title {
-    font-size: 2rem;
-  }
-
-  .category-title {
-    font-size: 2rem;
+  .interior-content {
+    padding: 60px 0;
   }
 
   .container {
-    padding: 0 20px;
+    padding: 0 16px;
   }
 
-  .interior-intro,
-  .interior-services,
-  .interior-categories,
-  .design-philosophy,
-  .interior-process,
-  .interior-cta {
-    padding: 80px 0;
+  .cta-section {
+    padding: 30px 20px;
+  }
+
+  .cta-section h3 {
+    font-size: 1.5rem;
+  }
+
+  .cta-button {
+    padding: 14px 28px;
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .services-grid {
-    grid-template-columns: 1fr;
+  .interior-hero {
+    height: 70vh;
   }
 
-  .service-card,
-  .philosophy-item,
-  .process-step {
-    padding: 30px;
-  }
-
-  .categories-navigation {
-    gap: 4px;
-  }
-
-  .category-tab {
-    padding: 10px 16px;
-    font-size: 14px;
-  }
-
-  .hero-title {
+  .page-title {
     font-size: 2rem;
   }
 
-  .intro-title,
-  .services-title,
-  .categories-title,
-  .philosophy-title,
-  .process-title,
-  .cta-title {
-    font-size: 1.8rem;
-  }
-
-  .category-title {
-    font-size: 1.8rem;
-  }
-
-  .intro-description,
-  .category-description,
-  .cta-description {
-    font-size: 16px;
-  }
-
-  .service-icon {
-    font-size: 2.5rem;
-  }
-
-  .category-image img {
-    height: 300px;
+  .back-button {
+    top: 16px;
+    left: 16px;
+    padding: 8px 16px;
+    font-size: 13px;
   }
 }

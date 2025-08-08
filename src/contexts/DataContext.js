@@ -1,7 +1,7 @@
 // Create this file: src/contexts/DataContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import ApiService from '../services/api';
-import { clearImageCache } from '../utils/imageUtils';
+import { clearImageCache, compressImageToBase64, storeImageLocally, getStoredImage, removeStoredImage } from '../utils/imageUtils';
 
 const DataContext = createContext();
 
@@ -43,6 +43,8 @@ export const DataProvider = ({ children }) => {
     blogs: [],
     // Clients data - will be fetched from API
     clients: [],
+    // Team members data - will be fetched from API
+    teamMembers: [],
     // Media files
     media: [
       {
@@ -57,19 +59,23 @@ export const DataProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState({
-    projects: false,
-    featuredProjects: false,
+    projects: true,
+    featuredProjects: true,
     blogs: false,
-    clients: false
+    clients: true,
+    teamMembers: false
   });
 
+  // Computed loading state for homepage - true if any homepage-critical data is still loading
+  const isHomepageLoading = loading.projects || loading.featuredProjects || loading.clients;
 
 
   const [error, setError] = useState({
     projects: null,
     featuredProjects: null,
     blogs: null,
-    clients: null
+    clients: null,
+    teamMembers: null
   });
 
   // Load data from localStorage on component mount
@@ -81,10 +87,11 @@ export const DataProvider = ({ children }) => {
         setData(prev => ({
           ...prev,
           ...parsed,
-          // Don't restore projects, blogs, and clients from localStorage, fetch from API instead
+          // Don't restore projects, blogs, clients, and teamMembers from localStorage, fetch from API instead
           projects: [],
           blogs: [],
-          clients: []
+          clients: [],
+          teamMembers: []
         }));
       } catch (error) {
         console.error('Error loading saved data:', error);
@@ -92,9 +99,9 @@ export const DataProvider = ({ children }) => {
     }
   }, []);
 
-  // Save data to localStorage whenever data changes (excluding projects, blogs, and clients)
+  // Save data to localStorage whenever data changes (excluding projects, blogs, clients, and teamMembers)
   useEffect(() => {
-    const { projects, blogs, clients, ...dataToSave } = data;
+    const { projects, blogs, clients, teamMembers, ...dataToSave } = data;
     localStorage.setItem('websiteData', JSON.stringify(dataToSave));
   }, [data]);
 
@@ -128,13 +135,41 @@ export const DataProvider = ({ children }) => {
       const response = await ApiService.getBlogs();
       const apiBlogs = response.data || [];
       
+      // Restore stored images for blogs that have them
+      const blogsWithRestoredImages = apiBlogs.map(blog => {
+        const storedImage = getStoredImage(blog.id);
+        if (storedImage) {
+          return { ...blog, image: storedImage };
+        }
+        return blog;
+      });
+      
       setData(prev => ({
         ...prev,
-        blogs: apiBlogs
+        blogs: blogsWithRestoredImages
       }));
     } catch (err) {
       console.error('Error fetching blogs:', err);
       setError(prev => ({ ...prev, blogs: err.message }));
+      
+      // If API fails, try to load locally stored blogs from a previous session
+      try {
+        const localBlogs = JSON.parse(localStorage.getItem('localBlogs') || '[]');
+        const blogsWithRestoredImages = localBlogs.map(blog => {
+          const storedImage = getStoredImage(blog.id);
+          if (storedImage) {
+            return { ...blog, image: storedImage };
+          }
+          return blog;
+        });
+        
+        setData(prev => ({
+          ...prev,
+          blogs: blogsWithRestoredImages
+        }));
+      } catch (localError) {
+        console.error('Error loading local blogs:', localError);
+      }
     } finally {
       setLoading(prev => ({ ...prev, blogs: false }));
     }
@@ -157,6 +192,26 @@ export const DataProvider = ({ children }) => {
       setError(prev => ({ ...prev, clients: err.message }));
     } finally {
       setLoading(prev => ({ ...prev, clients: false }));
+    }
+  }, []);
+
+  const fetchTeamMembers = useCallback(async () => {
+    try {
+      setLoading(prev => ({ ...prev, teamMembers: true }));
+      setError(prev => ({ ...prev, teamMembers: null }));
+      
+      const response = await ApiService.getTeamMembers();
+      const apiTeamMembers = response.data || [];
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: apiTeamMembers
+      }));
+    } catch (err) {
+      console.error('Error fetching team members:', err);
+      setError(prev => ({ ...prev, teamMembers: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, teamMembers: false }));
     }
   }, []);
 
@@ -211,7 +266,7 @@ export const DataProvider = ({ children }) => {
       // Check if projectData is FormData (contains files)
       if (projectData instanceof FormData) {
         // Handle FormData directly
-        const url = 'http://localhost:5000/api/projects';
+        const url = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/api/projects` : 'http://localhost:5000/api/projects';
         const fetchResponse = await fetch(url, {
           method: 'POST',
           body: projectData,
@@ -253,7 +308,7 @@ export const DataProvider = ({ children }) => {
       // Check if updates is FormData (contains files)
       if (updates instanceof FormData) {
         // Handle FormData directly
-        const url = `http://localhost:5000/api/projects/${id}`;
+        const url = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/api/projects/${id}` : `http://localhost:5000/api/projects/${id}`;
         const fetchResponse = await fetch(url, {
           method: 'PUT',
           body: updates,
@@ -313,9 +368,9 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  const addBlog = async (blog) => {
+  const addBlog = async (blog, imageFile = null) => {
     try {
-      const response = await ApiService.createBlog(blog);
+      const response = await ApiService.createBlog(blog, imageFile);
       const newBlog = response.data;
       
       setData(prev => ({
@@ -328,14 +383,51 @@ export const DataProvider = ({ children }) => {
       
       return newBlog;
     } catch (err) {
-      console.error('Error creating blog:', err);
-      throw err;
+      console.error('Error creating blog (falling back to local storage):', err);
+      
+      // Fallback: Create blog locally if server is not available
+      const blogId = Date.now().toString();
+      let imageUrl = blog.image || '';
+      
+      if (imageFile) {
+        try {
+          // Compress and convert image to base64 for persistent storage
+          const base64Image = await compressImageToBase64(imageFile);
+          // Store in localStorage for persistence
+          storeImageLocally(blogId, base64Image);
+          imageUrl = base64Image;
+        } catch (error) {
+          console.error('Error processing image:', error);
+          // Fallback to blob URL if base64 conversion fails
+          imageUrl = URL.createObjectURL(imageFile);
+        }
+      }
+      
+      const newBlog = {
+        ...blog,
+        id: blogId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        image: imageUrl
+      };
+      
+      setData(prev => {
+        const updatedBlogs = [...prev.blogs, newBlog];
+        // Save to localStorage for persistence
+        localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
+        return {
+          ...prev,
+          blogs: updatedBlogs
+        };
+      });
+      
+      return newBlog;
     }
   };
 
-  const updateBlog = async (id, updates) => {
+  const updateBlog = async (id, updates, imageFile = null) => {
     try {
-      const response = await ApiService.updateBlog(id, updates);
+      const response = await ApiService.updateBlog(id, updates, imageFile);
       const updatedBlog = response.data;
       
       setData(prev => ({
@@ -348,8 +440,43 @@ export const DataProvider = ({ children }) => {
       
       return updatedBlog;
     } catch (err) {
-      console.error('Error updating blog:', err);
-      throw err;
+      console.error('Error updating blog (falling back to local storage):', err);
+      
+      // Fallback: Update blog locally if server is not available
+      let imageUrl = updates.image || '';
+      
+      if (imageFile) {
+        try {
+          // Compress and convert image to base64 for persistent storage
+          const base64Image = await compressImageToBase64(imageFile);
+          // Store in localStorage for persistence
+          storeImageLocally(id, base64Image);
+          imageUrl = base64Image;
+        } catch (error) {
+          console.error('Error processing image:', error);
+          // Fallback to blob URL if base64 conversion fails
+          imageUrl = URL.createObjectURL(imageFile);
+        }
+      }
+      
+      const updatedBlog = {
+        ...updates,
+        id,
+        updatedAt: new Date().toISOString(),
+        image: imageUrl
+      };
+      
+      setData(prev => {
+        const updatedBlogs = prev.blogs.map(b => b.id === id ? { ...b, ...updatedBlog } : b);
+        // Save to localStorage for persistence
+        localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
+        return {
+          ...prev,
+          blogs: updatedBlogs
+        };
+      });
+      
+      return updatedBlog;
     }
   };
 
@@ -357,13 +484,34 @@ export const DataProvider = ({ children }) => {
     try {
       await ApiService.deleteBlog(id);
       
-      setData(prev => ({
-        ...prev,
-        blogs: prev.blogs.filter(b => b.id !== id)
-      }));
+      // Clean up stored image
+      removeStoredImage(id);
+      
+      setData(prev => {
+        const updatedBlogs = prev.blogs.filter(b => b.id !== id);
+        // Save to localStorage for persistence
+        localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
+        return {
+          ...prev,
+          blogs: updatedBlogs
+        };
+      });
     } catch (err) {
-      console.error('Error deleting blog:', err);
-      throw err;
+      console.error('Error deleting blog (falling back to local storage):', err);
+      
+      // Fallback: Delete blog locally if server is not available
+      // Clean up stored image
+      removeStoredImage(id);
+      
+      setData(prev => {
+        const updatedBlogs = prev.blogs.filter(b => b.id !== id);
+        // Save to localStorage for persistence
+        localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
+        return {
+          ...prev,
+          blogs: updatedBlogs
+        };
+      });
     }
   };
 
@@ -415,6 +563,54 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  const addTeamMember = async (member) => {
+    try {
+      const response = await ApiService.createTeamMember(member);
+      const newMember = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: [...prev.teamMembers, newMember]
+      }));
+      
+      return newMember;
+    } catch (err) {
+      console.error('Error creating team member:', err);
+      throw err;
+    }
+  };
+
+  const updateTeamMember = async (id, updates) => {
+    try {
+      const response = await ApiService.updateTeamMember(id, updates);
+      const updatedMember = response.data;
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: prev.teamMembers.map(m => m.id === id ? updatedMember : m)
+      }));
+      
+      return updatedMember;
+    } catch (err) {
+      console.error('Error updating team member:', err);
+      throw err;
+    }
+  };
+
+  const deleteTeamMember = async (id) => {
+    try {
+      await ApiService.deleteTeamMember(id);
+      
+      setData(prev => ({
+        ...prev,
+        teamMembers: prev.teamMembers.filter(m => m.id !== id)
+      }));
+    } catch (err) {
+      console.error('Error deleting team member:', err);
+      throw err;
+    }
+  };
+
   const addMedia = (media) => {
     setData(prev => ({
       ...prev,
@@ -436,14 +632,19 @@ export const DataProvider = ({ children }) => {
       .slice(0, limit);
   };
 
-  // Fetch projects from API on mount (after all functions are defined)
+  // Fetch data from API on mount (after all functions are defined)
   useEffect(() => {
     fetchProjects();
-  }, [fetchProjects]);
+    fetchFeaturedProjects();
+    fetchBlogs();
+    fetchClients();
+    fetchTeamMembers();
+  }, [fetchProjects, fetchFeaturedProjects, fetchBlogs, fetchClients, fetchTeamMembers]);
 
   const contextValue = {
     data,
     loading,
+    isHomepageLoading, // Add this new computed state
     error,
     setData,
     updateSiteSettings,
@@ -457,18 +658,23 @@ export const DataProvider = ({ children }) => {
     addClient,
     updateClient,
     deleteClient,
+    addTeamMember,
+    updateTeamMember,
+    deleteTeamMember,
     addMedia,
     deleteMedia,
     fetchProjects,
     fetchFeaturedProjects,
     fetchBlogs,
     fetchClients,
+    fetchTeamMembers,
     getRecentProjects,
     // Export individual data for easier access
     projects: data.projects,
     featuredProjects: data.featuredProjects,
     blogs: data.blogs,
     clients: data.clients,
+    teamMembers: data.teamMembers,
     media: data.media
   };
 

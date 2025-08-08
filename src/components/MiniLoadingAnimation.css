@@ -1,0 +1,449 @@
+/* Mini Loading Container Base */
+.mini-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  padding: 1rem;
+}
+
+/* Size Variations */
+.mini-loading-container.small {
+  padding: 0.5rem;
+}
+
+.mini-loading-container.medium {
+  padding: 1rem;
+}
+
+.mini-loading-container.large {
+  padding: 2rem;
+}
+
+/* Mini Logo Container */
+.mini-logo-container {
+  position: relative;
+  margin-bottom: 1rem;
+  animation: miniLogoFloat 2s ease-in-out infinite;
+}
+
+.mini-loading-container.small .mini-logo-container {
+  margin-bottom: 0.5rem;
+}
+
+.mini-loading-container.large .mini-logo-container {
+  margin-bottom: 1.5rem;
+}
+
+/* Mini Logo Sizes */
+.mini-loading-logo {
+  filter: brightness(1.1) contrast(1.05);
+  animation: miniLogoRotate 6s linear infinite, miniLogoPulse 1.5s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.mini-loading-container.small .mini-loading-logo {
+  width: 30px;
+  height: auto;
+}
+
+.mini-loading-container.medium .mini-loading-logo {
+  width: 50px;
+  height: auto;
+}
+
+.mini-loading-container.large .mini-loading-logo {
+  width: 80px;
+  height: auto;
+}
+
+/* Mini Logo Glow */
+.mini-logo-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: miniGlowPulse 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.mini-loading-container.small .mini-logo-glow {
+  width: 40px;
+  height: 40px;
+}
+
+.mini-loading-container.medium .mini-logo-glow {
+  width: 60px;
+  height: 60px;
+}
+
+.mini-loading-container.large .mini-logo-glow {
+  width: 90px;
+  height: 90px;
+}
+
+/* Mini Loading Text */
+.mini-loading-text {
+  margin-bottom: 1rem;
+  animation: miniTextFadeIn 0.8s ease-out 0.3s both;
+}
+
+.mini-loading-container.small .mini-loading-text {
+  margin-bottom: 0.5rem;
+}
+
+.mini-loading-container.large .mini-loading-text {
+  margin-bottom: 1.5rem;
+}
+
+.mini-loading-text span {
+  color: #ffffff;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  animation: miniTextGlow 2s ease-in-out infinite;
+}
+
+.mini-loading-container.small .mini-loading-text span {
+  font-size: 0.75rem;
+}
+
+.mini-loading-container.medium .mini-loading-text span {
+  font-size: 0.9rem;
+}
+
+.mini-loading-container.large .mini-loading-text span {
+  font-size: 1.1rem;
+}
+
+/* Mini Progress Bar */
+.mini-loading-progress {
+  margin-bottom: 1rem;
+  animation: miniProgressFadeIn 0.8s ease-out 0.6s both;
+}
+
+.mini-loading-container.small .mini-loading-progress {
+  width: 80px;
+  margin-bottom: 0.5rem;
+}
+
+.mini-loading-container.medium .mini-loading-progress {
+  width: 120px;
+}
+
+.mini-loading-container.large .mini-loading-progress {
+  width: 180px;
+  margin-bottom: 1.5rem;
+}
+
+.mini-progress-bar {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mini-loading-container.large .mini-progress-bar {
+  height: 2px;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: miniProgressSlide 1.5s ease-in-out infinite;
+  border-radius: 0.5px;
+}
+
+/* Mini Loading Dots */
+.mini-loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mini-loading-container.small .mini-loading-dots {
+  gap: 3px;
+}
+
+.mini-loading-container.large .mini-loading-dots {
+  gap: 6px;
+}
+
+.mini-loading-dots span {
+  background: #ffffff;
+  border-radius: 50%;
+  animation: miniDotBounce 1.2s ease-in-out infinite both;
+  opacity: 0.7;
+}
+
+.mini-loading-container.small .mini-loading-dots span {
+  width: 4px;
+  height: 4px;
+}
+
+.mini-loading-container.medium .mini-loading-dots span {
+  width: 5px;
+  height: 5px;
+}
+
+.mini-loading-container.large .mini-loading-dots span {
+  width: 6px;
+  height: 6px;
+}
+
+.mini-loading-dots span:nth-child(1) {
+  animation-delay: -0.24s;
+}
+
+.mini-loading-dots span:nth-child(2) {
+  animation-delay: -0.12s;
+}
+
+.mini-loading-dots span:nth-child(3) {
+  animation-delay: 0s;
+}
+
+/* Dots Only Variant */
+.mini-loading-dots-only {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 1rem;
+}
+
+.mini-loading-container.small .mini-loading-dots-only {
+  gap: 4px;
+  padding: 0.5rem;
+}
+
+.mini-loading-container.large .mini-loading-dots-only {
+  gap: 8px;
+  padding: 1.5rem;
+}
+
+.mini-loading-dots-only span {
+  background: #ffffff;
+  border-radius: 50%;
+  animation: miniDotBounce 1.2s ease-in-out infinite both;
+  opacity: 0.8;
+}
+
+.mini-loading-container.small .mini-loading-dots-only span {
+  width: 6px;
+  height: 6px;
+}
+
+.mini-loading-container.medium .mini-loading-dots-only span {
+  width: 8px;
+  height: 8px;
+}
+
+.mini-loading-container.large .mini-loading-dots-only span {
+  width: 10px;
+  height: 10px;
+}
+
+.mini-loading-dots-only span:nth-child(1) {
+  animation-delay: -0.24s;
+}
+
+.mini-loading-dots-only span:nth-child(2) {
+  animation-delay: -0.12s;
+}
+
+.mini-loading-dots-only span:nth-child(3) {
+  animation-delay: 0s;
+}
+
+/* Minimal Variant */
+.mini-loading-container.minimal .mini-loading-progress {
+  display: none;
+}
+
+.mini-loading-container.minimal .mini-loading-text {
+  margin-bottom: 0.5rem;
+}
+
+/* Keyframe Animations */
+@keyframes miniLogoFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes miniLogoRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes miniLogoPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes miniGlowPulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+@keyframes miniTextGlow {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes miniProgressSlide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes miniDotBounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+@keyframes miniTextFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes miniProgressFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Overlay Styles for Full-Screen Loading */
+.mini-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.mini-loading-overlay .mini-loading-container {
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Inline Styles for Section Loading */
+.mini-loading-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  width: 100%;
+}
+
+.mini-loading-inline.small {
+  min-height: 60px;
+}
+
+.mini-loading-inline.large {
+  min-height: 150px;
+}
+
+/* Card Loading Styles */
+.mini-loading-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .mini-loading-container.large {
+    padding: 1.5rem;
+  }
+  
+  .mini-loading-container.large .mini-loading-logo {
+    width: 60px;
+  }
+  
+  .mini-loading-container.large .mini-logo-glow {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .mini-loading-container.large .mini-loading-progress {
+    width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mini-loading-container.large {
+    padding: 1rem;
+  }
+  
+  .mini-loading-container.large .mini-loading-logo {
+    width: 50px;
+  }
+  
+  .mini-loading-container.large .mini-logo-glow {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .mini-loading-container.large .mini-loading-progress {
+    width: 120px;
+  }
+}

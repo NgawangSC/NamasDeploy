@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
+import ApiService from "../services/api"
+import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import "./AboutPage.css"
 
 // Custom hook for counter animation
@@ -61,13 +64,14 @@ function AboutPage() {
   const navigate = useNavigate()
   
   // Get data from context
-  const { data, loading, fetchProjects, fetchClients } = useData()
+  const { data, loading, fetchProjects, fetchClients, fetchTeamMembers } = useData()
   
   // Fetch data on component mount
   useEffect(() => {
     fetchProjects()
     fetchClients()
-  }, [fetchProjects, fetchClients])
+    fetchTeamMembers()
+  }, [fetchProjects, fetchClients, fetchTeamMembers])
   
 
   
@@ -75,54 +79,38 @@ function AboutPage() {
     projects: 0,
     clients: 0,
     workingHours: 0,
-    awards: 0
+    years: 0
   })
   
   // Recalculate statistics when data changes
   useEffect(() => {
     const calculateStats = () => {
-      const currentYear = new Date().getFullYear()
-      const foundingYear = 2021 // Based on your about section text
-      const yearsInBusiness = Math.max(currentYear - foundingYear, 1) // At least 1 year
-      
       // Calculate total projects done
       const totalProjects = data.projects?.length || 0
       
-      // Calculate happy clients - try to get from clients data, fallback to estimation
-      let happyClients = 0
-      if (data.clients && data.clients.length > 0) {
-        happyClients = data.clients.length
-      } else if (totalProjects > 0) {
-        // Estimate clients as 75% of projects (some clients may have multiple projects)
-        happyClients = Math.max(Math.ceil(totalProjects * 0.75), 1)
-      } else {
-        happyClients = 0
+      // Calculate happy clients - always 1 client per project
+      const happyClients = totalProjects
+      
+      // Calculate working hours (1 project = 100 working hours)
+      const hoursPerProject = 100
+      const totalWorkingHours = totalProjects * hoursPerProject
+      
+      // Calculate years of experience since 2022 (same as ExperienceBox)
+      const currentYear = new Date().getFullYear()
+      const foundingYear = 2022
+      const yearsOfExperience = currentYear - foundingYear + 1 // +1 to include the founding year
+      
+      return {
+        projects: Math.max(totalProjects, 0),
+        clients: Math.max(happyClients, 0),
+        workingHours: Math.max(totalWorkingHours, 0),
+        years: Math.max(yearsOfExperience, 0)
       }
-      
-      // Calculate working hours (estimated based on projects and years in business)
-      // Average project duration: 3-6 months, 40 hours/week, 4 weeks/month
-      const averageProjectHours = 480 // 3 months * 4 weeks * 40 hours
-      const projectBasedHours = totalProjects * averageProjectHours
-      const minimumYearlyHours = yearsInBusiness * 2000 // 2000 hours per year standard
-      const totalWorkingHours = Math.max(projectBasedHours, minimumYearlyHours)
-      
-      // Calculate awards - count from the awards timeline section (6 awards currently listed)
-      // Can be enhanced to pull from awards data if made dynamic
-      const baseAwards = 6 // Current awards in timeline
-      const additionalAwards = Math.floor(totalProjects / 15) // Bonus awards for project milestones
-      const totalAwards = baseAwards + additionalAwards
-      
-              return {
-          projects: Math.max(totalProjects, 0),
-          clients: Math.max(happyClients, 0),
-          workingHours: Math.max(totalWorkingHours, 0),
-          awards: Math.max(totalAwards, 0)
-        }
     }
     
     const newStats = calculateStats()
     setStatistics(newStats)
-  }, [data.projects, data.clients])
+  }, [data.projects, data.clients, data.teamMembers])
 
   // Navigation handlers for service pages
   const handlePlanningClick = () => {
@@ -210,6 +198,15 @@ function AboutPage() {
       title: "Interior Designer",
     },
   ]
+
+  // Testimonial slider functions
+  const nextTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev + 1) % testimonials.length)
+  }
+
+  const prevTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }
 
   // Intersection Observer to trigger counter animation
   useEffect(() => {
@@ -368,96 +365,39 @@ function AboutPage() {
             <h3>Experts ready to serve</h3>
           </div>
           <div className="team-grid">
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
+            {loading.teamMembers ? (
+              <div className="team-loading">
+                <MiniLoadingAnimation 
+                  size="medium" 
+                  text="Loading team members..." 
+                  variant="minimal"
+                  className="mini-loading-inline"
+                />
               </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
+            ) : data.teamMembers && data.teamMembers.length > 0 ? (
+              data.teamMembers.map((member) => (
+                <div key={member.id} className="team-member-card">
+                  <div className="team-member-image">
+                    <img 
+                      src={ApiService.getImageUrl(member.image) || "/images/founder-pic.png"} 
+                      alt={member.name}
+                      onError={(e) => {
+                        e.target.src = "/images/founder-pic.png";
+                      }}
+                    />
+                  </div>
+                  <div className="team-member-info">
+                    <h4 className="team-member-name">{member.name}</h4>
+                    <p className="team-member-title">{member.title}</p>
+                    <p className="team-member-position">{member.position}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="no-team-members">
+                <p>No team members found. Add team members through the dashboard to display them here.</p>
               </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
-            <div className="team-member-card">
-              <div className="team-member-image">
-                <img src="/images/founder-pic.png" alt="Sonam Tobgay" />
-              </div>
-              <div className="team-member-info">
-                <h4 className="team-member-name">Sonam Tobgay</h4>
-                <p className="team-member-title">Founder</p>
-                <p className="team-member-position">Principal Architect</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -500,9 +440,9 @@ function AboutPage() {
               </div>
               <div className="box-section">
                 <h4>
-                  <AnimatedCounter end={statistics.awards} suffix="+" startAnimation={startCounters} />
+                  <AnimatedCounter end={statistics.years} suffix="+" startAnimation={startCounters} />
                 </h4>
-                <p>Awards</p>
+                <p>Years</p>
               </div>
             </div>
             <div className="statistics-text">
@@ -530,14 +470,22 @@ function AboutPage() {
               {testimonials.map((testimonial, index) => (
                 <button
                   key={testimonial.id}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
                   onClick={() => setSelectedTestimonial(index)}
-                  className={`testimonial-name-btn ${index === selectedTestimonial ? "active" : ""}`}
                 >
                   {testimonial.name}
                 </button>
               ))}
             </div>
             <div className="testimonial-quote-container">
+              <div className="testimonial-slider-nav">
+                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
               <div className="quote-mark">"</div>
               <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
               <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
@@ -580,64 +528,6 @@ function AboutPage() {
                 Working together with your architect, you will share your project needs, dreams and goals.
               </p>
               <button className="service-btn" onClick={handleExteriorClick}>READ</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Awards Timeline Section */}
-      <section className="awards-section">
-        <div className="container">
-          <div className="awards-header">
-            <p className="awards-label">TIMELINE</p>
-            <h2 className="awards-title">Awards that we have</h2>
-          </div>
-          <div className="awards-timeline">
-            <div className="awards-column">
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-            </div>
-            <div className="awards-column">
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
-              <div className="award-item">
-                <div className="award-year">2016</div>
-                <div className="award-content">
-                  <h3 className="award-name">University of Australia Innovation Quarter</h3>
-                  <p className="award-description">Shortlist ( 3 finalist among 400 entries)</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

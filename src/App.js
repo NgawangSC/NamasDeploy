@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
-import { Routes, Route, useLocation } from "react-router-dom"
-import { DataProvider } from "./contexts/DataContext" // Add this import
+import { Routes, Route, useLocation, Navigate } from "react-router-dom"
+import { DataProvider, useData } from "./contexts/DataContext" // Modified import
 import Header from "./components/Header"
 import Footer from "./components/Footer"
+import LoadingAnimation from "./components/LoadingAnimation"
 import HomePage from "./pages/HomePage"
 import AboutPage from "./pages/AboutPage"
 import ProjectDetailPage from "./pages/ProjectDetailPage"
@@ -27,6 +28,7 @@ import RenovationPage from "./pages/RenovationPage"
 import AboutExteriorPage from "./pages/AboutExteriorPage"
 import AboutInteriorPage from "./pages/AboutInteriorPage"
 import AboutPlanningPage from "./pages/AboutPlanningPage"
+import ContactPage from "./pages/ContactPage"
 import DashboardLayout from "./dashboard/DashboardLayout"
 import DashboardHome from "./dashboard/DashboardHome"
 import ProjectsManager from "./dashboard/ProjectsManager"
@@ -34,9 +36,12 @@ import HeroBannerManager from "./dashboard/HeroBannerManager"
 import RecentProjectsManager from "./dashboard/RecentProjectsManager"
 import BlogsManager from "./dashboard/BlogsManager"
 import ClientsManager from "./dashboard/ClientsManager"
+import TeamManager from "./dashboard/TeamManager"
 import MediaManager from "./dashboard/MediaManager"
+
 import DashboardLogin from "./dashboard/DashboardLogin"
 import "./App.css"
+import MiniLoadingAnimation from "./components/MiniLoadingAnimation"
 
 // ScrollToTop component
 function ScrollToTop() {
@@ -49,45 +54,181 @@ function ScrollToTop() {
   return null
 }
 
+// Dashboard Route Component
+function DashboardRoute({ isAuthenticated, setIsAuthenticated }) {
+  const location = useLocation()
+  
+  // If not authenticated and trying to access any dashboard route except login
+  if (!isAuthenticated && location.pathname !== '/dashboard/login') {
+    return <Navigate to="/dashboard/login" replace />
+  }
+  
+  // If authenticated and trying to access login page, redirect to dashboard home
+  if (isAuthenticated && location.pathname === '/dashboard/login') {
+    return <Navigate to="/dashboard" replace />
+  }
+  
+  // If authenticated, show the dashboard
+  if (isAuthenticated) {
+    return (
+      <DataProvider>
+        <DashboardLayout setIsAuthenticated={setIsAuthenticated}>
+          <Routes>
+            <Route path="/" element={<DashboardHome />} />
+            <Route path="/projects" element={<ProjectsManager />} />
+            <Route path="/hero-banner" element={<HeroBannerManager />} />
+            <Route path="/recent-projects" element={<RecentProjectsManager />} />
+            <Route path="/blogs" element={<BlogsManager />} />
+            <Route path="/clients" element={<ClientsManager />} />
+            <Route path="/team" element={<TeamManager />} />
+            <Route path="/media" element={<MediaManager />} />
+          </Routes>
+        </DashboardLayout>
+      </DataProvider>
+    )
+  }
+  
+  // Show login page
+  return <DashboardLogin setIsAuthenticated={setIsAuthenticated} />
+}
+
+// Homepage Loading Wrapper Component
+function HomePageWithLoading() {
+  const { isHomepageLoading } = useData()
+  const [showInitialLoading, setShowInitialLoading] = useState(true)
+  const [hasCompletedInitialLoad, setHasCompletedInitialLoad] = useState(false)
+
+  useEffect(() => {
+    // Check for force loading parameter
+    const urlParams = new URLSearchParams(window.location.search)
+    const forceLoading = urlParams.get('loading') === 'true'
+    const resetVisited = urlParams.get('reset') === 'true'
+    
+    // Reset visited status if requested
+    if (resetVisited) {
+      sessionStorage.removeItem('hasVisited')
+      sessionStorage.removeItem('lastVisit')
+      console.log('Reset visited status')
+    }
+    
+    if (forceLoading) {
+      console.log('Force loading animation enabled via URL parameter')
+      // Force show loading animation for at least 2.5 seconds
+      const timer = setTimeout(() => {
+        setShowInitialLoading(false)
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+
+    // Check session storage for first visit logic
+    const hasVisited = sessionStorage.getItem("hasVisited")
+    const lastVisit = sessionStorage.getItem("lastVisit")
+    const now = Date.now()
+    
+    // Show loading if never visited, or if last visit was more than 30 minutes ago
+    const shouldShowLoadingBasedOnVisit = !hasVisited || !lastVisit || (now - parseInt(lastVisit)) > 30 * 60 * 1000
+    
+    if (!shouldShowLoadingBasedOnVisit && !isHomepageLoading && !forceLoading) {
+      // Skip loading animation if user has visited recently and data is already loaded
+      setShowInitialLoading(false)
+      setHasCompletedInitialLoad(true)
+      return
+    }
+
+    // Show loading animation until data is loaded
+    if (!isHomepageLoading && !hasCompletedInitialLoad) {
+      // Data has finished loading, but show loading for minimum time
+      const timer = setTimeout(() => {
+        setShowInitialLoading(false)
+        setHasCompletedInitialLoad(true)
+        sessionStorage.setItem("hasVisited", "true")
+        sessionStorage.setItem("lastVisit", now.toString())
+      }, 1500) // Minimum loading time
+      
+      return () => clearTimeout(timer)
+    }
+  }, [isHomepageLoading, hasCompletedInitialLoad])
+
+  // Show loading animation while data is loading or during minimum display time
+  if (showInitialLoading || (isHomepageLoading && !hasCompletedInitialLoad)) {
+    console.log('Showing LoadingAnimation - Homepage data loading:', isHomepageLoading)
+    return <LoadingAnimation />
+  }
+
+  return <HomePage />
+}
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Check authentication status
   useEffect(() => {
-    const authStatus = localStorage.getItem("dashboardAuth")
-    setIsAuthenticated(authStatus === "true")
+    const checkAuth = () => {
+      try {
+        const authStatus = localStorage.getItem("dashboardAuth")
+        const authTimestamp = localStorage.getItem("dashboardAuthTime")
+        
+        if (authStatus === "true" && authTimestamp) {
+          const now = new Date().getTime()
+          const authTime = parseInt(authTimestamp)
+          const hoursPassed = (now - authTime) / (1000 * 60 * 60)
+          
+          // Auto-logout after 24 hours for security
+          if (hoursPassed > 24) {
+            localStorage.removeItem("dashboardAuth")
+            localStorage.removeItem("dashboardAuthTime")
+            setIsAuthenticated(false)
+          } else {
+            setIsAuthenticated(true)
+          }
+        } else {
+          setIsAuthenticated(false)
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error)
+        setIsAuthenticated(false)
+      }
+      setIsLoading(false)
+    }
+
+    checkAuth()
   }, [])
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Loading...
+      </div>
+    )
+  }
 
   return (
     <div className="App">
       <ScrollToTop />
       <Routes>
-        {/* Dashboard Routes - Wrapped with DataProvider */}
-        <Route path="/dashboard/login" element={<DashboardLogin setIsAuthenticated={setIsAuthenticated} />} />
+        {/* Dashboard Routes */}
+        <Route 
+          path="/dashboard/login" 
+          element={
+            isAuthenticated ? 
+            <Navigate to="/dashboard" replace /> : 
+            <DashboardLogin setIsAuthenticated={setIsAuthenticated} />
+          } 
+        />
         <Route
           path="/dashboard/*"
-          element={
-            isAuthenticated ? (
-              <DataProvider>
-                <DashboardLayout setIsAuthenticated={setIsAuthenticated}>
-                  <Routes>
-                    <Route path="/" element={<DashboardHome />} />
-                    <Route path="/projects" element={<ProjectsManager />} />
-                    <Route path="/hero-banner" element={<HeroBannerManager />} />
-                    <Route path="/recent-projects" element={<RecentProjectsManager />} />
-                    <Route path="/blogs" element={<BlogsManager />} />
-                    <Route path="/clients" element={<ClientsManager />} />
-                    <Route path="/media" element={<MediaManager />} />
-                  </Routes>
-                </DashboardLayout>
-              </DataProvider>
-            ) : (
-              <DashboardLogin setIsAuthenticated={setIsAuthenticated} />
-            )
-          }
+          element={<DashboardRoute isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />}
         />
 
-        {/* Public Routes - You can also wrap these with DataProvider if needed */}
+        {/* Public Routes */}
         <Route
           path="/*"
           element={
@@ -95,7 +236,7 @@ function App() {
               <Header />
               <main>
                 <Routes>
-                  <Route path="/" element={<HomePage />} />
+                  <Route path="/" element={<HomePageWithLoading />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/design" element={<DesignPage />} />
                   <Route path="/build" element={<BuildPage />} />
@@ -126,6 +267,7 @@ function App() {
                   <Route path="/about/about-exterior" element={<AboutExteriorPage />} />
                   <Route path="/about/about-interior" element={<AboutInteriorPage />} />
                   <Route path="/about/about-planning" element={<AboutPlanningPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
                 </Routes>
               </main>
               <Footer />

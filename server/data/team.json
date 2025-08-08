@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "name": "Sonam Tobgay",
+    "title": "Founder",
+    "position": "Principal Architect",
+    "bio": "Founder and Principal Architect with over 15 years of experience in sustainable architecture and traditional Bhutanese design.",
+    "image": "/images/founder-pic.png",
+    "email": "sonam@namasarchitecture.com",
+    "phone": "+975-12345678",
+    "linkedin": "",
+    "status": "Active",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Dorji",
+    "title": "Architect",
+    "position": "Project Manager",
+    "bio": "123",
+    "email": "dorji@gmail.com",
+    "phone": "17123456",
+    "status": "Active",
+    "image": "/uploads/image-1753887841734-409455075.jpg",
+    "createdAt": "2025-07-30T14:53:42.026Z",
+    "updatedAt": "2025-07-30T15:04:01.737Z"
+  },
+  {
+    "id": 3,
+    "name": "Zen",
+    "title": "123",
+    "position": "123",
+    "bio": "123",
+    "email": "",
+    "linkedin": "",
+    "image": "/uploads/image-1753887874572-307108464.jpg",
+    "createdAt": "2025-07-30T15:04:25.424Z",
+    "updatedAt": "2025-07-30T15:04:34.610Z"
+  }
+]

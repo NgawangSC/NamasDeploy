@@ -50,7 +50,7 @@ const HeroBanner = ({ featuredProjects = [] }) => {
     return (
       <section className="hero-banner hero-banner-empty">
         <div className="hero-content">
-          <h1>Welcome to Our Architecture Studio</h1>
+          <h1>Welcome to Namas Design and Build</h1>
           <p>Creating beautiful and innovative architectural solutions</p>
           <div className="hero-empty-message">
             <p>Add some projects in the dashboard to see them featured here!</p>

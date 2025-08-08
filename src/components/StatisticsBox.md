@@ -33,7 +33,7 @@ function MyPage() {
   projectsDone={150}
   happyClients={75}
   workingHours={2500}
-  awards={5}
+  years={3}
 />
 ```
 
@@ -42,7 +42,7 @@ function MyPage() {
 const customStats = [
   { key: 'clients', value: 200, label: 'SATISFIED CLIENTS' },
   { key: 'projects', value: 150, label: 'COMPLETED PROJECTS' },
-  { key: 'experience', value: 10, label: 'YEARS EXPERIENCE' },
+  { key: 'years', value: 10, label: 'YEARS' },
   { key: 'team', value: 25, label: 'TEAM MEMBERS' }
 ];
 
@@ -60,9 +60,9 @@ const customStats = [
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `projectsDone` | number | 157 | Number of completed projects |
-| `happyClients` | number | 86 | Number of satisfied clients |
-| `workingHours` | number | 924 | Total working hours |
-| `awards` | number | 13 | Number of awards received |
+| `happyClients` | number | 157 | Number of satisfied clients (1 per project) |
+| `workingHours` | number | null (calculated as projectsDone * 100) | Total working hours |
+| `years` | number | 3 | Number of years in business |
 | `customStats` | array | null | Custom statistics array (overrides default props) |
 | `title` | string | "Make with love all what we do." | Section title (supports HTML) |
 | `subtitle` | string | "NUMBERS" | Section subtitle |

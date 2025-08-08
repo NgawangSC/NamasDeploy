@@ -8,7 +8,7 @@
 }
 
 .hero-banner-empty {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,25 +69,18 @@
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.8s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .hero-slide.active {
   opacity: 1;
 }
 
-.hero-slide:hover .hero-overlay {
-  background: linear-gradient(
-    135deg, 
-    rgba(0, 0, 0, 0.6) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.4) 100%
-  );
-}
+
 
 .hero-overlay {
   position: absolute;
@@ -183,8 +176,11 @@
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 3;
+  z-index: 10;
   backdrop-filter: blur(10px);
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .hero-arrow:hover {
@@ -208,7 +204,8 @@
   transform: translateX(-50%);
   display: flex;
   gap: 10px;
-  z-index: 3;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .hero-indicator {
@@ -219,6 +216,9 @@
   background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .hero-indicator.active {
@@ -273,7 +273,14 @@
   }
   
   .hero-arrow {
-    padding: 12px;
+    padding: 15px;
+    z-index: 15;
+    background: rgba(255, 255, 255, 0.3);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .hero-arrow-left {
@@ -286,6 +293,13 @@
   
   .hero-indicators {
     bottom: 20px;
+    z-index: 15;
+  }
+  
+  .hero-indicator {
+    width: 14px;
+    height: 14px;
+    border: 3px solid white;
   }
 }
 
@@ -310,7 +324,14 @@
   }
   
   .hero-arrow {
-    padding: 10px;
+    padding: 12px;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.4);
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .hero-arrow-left {
@@ -319,5 +340,15 @@
   
   .hero-arrow-right {
     right: 10px;
+  }
+  
+  .hero-indicators {
+    z-index: 20;
+  }
+  
+  .hero-indicator {
+    width: 16px;
+    height: 16px;
+    border: 3px solid white;
   }
 }

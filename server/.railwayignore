@@ -1,0 +1,21 @@
+# Ignore parent directory files that shouldn't be in server deployment
+../src/
+../public/
+../node_modules/
+../.git/
+../build/
+../dist/
+
+# Ignore development files
+*.log
+.env.local
+.env.development
+.env.test
+.DS_Store
+.vscode/
+.idea/
+
+# Ignore backup files
+backups/
+*.backup
+*.bak

@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import ApiService from "../services/api"
+import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import SEO from "../components/SEO"
 import "./ProjectDetailPage.css"
 
 const ProjectDetailPage = () => {
@@ -13,6 +16,8 @@ const ProjectDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [project, setProject] = useState(null)
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
+  const [singleProjectLoading, setSingleProjectLoading] = useState(false)
+  const [showDesignTeamModal, setShowDesignTeamModal] = useState(false)
 
   useEffect(() => {
     // Fetch projects on mount if not already loaded
@@ -34,12 +39,33 @@ const ProjectDetailPage = () => {
   }, [loading.projects, fetchProjects])
 
   useEffect(() => {
-    const foundProject = projects.find((p) => p.id === Number.parseInt(id))
-    setProject(foundProject)
+    const foundProject = projects.find((p) => {
+      // Handle both string and number IDs for backward compatibility
+      return p.id === Number.parseInt(id) || p.id === id || p.id.toString() === id
+    })
     
-    // Reset image index when project changes
     if (foundProject) {
+      setProject(foundProject)
       setCurrentImageIndex(0)
+    } else if (projects.length > 0) {
+      // If we have projects loaded but can't find this one, try fetching it individually
+      const fetchSingleProject = async () => {
+        try {
+          setSingleProjectLoading(true)
+          const response = await ApiService.getProject(id)
+          if (response.success && response.data) {
+            setProject(response.data)
+            setCurrentImageIndex(0)
+          }
+        } catch (error) {
+          console.error('Error fetching single project:', error)
+          // Project not found - will show "not found" message
+        } finally {
+          setSingleProjectLoading(false)
+        }
+      }
+      
+      fetchSingleProject()
     }
   }, [id, projects])
 
@@ -62,18 +88,24 @@ const ProjectDetailPage = () => {
 
 
   // Show loading only if we truly have no data and are actively loading
-  if (loading.projects && projects.length === 0) {
+  if ((loading.projects && projects.length === 0) || singleProjectLoading) {
     return (
       <div className="project-loading">
-        <div>Loading projects...</div>
-        <button 
-          onClick={() => {
-            fetchProjects()
-          }}
-          style={{ marginTop: '10px', padding: '8px 16px' }}
-        >
-          Retry Loading
-        </button>
+        <MiniLoadingAnimation 
+          size="large" 
+          text={singleProjectLoading ? 'Loading project...' : 'Loading projects...'} 
+          className="mini-loading-inline"
+        />
+        {!singleProjectLoading && (
+          <button 
+            onClick={() => {
+              fetchProjects()
+            }}
+            style={{ marginTop: '20px', padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Retry Loading
+          </button>
+        )}
       </div>
     )
   }
@@ -97,10 +129,29 @@ const ProjectDetailPage = () => {
       ? [getImageUrl(project.image)] 
       : ["/placeholder.svg"]
 
+  const projectDescription = project.description || [project.category, project.location, project.year].filter(Boolean).join(" • ") || "Project by NAMAS Bhutan."
 
+  const projectSchema = [{
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "name": project.title,
+    "description": projectDescription,
+    "image": projectImages[0] || undefined,
+    "datePublished": project.createdAt || undefined,
+    "dateModified": project.updatedAt || project.createdAt || undefined,
+  }]
 
   return (
     <div className="project-detail-page">
+      <SEO
+        title={`${project.title} | Projects | NAMAS Bhutan`}
+        description={projectDescription}
+        image={projectImages[0]}
+        type="article"
+        publishedTime={project.createdAt}
+        modifiedTime={project.updatedAt}
+        schema={projectSchema}
+      />
       <div className="project-gallery">
         <div className="gallery-container">
           {projectImages.length > 1 && (
@@ -167,25 +218,25 @@ const ProjectDetailPage = () => {
           </div>
 
           {projectImages.length > 1 && (
-            <button className="nav-arrow nav-arrow-right" onClick={handleNextImage}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+            <>
+              <button className="nav-arrow nav-arrow-right" onClick={handleNextImage}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <div className="gallery-indicators">
+                {projectImages.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`indicator ${index === currentImageIndex ? "active" : ""}`}
+                    onClick={() => handleIndicatorClick(index)}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
-
-        {projectImages.length > 1 && (
-          <div className="gallery-indicators">
-            {projectImages.map((_, index) => (
-              <button
-                key={index}
-                className={`indicator ${index === currentImageIndex ? "active" : ""}`}
-                onClick={() => handleIndicatorClick(index)}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="project-info-section">
@@ -203,7 +254,9 @@ const ProjectDetailPage = () => {
             <div className="info-cell">{project.client || 'N/A'}</div>
             <div className="info-cell">{project.year || 'N/A'}</div>
             <div className="info-cell">{project.location || 'N/A'}</div>
-            <div className="info-cell">{project.designTeam || 'NAMAS Architecture'}</div>
+            <div className="info-cell clickable-design-team" onClick={() => setShowDesignTeamModal(true)}>
+              DESIGN TEAM
+            </div>
             <div className="info-cell">{project.status || 'N/A'}</div>
           </div>
         </div>
@@ -221,6 +274,29 @@ const ProjectDetailPage = () => {
           </div>
         )}
       </div>
+
+      {/* Design Team Modal */}
+      {showDesignTeamModal && (
+        <div className="design-team-modal-overlay" onClick={() => setShowDesignTeamModal(false)}>
+          <div className="design-team-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Design Team</h2>
+              <button className="btn-close" onClick={() => setShowDesignTeamModal(false)}>
+                ×
+              </button>
+            </div>
+
+            <div className="modal-content">
+              <div className="design-team-info">
+                <div className="team-members">
+                  <h3>Team Members</h3>
+                  <p>{project.designTeam || 'Not specified'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

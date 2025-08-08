@@ -4,12 +4,14 @@ import { useState, useMemo } from "react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import ViewFilter from "../components/ViewFilter"
+import BlogImageUpload from "../components/BlogImageUpload"
 import "./BlogsManager.css"
 
 const BlogsManager = () => {
   const { blogs, addBlog, updateBlog, deleteBlog } = useData()
   const [showForm, setShowForm] = useState(false)
   const [editingBlog, setEditingBlog] = useState(null)
+  const [selectedImage, setSelectedImage] = useState(null)
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState("")
@@ -23,7 +25,7 @@ const BlogsManager = () => {
     author: "",
     category: "",
     tags: "",
-    status: "draft",
+    status: "published",
     image: "",
   })
 
@@ -33,9 +35,9 @@ const BlogsManager = () => {
     return cats.sort()
   }, [blogs])
 
-  // Filter blogs based on search term and category
+  // Filter and sort blogs based on search term and category
   const filteredBlogs = useMemo(() => {
-    return blogs.filter(blog => {
+    const filtered = blogs.filter(blog => {
       const matchesSearch = !searchTerm || 
         blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         blog.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,6 +49,13 @@ const BlogsManager = () => {
       
       return matchesSearch && matchesCategory
     })
+    
+    // Sort by creation date (most recent first)
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.updatedAt || a.publishedAt || a.date || 0)
+      const dateB = new Date(b.createdAt || b.updatedAt || b.publishedAt || b.date || 0)
+      return dateB - dateA
+    })
   }, [blogs, searchTerm, selectedCategory])
 
   const handleInputChange = (e) => {
@@ -57,7 +66,29 @@ const BlogsManager = () => {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleImageChange = (file) => {
+    // Clean up previous blob URL to prevent memory leaks
+    if (selectedImage && formData.image && formData.image.startsWith('blob:')) {
+      URL.revokeObjectURL(formData.image)
+    }
+    
+    setSelectedImage(file)
+    if (file) {
+      // Create a temporary URL for the image to store in formData
+      const imageUrl = URL.createObjectURL(file)
+      setFormData((prev) => ({
+        ...prev,
+        image: imageUrl,
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        image: "",
+      }))
+    }
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     const blogData = {
@@ -68,16 +99,31 @@ const BlogsManager = () => {
         .filter((tag) => tag),
     }
 
-    if (editingBlog) {
-      updateBlog(editingBlog.id, blogData)
-    } else {
-      addBlog(blogData)
+    // Remove the blob URL from blogData since we'll pass the file separately
+    if (selectedImage) {
+      // Don't include the blob URL in the data sent to server
+      delete blogData.image
     }
 
-    resetForm()
+    try {
+      if (editingBlog) {
+        await updateBlog(editingBlog.id, blogData, selectedImage)
+      } else {
+        await addBlog(blogData, selectedImage)
+      }
+      resetForm()
+    } catch (error) {
+      console.error('Error saving blog:', error)
+      alert('Error saving blog. Please try again.')
+    }
   }
 
   const resetForm = () => {
+    // Clean up blob URL to prevent memory leaks
+    if (formData.image && formData.image.startsWith('blob:')) {
+      URL.revokeObjectURL(formData.image)
+    }
+    
     setFormData({
       title: "",
       content: "",
@@ -85,9 +131,10 @@ const BlogsManager = () => {
       author: "",
       category: "",
       tags: "",
-      status: "draft",
+      status: "published",
       image: "",
     })
+    setSelectedImage(null)
     setShowForm(false)
     setEditingBlog(null)
   }
@@ -98,6 +145,7 @@ const BlogsManager = () => {
       tags: blog.tags ? blog.tags.join(", ") : "",
     })
     setEditingBlog(blog)
+    setSelectedImage(null) // Reset selected image when editing
     setShowForm(true)
   }
 
@@ -253,13 +301,10 @@ const BlogsManager = () => {
               </div>
 
               <div className="form-group">
-                <label>Featured Image URL</label>
-                <input
-                  type="url"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/image.jpg"
+                <BlogImageUpload
+                  selectedImage={selectedImage}
+                  onImageChange={handleImageChange}
+                  existingImageUrl={editingBlog ? formData.image : null}
                 />
               </div>
 

@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getImageUrl } from "../utils/imageUtils"
 import { heroUtils } from "../utils/heroFix"
 import "./HeroBanner.css"
+import MiniLoadingAnimation from "./MiniLoadingAnimation"
 
 const HeroBannerSelfContained = () => {
   const navigate = useNavigate()
@@ -73,15 +74,18 @@ const HeroBannerSelfContained = () => {
     return () => clearInterval(interval)
   }, [featuredProjects.length])
 
-  const nextSlide = () => {
+  const nextSlide = (e) => {
+    e?.stopPropagation()
     setCurrentSlide(prev => (prev + 1) % featuredProjects.length)
   }
 
-  const prevSlide = () => {
+  const prevSlide = (e) => {
+    e?.stopPropagation()
     setCurrentSlide(prev => (prev - 1 + featuredProjects.length) % featuredProjects.length)
   }
 
-  const goToSlide = (index) => {
+  const goToSlide = (index, e) => {
+    e?.stopPropagation()
     setCurrentSlide(index)
   }
 
@@ -99,17 +103,8 @@ const HeroBannerSelfContained = () => {
     return (
       <section className="hero-banner hero-banner-empty">
         <div className="hero-content">
-          <h1>Welcome to Our Architecture Studio</h1>
-          <p>Loading featured projects...</p>
-          <div style={{ 
-            marginTop: '20px', 
-            padding: '10px', 
-            backgroundColor: '#f0f0f0', 
-            borderRadius: '5px',
-            fontSize: '12px',
-            textAlign: 'center'
-          }}>
-            🔄 Fetching featured projects from server...
+          <div className="hero-loading-container">
+            <MiniLoadingAnimation size="medium" text="Loading featured projects..." variant="minimal" />
           </div>
         </div>
       </section>
@@ -221,10 +216,10 @@ const HeroBannerSelfContained = () => {
         {/* Navigation arrows */}
         {featuredProjects.length > 1 && (
           <>
-            <button className="hero-arrow hero-arrow-left" onClick={prevSlide}>
+            <button className="hero-arrow hero-arrow-left" onClick={(e) => prevSlide(e)}>
               <ChevronLeft size={24} />
             </button>
-            <button className="hero-arrow hero-arrow-right" onClick={nextSlide}>
+            <button className="hero-arrow hero-arrow-right" onClick={(e) => nextSlide(e)}>
               <ChevronRight size={24} />
             </button>
           </>
@@ -237,7 +232,7 @@ const HeroBannerSelfContained = () => {
               <button
                 key={index}
                 className={`hero-indicator ${index === currentSlide ? 'active' : ''}`}
-                onClick={() => goToSlide(index)}
+                onClick={(e) => goToSlide(index, e)}
               />
             ))}
           </div>

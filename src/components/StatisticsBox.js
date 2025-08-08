@@ -8,21 +8,24 @@ const formatNumber = (num) => {
 
 const StatisticsBox = ({ 
   projectsDone = 157, 
-  happyClients = 86, 
-  workingHours = 924, 
-  awards = 13,
+  happyClients = 157, 
+  workingHours = null, // Changed to null to calculate from projects
+  years = 3,
   customStats = null,
   title = "Make with love all what we do.",
   subtitle = "NUMBERS",
   description = "Our team takes over everything, from an idea and concept development to realization. We believe in traditions and incorporate them within our innovations. All our projects incorporate a unique artistic image and functional solutions.",
   backgroundImage = "/images/statistics-pic.jpeg"
 }) => {
+  // Calculate working hours if not provided (100 hours per project)
+  const calculatedWorkingHours = workingHours !== null ? workingHours : projectsDone * 100;
+  
   // Use custom stats if provided, otherwise use default props
   const defaultStats = [
     { key: 'projectsDone', value: projectsDone, label: 'PROJECTS DONE', x: '52%', numberY: '47%', titleY: '80%' },
     { key: 'happyClients', value: happyClients, label: 'HAPPY CLIENTS', x: '46%', numberY: '47%', titleY: '80%' },
-    { key: 'workingHours', value: workingHours, label: 'WORKING HOURS', x: '52%', numberY: '35%', titleY: '68%' },
-    { key: 'awards', value: awards, label: 'AWARDS', x: '46%', numberY: '35%', titleY: '68%' }
+    { key: 'workingHours', value: calculatedWorkingHours, label: 'WORKING HOURS', x: '52%', numberY: '35%', titleY: '68%' },
+    { key: 'years', value: years, label: 'YEARS', x: '46%', numberY: '35%', titleY: '68%' }
   ];
 
   const statsData = customStats || defaultStats;

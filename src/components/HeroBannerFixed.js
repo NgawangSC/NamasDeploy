@@ -37,7 +37,8 @@ const HeroBannerFixed = ({ featuredProjects = [] }) => {
   const testApiConnection = async () => {
     try {
       console.log('HeroBannerFixed: Testing direct API connection...')
-      const response = await fetch('http://localhost:5000/api/projects/featured')
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/projects/featured`)
       console.log('HeroBannerFixed: API response status:', response.status)
       
       if (response.ok) {

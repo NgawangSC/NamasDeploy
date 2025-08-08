@@ -2,7 +2,7 @@
   min-height: 100vh;
   background: #000;
   color: white;
-  padding-top: 140px;
+  padding-top: 90px;
 }
 
 .project-detail-page .header {
@@ -320,6 +320,23 @@
   font-weight: 600;
 }
 
+/* Tablet styles */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .project-info-section {
+    padding: 30px 24px;
+  }
+
+  .info-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+
+  .info-cell {
+    font-size: 13px;
+  }
+}
+
+/* Mobile and small tablet styles */
 @media (max-width: 768px) {
   .project-detail-page {
     padding-top: 70px;
@@ -359,13 +376,217 @@
     padding: 40px 24px;
   }
 
+  /* Create a more responsive layout for project details */
   .info-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0;
+  }
+
+  .info-row:first-child {
+    display: none; /* Hide the header row on mobile */
+  }
+
+  .info-row.info-data {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px 0;
   }
 
   .info-cell {
-    padding: 8px 0;
+    padding: 12px 0;
+    position: relative;
   }
+
+  /* Add labels before each data cell on mobile */
+  .info-data .info-cell:nth-child(1):before {
+    content: "PROJECT NAME";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(2):before {
+    content: "CLIENT";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(3):before {
+    content: "YEAR";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(4):before {
+    content: "LOCATION";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(5):before {
+    content: "DESIGN TEAM";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-data .info-cell:nth-child(6):before {
+    content: "STATUS";
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .project-info-section {
+    padding: 30px 16px;
+  }
+
+  .info-row.info-data {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .project-title-overlay {
+    left: 16px;
+    right: 16px;
+  }
+
+  .project-title-overlay h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Design Team Modal Styles */
+.clickable-design-team {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.clickable-design-team:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.design-team-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.design-team-modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.design-team-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.design-team-modal .modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.design-team-modal .btn-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.design-team-modal .btn-close:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.design-team-modal .modal-content {
+  padding: 1.5rem;
+}
+
+.design-team-info {
+  text-align: center;
+}
+
+.team-members h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.team-members p {
+  font-size: 1.3rem;
+  color: #333;
+  margin: 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+  font-weight: 500;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
