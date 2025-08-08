@@ -5,6 +5,7 @@ const path = require("path")
 const fs = require("fs")
 const nodemailer = require("nodemailer")
 require("dotenv").config() // Load environment variables
+const { createBackup } = require("./data-backup")
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -14,8 +15,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
   : ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
 
-const DATA_DIR = "./data"
-const UPLOADS_DIR = "./uploads"
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, "data")
+const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : path.join(__dirname, "uploads")
 const TEAM_MEMBERS_FILE = path.join(DATA_DIR, "team-members.json")
 const PROJECTS_FILE = path.join(DATA_DIR, "projects.json")
 const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
@@ -105,9 +106,32 @@ function saveData(filePath, data) {
   }
 }
 
+// Ensure data and uploads directories exist
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true })
+}
+
+// Bootstrap data directory with default files from repo on first run
+try {
+  const defaultDataDir = path.join(__dirname, "data")
+  if (path.resolve(DATA_DIR) !== path.resolve(defaultDataDir)) {
+    const filesToSeed = ["projects.json", "blogs.json", "clients.json", "contacts.json", "team-members.json"]
+    filesToSeed.forEach((fileName) => {
+      const targetPath = path.join(DATA_DIR, fileName)
+      const defaultPath = path.join(defaultDataDir, fileName)
+      if (!fs.existsSync(targetPath) && fs.existsSync(defaultPath)) {
+        fs.copyFileSync(defaultPath, targetPath)
+        console.log(`📦 Seeded ${fileName} to external DATA_DIR`)
+      }
+    })
+  }
+} catch (seedErr) {
+  console.warn("Could not seed external DATA_DIR:", seedErr.message)
+}
+
 // Setup uploads
 if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR)
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 }
 
 const storage = multer.diskStorage({
@@ -304,11 +328,6 @@ app.get("/api", (req, res) => {
 })
 
 // BACKUP ROUTE
-function createBackup() {
-  // Implement backup logic here
-  return true // Placeholder for actual backup success
-}
-
 app.post("/api/backup", (req, res) => {
   try {
     const success = createBackup()
