@@ -6,6 +6,7 @@ import { getImageUrl } from "../utils/imageUtils"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import SEO from "../components/SEO"
 import "./HomePage.css"
 
 function HomePage() {
@@ -129,8 +130,24 @@ function HomePage() {
     navigate(`/project/${projectId}`)
   }
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "NAMAS Bhutan",
+    "url": process.env.REACT_APP_SITE_URL || "https://www.namasbhutan.com",
+    "logo": (process.env.REACT_APP_SITE_URL || "https://www.namasbhutan.com") + "/android-chrome-192x192.png",
+    "sameAs": []
+  }
+
   return (
     <div className="homepage">
+      <SEO
+        title="NAMAS Bhutan — Architecture, Planning, Interiors & Construction"
+        description="Integrated design and build studio in Bhutan delivering architecture, planning, interior design, construction, supervision and project management."
+        image="/android-chrome-512x512.png"
+        type="website"
+        schema={[organizationSchema]}
+      />
       {/* Hero Banner Section with Featured Projects - Self-Contained Version */}
       <HeroBannerSelfContained />
 
@@ -221,46 +238,8 @@ function HomePage() {
                 </div>
               ))
             ) : (
-              <div className="no-projects">
-                <p>No projects available. Add some projects in the dashboard to see them here!</p>
-              </div>
+              <div className="projects-empty">No recent projects found.</div>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="testimonials-section">
-        <div className="testimonials-container">
-          <div className="testimonials-header">
-            <div className="testimonials-label">TESTIMONIALS</div>
-            <h2 className="testimonials-title">They love us</h2>
-          </div>
-          <div className="testimonials-content">
-            <div className="testimonials-list">
-              {testimonials.map((testimonial, index) => (
-                <button
-                  key={testimonial.id}
-                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
-                  onClick={() => setSelectedTestimonial(index)}
-                >
-                  {testimonial.name}
-                </button>
-              ))}
-            </div>
-            <div className="testimonial-quote-container">
-              <div className="testimonial-slider-nav">
-                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
-                  <ChevronLeft size={24} />
-                </button>
-                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
-                  <ChevronRight size={24} />
-                </button>
-              </div>
-              <div className="quote-mark">"</div>
-              <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
-              <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
-            </div>
           </div>
         </div>
       </section>
@@ -269,7 +248,7 @@ function HomePage() {
       <section className="clients-section">
         <div className="clients-container">
           <div className="clients-header">
-            <img src="/images/people-clients.png" alt="People Clients" className="clients-title-image" />
+            <h2>Our Clients</h2>
           </div>
           <div className="clients-carousel">
             {loading.clients ? (
@@ -337,6 +316,41 @@ function HomePage() {
                 <p>No clients available. Add some clients in the dashboard to see them here!</p>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials-section">
+        <div className="testimonials-container">
+          <div className="testimonials-header">
+            <h2>Testimonials</h2>
+          </div>
+          <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
+                  onClick={() => setSelectedTestimonial(index)}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
+            <div className="testimonial-quote-container">
+              <div className="testimonial-slider-nav">
+                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+              <div className="quote-mark">"</div>
+              <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
+              <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
+            </div>
           </div>
         </div>
       </section>
