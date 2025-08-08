@@ -47,7 +47,7 @@ function Footer() {
           </div>
         </div>
 
-        {/* Footer Bottom */}
+        {/* Footer Bottom  */}
         <div className="footer-bottom">
           <div className="footer-copyright">
             <span>Namas Design & Build (C) 2025 ALL RIGHTS RESERVED</span>
