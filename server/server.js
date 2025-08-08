@@ -11,17 +11,39 @@ const app = express()
 const PORT = process.env.PORT || 8080
 
 // Get allowed origins from environment variables
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
+const allowedOrigins = (() => {
+  const candidates = [
+    process.env.ALLOWED_ORIGINS,
+    process.env.CORS_ORIGIN,
+    process.env.CORS_ORIGINS,
+    [process.env.FRONTEND_URL, process.env.CPANEL_DOMAIN].filter(Boolean).join(","),
+  ].filter(Boolean)
+  const selected = candidates.find((v) => typeof v === "string" && v.trim().length > 0)
+  if (selected) {
+    return selected
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+  return ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
+})()
 
-const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, "data")
-const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : path.join(__dirname, "uploads")
+// Prefer external volume at /data when available unless explicitly overridden
+const DEFAULT_BASE_DIR = fs.existsSync('/data') ? '/data' : __dirname
+const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(DEFAULT_BASE_DIR, 'data'))
+const UPLOADS_DIR = path.resolve(process.env.UPLOADS_DIR || path.join(DEFAULT_BASE_DIR, 'uploads'))
 const TEAM_MEMBERS_FILE = path.join(DATA_DIR, "team-members.json")
 const PROJECTS_FILE = path.join(DATA_DIR, "projects.json")
 const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
 const CLIENTS_FILE = path.join(DATA_DIR, "clients.json")
 const CONTACTS_FILE = path.join(DATA_DIR, "contacts.json")
+
+// Startup diagnostics
+console.log("Runtime configuration:")
+console.log("  PORT:", PORT)
+console.log("  DATA_DIR:", DATA_DIR, DATA_DIR.includes(__dirname) ? "(internal)" : "(external)")
+console.log("  UPLOADS_DIR:", UPLOADS_DIR, UPLOADS_DIR.includes(__dirname) ? "(internal)" : "(external)")
+console.log("  ALLOWED_ORIGINS:", allowedOrigins)
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -100,6 +122,8 @@ function loadData(filePath) {
 
 function saveData(filePath, data) {
   try {
+    const sizeHint = Array.isArray(data) ? data.length : Object.keys(data || {}).length
+    console.log(`💾 Writing ${sizeHint} record(s) to`, filePath)
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
   } catch (error) {
     console.error(`Error saving data to ${filePath}:`, error)
@@ -207,6 +231,21 @@ app.get("/test", (req, res) => {
     status: "working",
     message: "Server is responding!",
     timestamp: new Date().toISOString(),
+  })
+})
+
+// CONFIG ROUTE - for diagnostics
+app.get("/api/config", (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      port: PORT,
+      dataDir: DATA_DIR,
+      uploadsDir: UPLOADS_DIR,
+      allowedOrigins,
+      usingExternalDataDir: !DATA_DIR.includes(__dirname),
+      usingExternalUploadsDir: !UPLOADS_DIR.includes(__dirname),
+    },
   })
 })
 
