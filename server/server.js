@@ -197,6 +197,77 @@ app.get("/", (req, res) => {
   })
 })
 
+// Dynamic sitemap.xml
+app.get('/sitemap.xml', (req, res) => {
+  try {
+    const siteUrl = process.env.SITE_URL || process.env.REACT_APP_SITE_URL || 'https://www.namasbhutan.com'
+
+    // static routes from the SPA
+    const staticRoutes = [
+      '/',
+      '/about',
+      '/design',
+      '/build',
+      '/architecture',
+      '/planning',
+      '/interior',
+      '/landscape',
+      '/supervision',
+      '/management',
+      '/real-estate',
+      '/private-homes',
+      '/commercial-buildings',
+      '/office',
+      '/institute',
+      '/hospitality',
+      '/interior-design',
+      '/renovation',
+      '/blog',
+      '/contact'
+    ]
+
+    const urls = []
+
+    const now = new Date().toISOString()
+
+    // Home with highest priority
+    urls.push({ loc: siteUrl + '/', changefreq: 'daily', priority: '1.0', lastmod: now })
+
+    // Other static routes
+    staticRoutes.filter(p => p !== '/').forEach(p => {
+      urls.push({ loc: siteUrl + p, changefreq: 'weekly', priority: '0.8', lastmod: now })
+    })
+
+    // Dynamic projects
+    if (Array.isArray(projects)) {
+      projects.forEach(p => {
+        const lastmod = p.updatedAt || p.createdAt || now
+        urls.push({ loc: `${siteUrl}/project/${p.id}`, changefreq: 'monthly', priority: '0.6', lastmod })
+      })
+    }
+
+    // Dynamic blogs (only published if status present)
+    if (Array.isArray(blogPosts)) {
+      blogPosts
+        .filter(b => !b.status || b.status === 'published')
+        .forEach(b => {
+          const lastmod = b.updatedAt || b.createdAt || now
+          urls.push({ loc: `${siteUrl}/blog/${b.id}`, changefreq: 'weekly', priority: '0.6', lastmod })
+        })
+    }
+
+    const xmlItems = urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`).join('\n')
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${xmlItems}\n</urlset>`
+
+    res.header('Content-Type', 'application/xml')
+    res.send(xml)
+  } catch (err) {
+    console.error('Failed to generate sitemap:', err)
+    res.status(500).send('Error generating sitemap')
+  }
+})
+
 app.get("/api", (req, res) => {
   res.json({
     success: true,

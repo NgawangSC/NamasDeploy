@@ -6,6 +6,7 @@ import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import ApiService from "../services/api"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import SEO from "../components/SEO"
 import "./ProjectDetailPage.css"
 
 const ProjectDetailPage = () => {
@@ -128,10 +129,29 @@ const ProjectDetailPage = () => {
       ? [getImageUrl(project.image)] 
       : ["/placeholder.svg"]
 
+  const projectDescription = project.description || [project.category, project.location, project.year].filter(Boolean).join(" • ") || "Project by NAMAS Bhutan."
 
+  const projectSchema = [{
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "name": project.title,
+    "description": projectDescription,
+    "image": projectImages[0] || undefined,
+    "datePublished": project.createdAt || undefined,
+    "dateModified": project.updatedAt || project.createdAt || undefined,
+  }]
 
   return (
     <div className="project-detail-page">
+      <SEO
+        title={`${project.title} | Projects | NAMAS Bhutan`}
+        description={projectDescription}
+        image={projectImages[0]}
+        type="article"
+        publishedTime={project.createdAt}
+        modifiedTime={project.updatedAt}
+        schema={projectSchema}
+      />
       <div className="project-gallery">
         <div className="gallery-container">
           {projectImages.length > 1 && (
@@ -198,25 +218,25 @@ const ProjectDetailPage = () => {
           </div>
 
           {projectImages.length > 1 && (
-            <button className="nav-arrow nav-arrow-right" onClick={handleNextImage}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+            <>
+              <button className="nav-arrow nav-arrow-right" onClick={handleNextImage}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <div className="image-indicators">
+                {projectImages.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`indicator ${index === currentImageIndex ? "active" : ""}`}
+                    onClick={() => handleIndicatorClick(index)}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
-
-        {projectImages.length > 1 && (
-          <div className="gallery-indicators">
-            {projectImages.map((_, index) => (
-              <button
-                key={index}
-                className={`indicator ${index === currentImageIndex ? "active" : ""}`}
-                onClick={() => handleIndicatorClick(index)}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="project-info-section">

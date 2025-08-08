@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import SEO from "../components/SEO"
 import "./BlogDetailPage.css"
 
 const BlogDetailPage = () => {
@@ -38,6 +39,28 @@ const BlogDetailPage = () => {
     navigate("/blog")
   }
 
+  const blogDescription = (html) => {
+    if (!html) return ""
+    try {
+      const tmp = document.createElement('div')
+      tmp.innerHTML = html
+      const text = tmp.textContent || tmp.innerText || ""
+      return text.substring(0, 200)
+    } catch {
+      return ""
+    }
+  }
+
+  const articleSchema = blog ? [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": blog.title,
+    "image": getImageUrl(blog.image) || undefined,
+    "author": blog.author ? { "@type": "Person", "name": blog.author } : undefined,
+    "datePublished": blog.createdAt || undefined,
+    "dateModified": blog.updatedAt || blog.createdAt || undefined,
+  }] : []
+
   if (loading) {
     return (
       <div className="blog-detail-page">
@@ -64,6 +87,15 @@ const BlogDetailPage = () => {
 
   return (
     <div className="blog-detail-page">
+      <SEO
+        title={`${blog.title} | Blog | NAMAS Bhutan`}
+        description={blog.excerpt || blogDescription(blog.content) || "Read insights from NAMAS Bhutan on architecture, planning, interiors and construction."}
+        image={getImageUrl(blog.image) || "/android-chrome-512x512.png"}
+        type="article"
+        publishedTime={blog.createdAt}
+        modifiedTime={blog.updatedAt}
+        schema={articleSchema}
+      />
       <div className="blog-detail-container">
         <article className="blog-detail-article">
           <header className="blog-detail-header">
