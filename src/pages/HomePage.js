@@ -73,7 +73,7 @@ function HomePage() {
     };
   })
 
-  const testimonials = [
+ const testimonials = [
     {
       id: 1,
       name: "Neten Sherab",
@@ -83,21 +83,21 @@ function HomePage() {
     },
     {
       id: 2,
-      name: "Michael Chen",
+      name: "Karma Dorji",
       quote:
         "Their innovative approach to sustainable design has transformed our understanding of modern architecture. Every project tells a unique story.",
       title: "Urban Planner",
     },
     {
       id: 3,
-      name: "Sarah Williams",
+      name: "Pema Sherab",
       quote:
         "Working with this team was an exceptional experience. They brought our vision to life while exceeding all our expectations for functionality and beauty.",
       title: "Property Developer",
     },
     {
       id: 4,
-      name: "David Rodriguez",
+      name: "Kezang Choden",
       quote:
         "The attention to detail and commitment to excellence is evident in every aspect of their work. Truly masters of their craft.",
       title: "Interior Designer",

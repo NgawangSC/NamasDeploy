@@ -171,28 +171,28 @@ function AboutPage() {
   const testimonials = [
     {
       id: 1,
-      name: "Jennifer Hilbertson",
+      name: "Neten Sherab",
       quote:
-        "The Seascape Villas project constitutes one of the first urban interventions in this very unique context, a landscape dominated by mountains and sea.",
-      title: "Architecture Critic",
+        "Well established office with required professionals. The firm built my dream house without any hindrance.",
+      title: "Client",
     },
     {
       id: 2,
-      name: "Michael Chen",
+      name: "Karma Dorji",
       quote:
         "Their innovative approach to sustainable design has transformed our understanding of modern architecture. Every project tells a unique story.",
       title: "Urban Planner",
     },
     {
       id: 3,
-      name: "Sarah Williams",
+      name: "Pema Sherab",
       quote:
         "Working with this team was an exceptional experience. They brought our vision to life while exceeding all our expectations for functionality and beauty.",
       title: "Property Developer",
     },
     {
       id: 4,
-      name: "David Rodriguez",
+      name: "Kezang Choden",
       quote:
         "The attention to detail and commitment to excellence is evident in every aspect of their work. Truly masters of their craft.",
       title: "Interior Designer",
