@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
-import HeroBanner from "../components/HeroBanner"
+import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import SEO from "../components/SEO"
@@ -73,7 +73,7 @@ function HomePage() {
     };
   })
 
- const testimonials = [
+  const testimonials = [
     {
       id: 1,
       name: "Neten Sherab",
@@ -83,21 +83,21 @@ function HomePage() {
     },
     {
       id: 2,
-      name: "Karma Dorji",
+      name: "Michael Chen",
       quote:
         "Their innovative approach to sustainable design has transformed our understanding of modern architecture. Every project tells a unique story.",
       title: "Urban Planner",
     },
     {
       id: 3,
-      name: "Pema Sherab",
+      name: "Sarah Williams",
       quote:
         "Working with this team was an exceptional experience. They brought our vision to life while exceeding all our expectations for functionality and beauty.",
       title: "Property Developer",
     },
     {
       id: 4,
-      name: "Kezang Choden",
+      name: "David Rodriguez",
       quote:
         "The attention to detail and commitment to excellence is evident in every aspect of their work. Truly masters of their craft.",
       title: "Interior Designer",
@@ -148,8 +148,8 @@ function HomePage() {
         type="website"
         schema={[organizationSchema]}
       />
-      {/* Hero Banner Section with Featured Projects */}
-      <HeroBanner featuredProjects={featuredProjects} />
+      {/* Hero Banner Section with Featured Projects - Self-Contained Version */}
+      <HeroBannerSelfContained />
 
       {/* About Us Section */}
       <section className="about-section">
