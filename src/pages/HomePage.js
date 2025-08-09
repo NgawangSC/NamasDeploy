@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
-import HeroBanner from "../components/HeroBanner"
+import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import SEO from "../components/SEO"
@@ -73,31 +73,31 @@ function HomePage() {
     };
   })
 
- const testimonials = [
+  const testimonials = [
     {
       id: 1,
-      name: "Neten Sherab",
+      name: "Jennifer Hilbertson",
       quote:
-        "Well established office with required professionals. The firm built my dream house without any hindrance.",
-      title: "Client",
+        "The Seascape Villas project constitutes one of the first urban interventions in this very unique context, a landscape dominated by mountains and sea.",
+      title: "Architecture Critic",
     },
     {
       id: 2,
-      name: "Karma Dorji",
+      name: "Michael Chen",
       quote:
         "Their innovative approach to sustainable design has transformed our understanding of modern architecture. Every project tells a unique story.",
       title: "Urban Planner",
     },
     {
       id: 3,
-      name: "Pema Sherab",
+      name: "Sarah Williams",
       quote:
         "Working with this team was an exceptional experience. They brought our vision to life while exceeding all our expectations for functionality and beauty.",
       title: "Property Developer",
     },
     {
       id: 4,
-      name: "Kezang Choden",
+      name: "David Rodriguez",
       quote:
         "The attention to detail and commitment to excellence is evident in every aspect of their work. Truly masters of their craft.",
       title: "Interior Designer",
@@ -148,8 +148,8 @@ function HomePage() {
         type="website"
         schema={[organizationSchema]}
       />
-      {/* Hero Banner Section with Featured Projects */}
-      <HeroBanner featuredProjects={featuredProjects} />
+      {/* Hero Banner Section with Featured Projects - Self-Contained Version */}
+      <HeroBannerSelfContained />
 
       {/* About Us Section */}
       <section className="about-section">
@@ -238,8 +238,46 @@ function HomePage() {
                 </div>
               ))
             ) : (
-              <div className="projects-empty">No recent projects found.</div>
+              <div className="no-projects">
+                <p>No projects available. Add some projects in the dashboard to see them here!</p>
+              </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials-section">
+        <div className="testimonials-container">
+          <div className="testimonials-header">
+            <div className="testimonials-label">TESTIMONIALS</div>
+            <h2 className="testimonials-title">They love us</h2>
+          </div>
+          <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
+                  onClick={() => setSelectedTestimonial(index)}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
+            <div className="testimonial-quote-container">
+              <div className="testimonial-slider-nav">
+                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+              <div className="quote-mark">"</div>
+              <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
+              <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
+            </div>
           </div>
         </div>
       </section>
@@ -248,7 +286,7 @@ function HomePage() {
       <section className="clients-section">
         <div className="clients-container">
           <div className="clients-header">
-            <h2>Our Clients</h2>
+            <img src="/images/people-clients.png" alt="People Clients" className="clients-title-image" />
           </div>
           <div className="clients-carousel">
             {loading.clients ? (
@@ -316,41 +354,6 @@ function HomePage() {
                 <p>No clients available. Add some clients in the dashboard to see them here!</p>
               </div>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="testimonials-section">
-        <div className="testimonials-container">
-          <div className="testimonials-header">
-            <h2>Testimonials</h2>
-          </div>
-          <div className="testimonials-content">
-            <div className="testimonials-list">
-              {testimonials.map((testimonial, index) => (
-                <button
-                  key={testimonial.id}
-                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
-                  onClick={() => setSelectedTestimonial(index)}
-                >
-                  {testimonial.name}
-                </button>
-              ))}
-            </div>
-            <div className="testimonial-quote-container">
-              <div className="testimonial-slider-nav">
-                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
-                  <ChevronLeft size={24} />
-                </button>
-                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
-                  <ChevronRight size={24} />
-                </button>
-              </div>
-              <div className="quote-mark">"</div>
-              <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
-              <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
-            </div>
           </div>
         </div>
       </section>
