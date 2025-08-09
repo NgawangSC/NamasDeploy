@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
-import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
+import HeroBanner from "../components/HeroBanner"
 import ExperienceBox from "../components/ExperienceBox"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
 import SEO from "../components/SEO"
@@ -148,8 +148,8 @@ function HomePage() {
         type="website"
         schema={[organizationSchema]}
       />
-      {/* Hero Banner Section with Featured Projects - Self-Contained Version */}
-      <HeroBannerSelfContained />
+      {/* Hero Banner Section with Featured Projects */}
+      <HeroBanner featuredProjects={featuredProjects} />
 
       {/* About Us Section */}
       <section className="about-section">
