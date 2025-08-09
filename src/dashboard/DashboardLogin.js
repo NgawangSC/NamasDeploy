@@ -26,7 +26,7 @@ const DashboardLogin = ({ setIsAuthenticated }) => {
     setError("")
     
     if (
-      (credentials.username === "namasbhutan" && credentials.password === "admin123")
+      (credentials.username === "namasbhutan" && credentials.password === "JW732*&re4_")
     ) {
       const currentTime = new Date().getTime()
       localStorage.setItem("dashboardAuth", "true")
