@@ -76,10 +76,10 @@ function HomePage() {
   const testimonials = [
     {
       id: 1,
-      name: "Neten Sherab",
+      name: "Jennifer Hilbertson",
       quote:
-        "Well established office with required professionals. The firm built my dream house without any hindrance.",
-      title: "Client",
+        "The Seascape Villas project constitutes one of the first urban interventions in this very unique context, a landscape dominated by mountains and sea.",
+      title: "Architecture Critic",
     },
     {
       id: 2,
@@ -238,8 +238,46 @@ function HomePage() {
                 </div>
               ))
             ) : (
-              <div className="projects-empty">No recent projects found.</div>
+              <div className="no-projects">
+                <p>No projects available. Add some projects in the dashboard to see them here!</p>
+              </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials-section">
+        <div className="testimonials-container">
+          <div className="testimonials-header">
+            <div className="testimonials-label">TESTIMONIALS</div>
+            <h2 className="testimonials-title">They love us</h2>
+          </div>
+          <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
+                  onClick={() => setSelectedTestimonial(index)}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
+            <div className="testimonial-quote-container">
+              <div className="testimonial-slider-nav">
+                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+              <div className="quote-mark">"</div>
+              <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
+              <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
+            </div>
           </div>
         </div>
       </section>
@@ -248,7 +286,7 @@ function HomePage() {
       <section className="clients-section">
         <div className="clients-container">
           <div className="clients-header">
-            <h2>Our Clients</h2>
+            <img src="/images/people-clients.png" alt="People Clients" className="clients-title-image" />
           </div>
           <div className="clients-carousel">
             {loading.clients ? (
@@ -316,41 +354,6 @@ function HomePage() {
                 <p>No clients available. Add some clients in the dashboard to see them here!</p>
               </div>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="testimonials-section">
-        <div className="testimonials-container">
-          <div className="testimonials-header">
-            <h2>Testimonials</h2>
-          </div>
-          <div className="testimonials-content">
-            <div className="testimonials-list">
-              {testimonials.map((testimonial, index) => (
-                <button
-                  key={testimonial.id}
-                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
-                  onClick={() => setSelectedTestimonial(index)}
-                >
-                  {testimonial.name}
-                </button>
-              ))}
-            </div>
-            <div className="testimonial-quote-container">
-              <div className="testimonial-slider-nav">
-                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
-                  <ChevronLeft size={24} />
-                </button>
-                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
-                  <ChevronRight size={24} />
-                </button>
-              </div>
-              <div className="quote-mark">"</div>
-              <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
-              <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
-            </div>
           </div>
         </div>
       </section>

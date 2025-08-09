@@ -3,14 +3,6 @@
   padding-top: 0;
 }
 
-/* Ensure dark text on light-background sections */
-.about-section,
-.projects-section,
-.testimonials-section,
-.clients-section {
-  color: #333;
-}
-
 /* Hero Section */
 .hero-section {
   position: relative;
@@ -481,13 +473,7 @@
   margin-bottom: 80px;
 }
 
-.clients-header h2 {
-  color: #333;
-}
 
-.testimonials-header h2 {
-  color: #333;
-}
 
 .clients-title-image {
   max-width: 100%;
