@@ -55,31 +55,70 @@ const ImageCropper = ({
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    canvas.width = crop.width;
-    canvas.height = crop.height;
+    // Calculate actual crop dimensions in original image coordinates
+    const cropWidth = crop.width * scaleX;
+    const cropHeight = crop.height * scaleY;
+    const cropX = crop.x * scaleX;
+    const cropY = crop.y * scaleY;
 
+    // Use device pixel ratio for high-DPI displays
+    const pixelRatio = window.devicePixelRatio || 1;
+    
+    // Set canvas size to maintain high quality
+    // Use the larger of crop dimensions or minimum quality threshold
+    const minQualitySize = 800; // Minimum size to maintain quality
+    const outputWidth = Math.max(cropWidth, minQualitySize);
+    const outputHeight = Math.max(cropHeight, minQualitySize);
+    
+    // If crop is smaller than minimum, scale proportionally
+    const scale = Math.min(outputWidth / cropWidth, outputHeight / cropHeight);
+    const finalWidth = cropWidth * scale;
+    const finalHeight = cropHeight * scale;
+
+    // Set canvas dimensions accounting for pixel ratio
+    canvas.width = finalWidth * pixelRatio;
+    canvas.height = finalHeight * pixelRatio;
+    
+    // Scale the canvas back down using CSS
+    canvas.style.width = finalWidth + 'px';
+    canvas.style.height = finalHeight + 'px';
+    
+    // Scale the context to account for device pixel ratio
+    ctx.scale(pixelRatio, pixelRatio);
+    
+    // Enable high-quality rendering
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Draw the cropped portion with high quality scaling
     ctx.drawImage(
       image,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
+      cropX,
+      cropY,
+      cropWidth,
+      cropHeight,
       0,
       0,
-      crop.width,
-      crop.height
+      finalWidth,
+      finalHeight
     );
 
     return new Promise((resolve) => {
-      // Preserve original format and use higher quality
+      // Preserve original format and use highest quality
       const originalType = originalFile?.type || 'image/jpeg';
-      const quality = originalType === 'image/png' ? undefined : 0.98; // PNG doesn't use quality
+      let quality;
+      
+      if (originalType === 'image/png' || originalType === 'image/webp') {
+        quality = undefined; // PNG and WebP use lossless compression
+      } else {
+        quality = 1.0; // Maximum quality for JPEG
+      }
       
       canvas.toBlob((blob) => {
         resolve(blob);
       }, originalType, quality);
     });
-  }, []);
+  }, [originalFile]);
 
   const handleCropComplete = async () => {
     if (!completedCrop || !imgRef.current) {
