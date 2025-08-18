@@ -245,6 +245,15 @@
 @media (max-width: 968px) {
   .project-img {
     object-fit: contain;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .project-image {
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -654,8 +663,9 @@
   }
 
   .project-image {
-    min-height: 300px;
-    height: 300px;
+    min-height: 250px;
+    height: auto;
+    aspect-ratio: 16/10;
   }
 
   .testimonials-content {
@@ -741,6 +751,11 @@
 
   .project-name {
     font-size: 1.75rem;
+  }
+
+  .project-image {
+    min-height: 200px;
+    aspect-ratio: 4/3;
   }
 
   .testimonials-section {
