@@ -590,3 +590,366 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Clickable Image Cursor */
+.clickable-image {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.clickable-image:hover {
+  transform: scale(1.02);
+}
+
+/* Fullscreen Modal Styles */
+.fullscreen-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fullscreen-modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+.fullscreen-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.fullscreen-close-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.fullscreen-image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 80px 120px 80px;
+}
+
+.fullscreen-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: zoomIn 0.3s ease-out;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.fullscreen-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: white;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.fullscreen-nav-arrow:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.fullscreen-nav-left {
+  left: 30px;
+}
+
+.fullscreen-nav-right {
+  right: 30px;
+}
+
+.fullscreen-image-info {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  z-index: 10;
+}
+
+.fullscreen-image-counter {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+.fullscreen-indicators {
+  display: flex;
+  gap: 12px;
+}
+
+.fullscreen-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.fullscreen-indicator.active {
+  background: white;
+  transform: scale(1.3);
+}
+
+.fullscreen-indicator:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.fullscreen-title {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  z-index: 10;
+}
+
+.fullscreen-title h2 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  letter-spacing: 1px;
+}
+
+/* Responsive Styles for Fullscreen Modal */
+
+/* Tablet styles */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .fullscreen-image-container {
+    padding: 60px 60px 100px 60px;
+  }
+
+  .fullscreen-nav-arrow {
+    width: 60px;
+    height: 60px;
+  }
+
+  .fullscreen-nav-left {
+    left: 20px;
+  }
+
+  .fullscreen-nav-right {
+    right: 20px;
+  }
+
+  .fullscreen-close-btn {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .fullscreen-modal-overlay {
+    padding: 10px;
+  }
+
+  .fullscreen-image-container {
+    padding: 80px 20px 120px 20px;
+  }
+
+  .fullscreen-nav-arrow {
+    width: 50px;
+    height: 50px;
+  }
+
+  .fullscreen-nav-left {
+    left: 15px;
+  }
+
+  .fullscreen-nav-right {
+    right: 15px;
+  }
+
+  .fullscreen-close-btn {
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .fullscreen-title {
+    top: 20px;
+    left: 20px;
+    right: 70px;
+  }
+
+  .fullscreen-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .fullscreen-image-info {
+    bottom: 20px;
+  }
+
+  .fullscreen-image-counter {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .fullscreen-indicators {
+    gap: 10px;
+  }
+
+  .fullscreen-indicator {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .fullscreen-image-container {
+    padding: 70px 15px 100px 15px;
+  }
+
+  .fullscreen-nav-arrow {
+    width: 45px;
+    height: 45px;
+  }
+
+  .fullscreen-nav-left {
+    left: 10px;
+  }
+
+  .fullscreen-nav-right {
+    right: 10px;
+  }
+
+  .fullscreen-close-btn {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .fullscreen-title {
+    top: 15px;
+    left: 15px;
+    right: 60px;
+  }
+
+  .fullscreen-title h2 {
+    font-size: 1rem;
+  }
+
+  .fullscreen-image-info {
+    bottom: 15px;
+  }
+
+  .fullscreen-indicators {
+    gap: 8px;
+  }
+
+  .fullscreen-indicator {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .clickable-image:hover {
+    transform: none;
+  }
+
+  .fullscreen-nav-arrow:hover {
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .fullscreen-close-btn:hover {
+    transform: none;
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .fullscreen-indicator:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Make touch targets larger on touch devices */
+  .fullscreen-nav-arrow {
+    width: 60px;
+    height: 60px;
+  }
+
+  .fullscreen-close-btn {
+    width: 50px;
+    height: 50px;
+  }
+}
