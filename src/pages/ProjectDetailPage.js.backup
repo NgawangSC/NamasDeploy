@@ -137,7 +137,7 @@ const ProjectDetailPage = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isFullscreen, project?.images?.length])
+  }, [isFullscreen, projectImages.length])
 
   // Cleanup on unmount
   useEffect(() => {
