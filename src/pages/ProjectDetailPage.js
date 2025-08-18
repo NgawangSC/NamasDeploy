@@ -98,6 +98,35 @@ const ProjectDetailPage = () => {
     document.body.style.overflow = 'unset' // Restore scrolling
   }, [])
 
+  // Keyboard controls for fullscreen
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!isFullscreen) return
+
+      switch (event.key) {
+        case 'Escape':
+          closeFullscreen()
+          break
+        case 'ArrowLeft':
+          handleFullscreenPrev()
+          break
+        case 'ArrowRight':
+          handleFullscreenNext()
+          break
+        default:
+          break
+      }
+    }
+
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isFullscreen, closeFullscreen, handleFullscreenPrev, handleFullscreenNext])
+
   const getProjectImages = useCallback(() => {
     if (!project) return ["/placeholder.svg"]
     return project.images && Array.isArray(project.images) && project.images.length > 0 
@@ -161,34 +190,6 @@ const ProjectDetailPage = () => {
     )
   }
 
-  // Keyboard controls for fullscreen
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (!isFullscreen) return
-
-      switch (event.key) {
-        case 'Escape':
-          closeFullscreen()
-          break
-        case 'ArrowLeft':
-          handleFullscreenPrev()
-          break
-        case 'ArrowRight':
-          handleFullscreenNext()
-          break
-        default:
-          break
-      }
-    }
-
-    if (isFullscreen) {
-      document.addEventListener('keydown', handleKeyDown)
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isFullscreen, closeFullscreen, handleFullscreenPrev, handleFullscreenNext])
 
   // Get project images - moved here to be available for schema and render
   const projectImages = getProjectImages()
