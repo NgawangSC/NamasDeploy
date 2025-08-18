@@ -1,0 +1,32 @@
+{"level":"info","message":"🚀 NAMAS Architecture API Server v2.0 running on port 5000","service":"namas-server","timestamp":"2025-08-18T14:58:42.129Z"}
+{"level":"info","message":"📡 Server URL: http://localhost:5000","service":"namas-server","timestamp":"2025-08-18T14:58:42.131Z"}
+{"level":"info","message":"🔒 Security: Enhanced with Helmet, Rate Limiting, and Input Validation","service":"namas-server","timestamp":"2025-08-18T14:58:42.131Z"}
+{"level":"info","message":"💾 Database: MongoDB with Mongoose ODM","service":"namas-server","timestamp":"2025-08-18T14:58:42.131Z"}
+{"level":"info","message":"☁️ Storage: Cloudinary for image management","service":"namas-server","timestamp":"2025-08-18T14:58:42.131Z"}
+{"level":"info","message":"📋 API Documentation: http://localhost:5000/api","service":"namas-server","timestamp":"2025-08-18T14:58:42.131Z"}
+{"level":"info","message":"🌍 Environment: development","service":"namas-server","timestamp":"2025-08-18T14:58:42.132Z"}
+{"level":"info","message":"GET /api - ::1","service":"namas-server","timestamp":"2025-08-18T14:58:47.038Z"}
+{"level":"info","message":"GET /api/projects - ::1","service":"namas-server","timestamp":"2025-08-18T14:58:52.541Z"}
+{"level":"error","message":"Error fetching projects: Cannot call `projects.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.","service":"namas-server","stack":"MongooseError: Cannot call `projects.find()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.\n    at NativeCollection.<computed> [as find] (/workspace/server/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:237:15)\n    at model.Query._find (/workspace/server/node_modules/mongoose/lib/query.js:2402:48)\n    at model.Query.exec (/workspace/server/node_modules/mongoose/lib/query.js:4604:80)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async /workspace/server/server.js:182:22","timestamp":"2025-08-18T14:58:52.547Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"namas-server","timestamp":"2025-08-18T15:00:01.106Z"}
+{"level":"info","message":"🚀 NAMAS Architecture API Server v2.0 running on port 5000","service":"namas-server","timestamp":"2025-08-18T15:00:11.669Z"}
+{"level":"info","message":"📡 Server URL: http://localhost:5000","service":"namas-server","timestamp":"2025-08-18T15:00:11.671Z"}
+{"level":"info","message":"🔒 Security: Enhanced with Helmet, Rate Limiting, and Input Validation","service":"namas-server","timestamp":"2025-08-18T15:00:11.671Z"}
+{"level":"info","message":"💾 Database: MongoDB with Mongoose ODM","service":"namas-server","timestamp":"2025-08-18T15:00:11.671Z"}
+{"level":"info","message":"☁️ Storage: Cloudinary for image management","service":"namas-server","timestamp":"2025-08-18T15:00:11.671Z"}
+{"level":"info","message":"📋 API Documentation: http://localhost:5000/api","service":"namas-server","timestamp":"2025-08-18T15:00:11.671Z"}
+{"level":"info","message":"🌍 Environment: development","service":"namas-server","timestamp":"2025-08-18T15:00:11.671Z"}
+{"level":"info","message":"GET /api/projects - ::1","service":"namas-server","timestamp":"2025-08-18T15:00:15.628Z"}
+{"level":"error","message":"Error fetching projects: mongoose is not defined","service":"namas-server","stack":"ReferenceError: mongoose is not defined\n    at /workspace/server/server.js:171:5\n    at Layer.handle [as handle_request] (/workspace/server/node_modules/express/lib/router/layer.js:95:5)\n    at next (/workspace/server/node_modules/express/lib/router/route.js:149:13)\n    at handleValidationErrors (/workspace/server/middleware/validation.js:13:3)\n    at Layer.handle [as handle_request] (/workspace/server/node_modules/express/lib/router/layer.js:95:5)\n    at next (/workspace/server/node_modules/express/lib/router/route.js:149:13)\n    at middleware (/workspace/server/node_modules/express-validator/lib/middlewares/check.js:16:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-08-18T15:00:15.631Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"namas-server","timestamp":"2025-08-18T15:00:29.447Z"}
+{"level":"info","message":"🚀 NAMAS Architecture API Server v2.0 running on port 5000","service":"namas-server","timestamp":"2025-08-18T15:00:38.467Z"}
+{"level":"info","message":"📡 Server URL: http://localhost:5000","service":"namas-server","timestamp":"2025-08-18T15:00:38.469Z"}
+{"level":"info","message":"🔒 Security: Enhanced with Helmet, Rate Limiting, and Input Validation","service":"namas-server","timestamp":"2025-08-18T15:00:38.469Z"}
+{"level":"info","message":"💾 Database: MongoDB with Mongoose ODM","service":"namas-server","timestamp":"2025-08-18T15:00:38.469Z"}
+{"level":"info","message":"☁️ Storage: Cloudinary for image management","service":"namas-server","timestamp":"2025-08-18T15:00:38.469Z"}
+{"level":"info","message":"📋 API Documentation: http://localhost:5000/api","service":"namas-server","timestamp":"2025-08-18T15:00:38.469Z"}
+{"level":"info","message":"🌍 Environment: development","service":"namas-server","timestamp":"2025-08-18T15:00:38.469Z"}
+{"level":"info","message":"GET /api/projects - ::1","service":"namas-server","timestamp":"2025-08-18T15:00:41.783Z"}
+{"level":"info","message":"GET /api/projects/featured - ::1","service":"namas-server","timestamp":"2025-08-18T15:00:45.976Z"}
+{"level":"info","message":"POST /api/projects - ::1","service":"namas-server","timestamp":"2025-08-18T15:00:50.842Z"}
+{"level":"info","message":"POST /api/projects - ::1","service":"namas-server","timestamp":"2025-08-18T15:00:59.669Z"}

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import ViewFilter from "../components/ViewFilter"
+import ImageUploadWithCrop from "../components/ImageUploadWithCrop"
 import "./ProjectsManager.css"
 
 const ProjectsManager = () => {
@@ -20,7 +21,6 @@ const ProjectsManager = () => {
   const [showImageManager, setShowImageManager] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
   const [selectedImages, setSelectedImages] = useState([])
-  const [imagePreviews, setImagePreviews] = useState([])
   const [managingProject, setManagingProject] = useState(null)
   const [additionalImages, setAdditionalImages] = useState([])
   const [updatingFeatured, setUpdatingFeatured] = useState(null)
@@ -80,13 +80,8 @@ const ProjectsManager = () => {
     }))
   }
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files)
-    setSelectedImages(files)
-    
-    // Create preview URLs
-    const previewUrls = files.map(file => URL.createObjectURL(file))
-    setImagePreviews(previewUrls)
+  const handleImageChange = (images) => {
+    setSelectedImages(images)
   }
 
   const handleAdditionalImageChange = (e) => {
@@ -94,21 +89,7 @@ const ProjectsManager = () => {
     setAdditionalImages(files)
   }
 
-  const removeImagePreview = (index) => {
-    const newImages = selectedImages.filter((_, i) => i !== index)
-    const newPreviews = imagePreviews.filter((_, i) => i !== index)
-    
-    setSelectedImages(newImages)
-    setImagePreviews(newPreviews)
-    
-    // Update file input
-    const fileInput = document.querySelector('input[type="file"]')
-    if (fileInput) {
-      const dt = new DataTransfer()
-      newImages.forEach(file => dt.items.add(file))
-      fileInput.files = dt.files
-    }
-  }
+
 
   const addImagesToProject = async () => {
     if (!managingProject || additionalImages.length === 0) return
@@ -283,22 +264,14 @@ const ProjectsManager = () => {
       featured: false,
     })
     setSelectedImages([])
-    setImagePreviews([])
     setShowForm(false)
     setEditingProject(null)
-    
-    // Reset file input
-    const fileInput = document.querySelector('input[type="file"]')
-    if (fileInput) {
-      fileInput.value = ''
-    }
   }
 
   const handleEdit = (project) => {
     setFormData(project)
     setEditingProject(project)
     setSelectedImages([])
-    setImagePreviews([])
     setShowForm(true)
   }
 
@@ -580,43 +553,16 @@ const toggleFeatured = async (project) => {
                 <small>Projects marked as featured will appear in the homepage hero banner carousel.</small>
               </div>
 
-              <div className="form-group">
-                <label>Project Images</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  className="file-input"
-                />
-                <p className="file-input-hint">
-                  {editingProject 
-                    ? "Select new images to replace existing ones (optional)" 
-                    : "Select one or more images for this project"
-                  }
-                </p>
-                
-                {imagePreviews.length > 0 && (
-                  <div className="image-previews">
-                    <h4>Selected Images:</h4>
-                    <div className="preview-grid">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="preview-item">
-                          <img src={preview} alt={`Project preview ${index + 1}`} />
-                          <button
-                            type="button"
-                            onClick={() => removeImagePreview(index)}
-                            className="remove-preview"
-                          >
-                            ×
-                          </button>
-                          {index === 0 && <span className="cover-badge">Cover</span>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ImageUploadWithCrop
+                multiple={true}
+                onImagesReady={handleImageChange}
+                maxFiles={10}
+                label="Project Images"
+                helperText={editingProject 
+                  ? "Select new images to replace existing ones (optional)" 
+                  : "Select one or more images for this project"
+                }
+              />
 
               <div className="form-group">
                 <label>Description *</label>

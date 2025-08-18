@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useProjects, useProjectOperations } from "../hooks/useApi"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl, clearImageCache } from "../utils/imageUtils"
-import ProjectImageUpload from "../components/ProjectImageUpload"
+import ImageUploadWithCrop from "../components/ImageUploadWithCrop"
 import "./AdminProjects.css"
 
 const AdminProjects = () => {
@@ -251,10 +251,12 @@ const AdminProjects = () => {
                 <textarea name="description" value={formData.description} onChange={handleInputChange} rows="4" />
               </div>
 
-              <ProjectImageUpload
-                selectedImages={selectedImages}
-                onImagesChange={handleImageChange}
+              <ImageUploadWithCrop
+                multiple={true}
+                onImagesReady={handleImageChange}
                 maxFiles={10}
+                label="Project Images"
+                helperText="Select images for your project"
               />
 
               <div className="form-actions">
