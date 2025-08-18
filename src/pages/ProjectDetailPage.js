@@ -228,7 +228,6 @@ const ProjectDetailPage = () => {
               src={projectImages[currentImageIndex] || "/placeholder.svg"}
               alt={project.title}
               className="gallery-image clickable-image"
-              loading="eager"
               onClick={() => openFullscreen(currentImageIndex)}
               onError={(e) => {
                 console.warn('Project detail image failed to load:', projectImages[currentImageIndex]);
@@ -383,7 +382,6 @@ const ProjectDetailPage = () => {
                 src={projectImages[fullscreenImageIndex] || "/placeholder.svg"}
                 alt={`${project.title} - Image ${fullscreenImageIndex + 1}`}
                 className="fullscreen-image"
-                loading="eager"
                 onError={(e) => {
                   console.warn('Fullscreen image failed to load:', projectImages[fullscreenImageIndex]);
                   e.target.src = "/placeholder.svg?height=800&width=1200&text=Image+Not+Found";
