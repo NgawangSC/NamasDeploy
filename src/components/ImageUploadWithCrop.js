@@ -112,7 +112,18 @@ const ImageUploadWithCrop = ({
     // Update processed files
     setProcessedFiles(prev => {
       const filtered = prev.filter(f => f.originalId !== currentCropFile.id);
-      return [...filtered, processedFile];
+      const newProcessedFiles = [...filtered, processedFile];
+      
+      // Notify parent component after state update
+      setTimeout(() => {
+        if (multiple) {
+          onImagesReady && onImagesReady(newProcessedFiles.map(f => f.file));
+        } else {
+          onImageReady && onImageReady(croppedFile);
+        }
+      }, 0);
+      
+      return newProcessedFiles;
     });
 
     // Mark original file as processed
@@ -121,14 +132,6 @@ const ImageUploadWithCrop = ({
     ));
 
     setCurrentCropFile(null);
-
-    // Notify parent component
-    if (multiple) {
-      const allProcessed = [...processedFiles, processedFile];
-      onImagesReady && onImagesReady(allProcessed.map(f => f.file));
-    } else {
-      onImageReady && onImageReady(croppedFile);
-    }
   };
 
   const handleCropCancel = () => {

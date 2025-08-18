@@ -215,6 +215,12 @@ const ProjectsManager = () => {
     e.preventDefault()
 
     try {
+      // Check if images are provided when creating a new project
+      if (!editingProject && selectedImages.length === 0) {
+        alert('Please select at least one image for the project.');
+        return;
+      }
+
       const submitData = new FormData()
       
       // Append form fields
@@ -228,8 +234,6 @@ const ProjectsManager = () => {
       selectedImages.forEach(file => {
         submitData.append('images', file)
       })
-
-
 
       if (editingProject) {
         await updateProject(editingProject.id, submitData)
