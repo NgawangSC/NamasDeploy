@@ -20,6 +20,7 @@ const ImageCropper = ({
     y: 5
   });
   const [completedCrop, setCompletedCrop] = useState(null);
+  const [currentAspectRatio, setCurrentAspectRatio] = useState(aspectRatio);
   const imgRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -117,7 +118,7 @@ const ImageCropper = ({
               crop={crop}
               onChange={(newCrop) => setCrop(newCrop)}
               onComplete={(c) => setCompletedCrop(c)}
-              aspect={aspectRatio}
+              aspect={currentAspectRatio}
               circularCrop={circularCrop}
               minWidth={minWidth}
               minHeight={minHeight}
@@ -137,31 +138,38 @@ const ImageCropper = ({
             <div className="aspect-ratio-buttons">
               <button
                 type="button"
-                className={`aspect-btn ${aspectRatio === null ? 'active' : ''}`}
-                onClick={() => setCrop({ ...crop, aspect: undefined })}
+                className={`aspect-btn ${currentAspectRatio === null || currentAspectRatio === undefined ? 'active' : ''}`}
+                onClick={() => setCurrentAspectRatio(undefined)}
               >
                 Free
               </button>
               <button
                 type="button"
-                className={`aspect-btn ${aspectRatio === 1 ? 'active' : ''}`}
-                onClick={() => setCrop({ ...crop, aspect: 1 })}
+                className={`aspect-btn ${currentAspectRatio === 1 ? 'active' : ''}`}
+                onClick={() => setCurrentAspectRatio(1)}
               >
                 Square
               </button>
               <button
                 type="button"
-                className={`aspect-btn ${aspectRatio === 16/9 ? 'active' : ''}`}
-                onClick={() => setCrop({ ...crop, aspect: 16/9 })}
+                className={`aspect-btn ${currentAspectRatio === 16/9 ? 'active' : ''}`}
+                onClick={() => setCurrentAspectRatio(16/9)}
               >
                 16:9
               </button>
               <button
                 type="button"
-                className={`aspect-btn ${aspectRatio === 4/3 ? 'active' : ''}`}
-                onClick={() => setCrop({ ...crop, aspect: 4/3 })}
+                className={`aspect-btn ${currentAspectRatio === 4/3 ? 'active' : ''}`}
+                onClick={() => setCurrentAspectRatio(4/3)}
               >
                 4:3
+              </button>
+              <button
+                type="button"
+                className={`aspect-btn ${currentAspectRatio === 3/2 ? 'active' : ''}`}
+                onClick={() => setCurrentAspectRatio(3/2)}
+              >
+                3:2
               </button>
             </div>
           </div>
