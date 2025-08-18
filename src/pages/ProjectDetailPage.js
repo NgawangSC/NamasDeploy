@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
@@ -87,16 +87,28 @@ const ProjectDetailPage = () => {
     setCurrentImageIndex(index)
   }
 
-  const openFullscreen = useCallback((imageIndex = currentImageIndex) => {
+  const openFullscreen = (imageIndex = currentImageIndex) => {
     setFullscreenImageIndex(imageIndex)
     setIsFullscreen(true)
     document.body.style.overflow = 'hidden' // Prevent background scrolling
-  }, [currentImageIndex])
+  }
 
-  const closeFullscreen = useCallback(() => {
+  const closeFullscreen = () => {
     setIsFullscreen(false)
     document.body.style.overflow = 'unset' // Restore scrolling
-  }, [])
+  }
+
+  const handleFullscreenPrev = () => {
+    if (project && project.images && project.images.length > 0) {
+      setFullscreenImageIndex((prev) => (prev === 0 ? projectImages.length - 1 : prev - 1))
+    }
+  }
+
+  const handleFullscreenNext = () => {
+    if (project && project.images && project.images.length > 0) {
+      setFullscreenImageIndex((prev) => (prev === projectImages.length - 1 ? 0 : prev + 1))
+    }
+  }
 
   // Keyboard controls for fullscreen
   useEffect(() => {
@@ -125,26 +137,7 @@ const ProjectDetailPage = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isFullscreen, closeFullscreen, handleFullscreenPrev, handleFullscreenNext])
-
-  const getProjectImages = useCallback(() => {
-    if (!project) return ["/placeholder.svg"]
-    return project.images && Array.isArray(project.images) && project.images.length > 0 
-      ? project.images.map(img => getImageUrl(img))
-      : project.image 
-        ? [getImageUrl(project.image)] 
-        : ["/placeholder.svg"]
-  }, [project])
-
-  const handleFullscreenPrev = useCallback(() => {
-    const images = getProjectImages()
-    setFullscreenImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
-  }, [getProjectImages])
-
-  const handleFullscreenNext = useCallback(() => {
-    const images = getProjectImages()
-    setFullscreenImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
-  }, [getProjectImages])
+  }, [isFullscreen, projectImages.length])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -190,10 +183,13 @@ const ProjectDetailPage = () => {
     )
   }
 
+  // Handle both single image and multiple images
+  const projectImages = project.images && Array.isArray(project.images) && project.images.length > 0 
+    ? project.images.map(img => getImageUrl(img))
+    : project.image 
+      ? [getImageUrl(project.image)] 
+      : ["/placeholder.svg"]
 
-  // Get project images - moved here to be available for schema and render
-  const projectImages = getProjectImages()
-  
   const projectDescription = project.description || [project.category, project.location, project.year].filter(Boolean).join(" • ") || "Project by NAMAS Bhutan."
 
   const projectSchema = [{
