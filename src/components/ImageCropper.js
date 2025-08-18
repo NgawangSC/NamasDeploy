@@ -10,7 +10,8 @@ const ImageCropper = ({
   aspectRatio = null,
   circularCrop = false,
   minWidth = 100,
-  minHeight = 100
+  minHeight = 100,
+  originalFile = null
 }) => {
   const [crop, setCrop] = useState({
     unit: '%',
@@ -70,9 +71,13 @@ const ImageCropper = ({
     );
 
     return new Promise((resolve) => {
+      // Preserve original format and use higher quality
+      const originalType = originalFile?.type || 'image/jpeg';
+      const quality = originalType === 'image/png' ? undefined : 0.98; // PNG doesn't use quality
+      
       canvas.toBlob((blob) => {
         resolve(blob);
-      }, 'image/jpeg', 0.95);
+      }, originalType, quality);
     });
   }, []);
 
@@ -85,9 +90,11 @@ const ImageCropper = ({
       const croppedImageBlob = await getCroppedImg(imgRef.current, completedCrop);
       
       if (croppedImageBlob) {
-        // Create a File object from the blob
-        const croppedFile = new File([croppedImageBlob], 'cropped-image.jpg', {
-          type: 'image/jpeg'
+        // Create a File object from the blob, preserving original format
+        const originalType = originalFile?.type || 'image/jpeg';
+        const extension = originalType.split('/')[1] || 'jpg';
+        const croppedFile = new File([croppedImageBlob], `cropped-image.${extension}`, {
+          type: originalType
         });
         
         onCropComplete(croppedFile, URL.createObjectURL(croppedImageBlob));
