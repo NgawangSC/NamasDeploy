@@ -699,6 +699,7 @@ app.post("/api/projects/:id/images", upload.array('images', 10), (req, res) => {
       success: true,
       message: "Images added successfully",
       data: {
+        project: projects[projectIndex],
         projectId: projectId,
         newImages: newImages,
         totalImages: projects[projectIndex].images.length
@@ -764,11 +765,7 @@ app.delete("/api/projects/:id/images", (req, res) => {
     res.json({
       success: true,
       message: "Image removed successfully",
-      data: {
-        projectId: projectId,
-        removedImage: imageUrl,
-        remainingImages: project.images.length
-      }
+      data: project
     })
     
   } catch (error) {
@@ -824,10 +821,7 @@ app.put("/api/projects/:id/cover", (req, res) => {
     res.json({
       success: true,
       message: "Cover image set successfully",
-      data: {
-        projectId: projectId,
-        coverImage: imageUrl
-      }
+      data: project
     })
     
   } catch (error) {

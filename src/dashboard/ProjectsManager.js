@@ -112,6 +112,8 @@ const ProjectsManager = () => {
       }
 
       const result = await response.json()
+      
+      // Use the updated project from the server response
       const updatedProject = result.data.project
 
       // Update the project in the state and also update the managingProject
