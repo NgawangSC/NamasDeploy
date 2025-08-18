@@ -155,16 +155,26 @@ const ProjectsManager = () => {
 
         if (!response.ok) {
           const errorData = await response.json()
+          console.error('Server error removing image:', errorData)
           throw new Error(errorData.error || 'Failed to remove image')
         }
 
         const result = await response.json()
+        console.log('Image removal result:', result)
+        
         const updatedProject = result.data
+
+        // Validate the updated project has the expected structure
+        if (!updatedProject || !updatedProject.id) {
+          console.error('Invalid updated project data:', updatedProject)
+          throw new Error('Server returned invalid project data')
+        }
 
         // Update the project in the state and also update the managingProject
         await updateProject(managingProject.id, updatedProject)
         setManagingProject(updatedProject)
         
+        console.log('Updated managingProject:', updatedProject)
         alert('Image removed successfully!')
       } catch (error) {
         console.error('Error removing image:', error)
@@ -173,6 +183,18 @@ const ProjectsManager = () => {
           errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
         }
         alert('Error removing image: ' + errorMessage)
+        
+        // Refresh the project data to ensure UI is in sync with server
+        try {
+          await fetchProjects();
+          // Find the refreshed project in the current projects state
+          const refreshedProject = projects.find(p => p.id === managingProject.id);
+          if (refreshedProject) {
+            setManagingProject(refreshedProject);
+          }
+        } catch (refreshError) {
+          console.error('Error refreshing project data:', refreshError);
+        }
       }
     }
   }

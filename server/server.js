@@ -740,21 +740,41 @@ app.delete("/api/projects/:id/images", (req, res) => {
     
     // Remove image from project
     const project = projects[projectIndex]
-    const imageIndex = project.images?.indexOf(imageUrl) || -1
+    
+    // Ensure project has images array
+    if (!project.images || !Array.isArray(project.images)) {
+      return res.status(400).json({
+        success: false,
+        error: "Project has no images array"
+      })
+    }
+    
+    const imageIndex = project.images.indexOf(imageUrl)
+    
+    console.log(`🔍 Looking for image: ${imageUrl}`)
+    console.log(`📋 Current images:`, project.images)
+    console.log(`📍 Image index: ${imageIndex}`)
     
     if (imageIndex === -1) {
+      console.log(`❌ Image not found in project images`)
       return res.status(404).json({
         success: false,
         error: "Image not found in project"
       })
     }
     
+    // Remove the image
     project.images.splice(imageIndex, 1)
     project.updatedAt = new Date().toISOString()
     
+    console.log(`✂️ Removed image at index ${imageIndex}`)
+    console.log(`📋 Remaining images:`, project.images)
+    
     // If this was the cover image, update it
     if (project.image === imageUrl) {
-      project.image = project.images.length > 0 ? project.images[0] : null
+      const newCoverImage = project.images.length > 0 ? project.images[0] : null
+      project.image = newCoverImage
+      console.log(`🖼️ Updated cover image to: ${newCoverImage}`)
     }
     
     // Save to file
