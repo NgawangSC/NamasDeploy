@@ -157,14 +157,14 @@ export const fileToBase64 = (file) => {
 };
 
 /**
- * Compresses an image file and converts it to base64
+ * Compresses an image file and converts it to base64 with high quality
  * @param {File} file - The image file to compress
  * @param {number} maxWidth - Maximum width for the compressed image
  * @param {number} maxHeight - Maximum height for the compressed image  
  * @param {number} quality - JPEG quality (0-1)
  * @returns {Promise<string>} - Promise that resolves to compressed base64 data URL
  */
-export const compressImageToBase64 = (file, maxWidth = 1200, maxHeight = 800, quality = 0.8) => {
+export const compressImageToBase64 = (file, maxWidth = 1200, maxHeight = 800, quality = 0.9) => {
   return new Promise((resolve, reject) => {
     if (!file) {
       resolve('');
@@ -191,15 +191,33 @@ export const compressImageToBase64 = (file, maxWidth = 1200, maxHeight = 800, qu
         }
       }
       
-      // Set canvas dimensions
-      canvas.width = width;
-      canvas.height = height;
+      // Use device pixel ratio for high-DPI displays
+      const pixelRatio = window.devicePixelRatio || 1;
       
-      // Draw and compress
+      // Set canvas dimensions accounting for pixel ratio
+      canvas.width = width * pixelRatio;
+      canvas.height = height * pixelRatio;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      
+      // Scale the context to account for device pixel ratio
+      ctx.scale(pixelRatio, pixelRatio);
+      
+      // Enable high-quality rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Draw with high quality
       ctx.drawImage(img, 0, 0, width, height);
       
-      // Convert to base64
-      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      // Convert to base64 with preserved format if possible
+      const originalType = file.type;
+      const outputType = (originalType === 'image/png' || originalType === 'image/webp') 
+        ? originalType 
+        : 'image/jpeg';
+      const finalQuality = (outputType === 'image/jpeg') ? quality : undefined;
+      
+      const dataUrl = canvas.toDataURL(outputType, finalQuality);
       resolve(dataUrl);
     };
     
@@ -249,6 +267,210 @@ export const removeStoredImage = (blogId) => {
     localStorage.removeItem(key);
   } catch (error) {
     console.warn('Failed to remove stored image:', error);
+  }
+};
+
+/**
+ * Creates a high-quality cropped image from canvas
+ * @param {HTMLImageElement} image - Source image element
+ * @param {Object} crop - Crop configuration
+ * @param {File} originalFile - Original file for format preservation
+ * @param {number} minQualitySize - Minimum output size to maintain quality
+ * @returns {Promise<Blob>} - Promise that resolves to cropped image blob
+ */
+export const createHighQualityCrop = async (image, crop, originalFile, minQualitySize = 800) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  if (!crop || !image) {
+    return null;
+  }
+
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+
+  // Calculate actual crop dimensions in original image coordinates
+  const cropWidth = crop.width * scaleX;
+  const cropHeight = crop.height * scaleY;
+  const cropX = crop.x * scaleX;
+  const cropY = crop.y * scaleY;
+
+  // Use device pixel ratio for high-DPI displays
+  const pixelRatio = window.devicePixelRatio || 1;
+  
+  // Set canvas size to maintain high quality
+  const outputWidth = Math.max(cropWidth, minQualitySize);
+  const outputHeight = Math.max(cropHeight, minQualitySize);
+  
+  const scale = Math.min(outputWidth / cropWidth, outputHeight / cropHeight);
+  const finalWidth = cropWidth * scale;
+  const finalHeight = cropHeight * scale;
+
+  // Set canvas dimensions accounting for pixel ratio
+  canvas.width = finalWidth * pixelRatio;
+  canvas.height = finalHeight * pixelRatio;
+  
+  canvas.style.width = finalWidth + 'px';
+  canvas.style.height = finalHeight + 'px';
+  
+  ctx.scale(pixelRatio, pixelRatio);
+  
+  // Enable high-quality rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  
+  ctx.drawImage(
+    image,
+    cropX,
+    cropY,
+    cropWidth,
+    cropHeight,
+    0,
+    0,
+    finalWidth,
+    finalHeight
+  );
+
+  return new Promise((resolve) => {
+    const originalType = originalFile?.type || 'image/jpeg';
+    let quality;
+    
+    if (originalType === 'image/png' || originalType === 'image/webp') {
+      quality = undefined; // Lossless formats
+    } else {
+      quality = 1.0; // Maximum quality for JPEG
+    }
+    
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, originalType, quality);
+  });
+};
+
+/**
+ * Resizes an image while maintaining aspect ratio and quality
+ * @param {File} file - Image file to resize
+ * @param {number} maxWidth - Maximum width
+ * @param {number} maxHeight - Maximum height
+ * @param {number} quality - Quality for lossy formats (0-1)
+ * @returns {Promise<Blob>} - Promise that resolves to resized image blob
+ */
+export const resizeImageWithQuality = async (file, maxWidth = 1920, maxHeight = 1080, quality = 0.95) => {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      let { width, height } = img;
+      
+      // Calculate new dimensions maintaining aspect ratio
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+      }
+      
+      // Use device pixel ratio for high-DPI displays
+      const pixelRatio = window.devicePixelRatio || 1;
+      
+      canvas.width = width * pixelRatio;
+      canvas.height = height * pixelRatio;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      
+      ctx.scale(pixelRatio, pixelRatio);
+      
+      // Enable high-quality rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Preserve original format
+      const originalType = file.type;
+      const finalQuality = (originalType === 'image/png' || originalType === 'image/webp') 
+        ? undefined 
+        : quality;
+      
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, originalType, finalQuality);
+    };
+    
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+};
+
+/**
+ * Optimizes an image file for web usage while preserving quality
+ * @param {File} file - Image file to optimize
+ * @param {Object} options - Optimization options
+ * @returns {Promise<File>} - Promise that resolves to optimized file
+ */
+export const optimizeImageForWeb = async (file, options = {}) => {
+  const {
+    maxWidth = 1920,
+    maxHeight = 1080,
+    quality = 0.95,
+    maintainOriginalSize = false
+  } = options;
+  
+  try {
+    let optimizedBlob;
+    
+    if (maintainOriginalSize) {
+      // Just improve quality settings without resizing
+      optimizedBlob = await new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+          const pixelRatio = window.devicePixelRatio || 1;
+          
+          canvas.width = img.naturalWidth * pixelRatio;
+          canvas.height = img.naturalHeight * pixelRatio;
+          canvas.style.width = img.naturalWidth + 'px';
+          canvas.style.height = img.naturalHeight + 'px';
+          
+          ctx.scale(pixelRatio, pixelRatio);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          
+          ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
+          
+          const finalQuality = (file.type === 'image/png' || file.type === 'image/webp') 
+            ? undefined 
+            : quality;
+          
+          canvas.toBlob(resolve, file.type, finalQuality);
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
+    } else {
+      optimizedBlob = await resizeImageWithQuality(file, maxWidth, maxHeight, quality);
+    }
+    
+    if (optimizedBlob) {
+      return new File([optimizedBlob], `optimized-${file.name}`, {
+        type: file.type,
+        lastModified: Date.now()
+      });
+    }
+    
+    return file; // Return original if optimization fails
+  } catch (error) {
+    console.error('Image optimization failed:', error);
+    return file; // Return original if optimization fails
   }
 };
 

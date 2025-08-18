@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
@@ -10,8 +10,10 @@ const SimpleImageCropper = ({ imageFile, onCropComplete, onCancel }) => {
     x: 10,
     y: 10
   });
+  const [completedCrop, setCompletedCrop] = useState(null);
   const [imgSrc, setImgSrc] = useState('');
   const imgRef = useRef(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     if (imageFile) {
@@ -25,12 +27,101 @@ const SimpleImageCropper = ({ imageFile, onCropComplete, onCancel }) => {
     }
   }, [imageFile]);
 
-  const handleCropComplete = () => {
-    if (!imgRef.current) return;
+  const getCroppedImg = useCallback((image, crop) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
     
-    // For now, just return the original file
-    console.log('SimpleImageCropper: Crop completed');
-    onCropComplete(imageFile);
+    if (!crop || !image) {
+      return null;
+    }
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    // Calculate actual crop dimensions in original image coordinates
+    const cropWidth = crop.width * scaleX;
+    const cropHeight = crop.height * scaleY;
+    const cropX = crop.x * scaleX;
+    const cropY = crop.y * scaleY;
+
+    // Use device pixel ratio for high-DPI displays
+    const pixelRatio = window.devicePixelRatio || 1;
+    
+    // Set canvas size to maintain high quality
+    const minQualitySize = 600; // Minimum size for simple cropper
+    const outputWidth = Math.max(cropWidth, minQualitySize);
+    const outputHeight = Math.max(cropHeight, minQualitySize);
+    
+    const scale = Math.min(outputWidth / cropWidth, outputHeight / cropHeight);
+    const finalWidth = cropWidth * scale;
+    const finalHeight = cropHeight * scale;
+
+    // Set canvas dimensions accounting for pixel ratio
+    canvas.width = finalWidth * pixelRatio;
+    canvas.height = finalHeight * pixelRatio;
+    
+    canvas.style.width = finalWidth + 'px';
+    canvas.style.height = finalHeight + 'px';
+    
+    ctx.scale(pixelRatio, pixelRatio);
+    
+    // Enable high-quality rendering
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    ctx.drawImage(
+      image,
+      cropX,
+      cropY,
+      cropWidth,
+      cropHeight,
+      0,
+      0,
+      finalWidth,
+      finalHeight
+    );
+
+    return new Promise((resolve) => {
+      const originalType = imageFile?.type || 'image/jpeg';
+      let quality;
+      
+      if (originalType === 'image/png' || originalType === 'image/webp') {
+        quality = undefined;
+      } else {
+        quality = 1.0;
+      }
+      
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, originalType, quality);
+    });
+  }, [imageFile]);
+
+  const handleCropComplete = async () => {
+    if (!completedCrop || !imgRef.current) {
+      console.log('SimpleImageCropper: No crop or image ref available');
+      return;
+    }
+    
+    try {
+      console.log('SimpleImageCropper: Processing crop...');
+      const croppedImageBlob = await getCroppedImg(imgRef.current, completedCrop);
+      
+      if (croppedImageBlob) {
+        const originalType = imageFile?.type || 'image/jpeg';
+        const extension = originalType.split('/')[1] || 'jpg';
+        const croppedFile = new File([croppedImageBlob], `cropped-${imageFile.name}`, {
+          type: originalType
+        });
+        
+        console.log('SimpleImageCropper: Crop completed successfully');
+        onCropComplete(croppedFile);
+      }
+    } catch (error) {
+      console.error('SimpleImageCropper: Error cropping image:', error);
+      // Fallback to original file if cropping fails
+      onCropComplete(imageFile);
+    }
   };
 
   if (!imgSrc) {
@@ -81,6 +172,7 @@ const SimpleImageCropper = ({ imageFile, onCropComplete, onCancel }) => {
         <ReactCrop
           crop={crop}
           onChange={(c, percentCrop) => setCrop(percentCrop)}
+          onComplete={(c) => setCompletedCrop(c)}
           aspect={16/9}
         >
           <img
@@ -120,6 +212,9 @@ const SimpleImageCropper = ({ imageFile, onCropComplete, onCancel }) => {
           </button>
         </div>
       </div>
+      
+      {/* Hidden canvas for image processing */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
     </div>
   );
 };
