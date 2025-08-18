@@ -18,6 +18,8 @@ const ProjectDetailPage = () => {
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
   const [singleProjectLoading, setSingleProjectLoading] = useState(false)
   const [showDesignTeamModal, setShowDesignTeamModal] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0)
 
   useEffect(() => {
     // Fetch projects on mount if not already loaded
@@ -84,6 +86,65 @@ const ProjectDetailPage = () => {
   const handleIndicatorClick = (index) => {
     setCurrentImageIndex(index)
   }
+
+  const openFullscreen = (imageIndex = currentImageIndex) => {
+    setFullscreenImageIndex(imageIndex)
+    setIsFullscreen(true)
+    document.body.style.overflow = 'hidden' // Prevent background scrolling
+  }
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false)
+    document.body.style.overflow = 'unset' // Restore scrolling
+  }
+
+  const handleFullscreenPrev = () => {
+    if (project && project.images && project.images.length > 0) {
+      setFullscreenImageIndex((prev) => (prev === 0 ? project.images.length - 1 : prev - 1))
+    }
+  }
+
+  const handleFullscreenNext = () => {
+    if (project && project.images && project.images.length > 0) {
+      setFullscreenImageIndex((prev) => (prev === project.images.length - 1 ? 0 : prev + 1))
+    }
+  }
+
+  // Keyboard controls for fullscreen
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!isFullscreen) return
+
+      switch (event.key) {
+        case 'Escape':
+          closeFullscreen()
+          break
+        case 'ArrowLeft':
+          handleFullscreenPrev()
+          break
+        case 'ArrowRight':
+          handleFullscreenNext()
+          break
+        default:
+          break
+      }
+    }
+
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isFullscreen, projectImages.length])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
   
 
 
@@ -166,12 +227,12 @@ const ProjectDetailPage = () => {
             <img
               src={projectImages[currentImageIndex] || "/placeholder.svg"}
               alt={project.title}
-              className="gallery-image"
+              className="gallery-image clickable-image"
+              onClick={() => openFullscreen(currentImageIndex)}
               onError={(e) => {
                 console.warn('Project detail image failed to load:', projectImages[currentImageIndex]);
                 e.target.src = "/placeholder.svg?height=400&width=600&text=Image+Not+Found";
               }}
-
             />
                           <div className="project-title-overlay">
                 <h1>{project.title}</h1>
@@ -293,6 +354,69 @@ const ProjectDetailPage = () => {
                   <p>{project.designTeam || 'Not specified'}</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Image Modal */}
+      {isFullscreen && (
+        <div className="fullscreen-modal-overlay" onClick={closeFullscreen}>
+          <div className="fullscreen-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="fullscreen-close-btn" onClick={closeFullscreen}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {projectImages.length > 1 && (
+              <button className="fullscreen-nav-arrow fullscreen-nav-left" onClick={handleFullscreenPrev}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+
+            <div className="fullscreen-image-container">
+              <img
+                src={projectImages[fullscreenImageIndex] || "/placeholder.svg"}
+                alt={`${project.title} - Image ${fullscreenImageIndex + 1}`}
+                className="fullscreen-image"
+                onError={(e) => {
+                  console.warn('Fullscreen image failed to load:', projectImages[fullscreenImageIndex]);
+                  e.target.src = "/placeholder.svg?height=800&width=1200&text=Image+Not+Found";
+                }}
+              />
+            </div>
+
+            {projectImages.length > 1 && (
+              <button className="fullscreen-nav-arrow fullscreen-nav-right" onClick={handleFullscreenNext}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+
+            {projectImages.length > 1 && (
+              <div className="fullscreen-image-info">
+                <div className="fullscreen-image-counter">
+                  {fullscreenImageIndex + 1} / {projectImages.length}
+                </div>
+                <div className="fullscreen-indicators">
+                  {projectImages.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`fullscreen-indicator ${index === fullscreenImageIndex ? "active" : ""}`}
+                      onClick={() => setFullscreenImageIndex(index)}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="fullscreen-title">
+              <h2>{project.title}</h2>
             </div>
           </div>
         </div>
