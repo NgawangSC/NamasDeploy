@@ -106,6 +106,72 @@ export const preloadImage = (imageUrl) => {
 };
 
 /**
+ * Gets responsive image URL based on viewport size and device pixel ratio
+ * @param {string} imagePath - The original image path
+ * @param {Object} options - Responsive options
+ * @returns {string} - Optimized image URL
+ */
+export const getResponsiveImageUrl = (imagePath, options = {}) => {
+  if (!imagePath) {
+    return "/images/placeholder.png";
+  }
+
+  const {
+    maxWidth = window.innerWidth,
+    maxHeight = window.innerHeight,
+    quality = 0.9,
+    format = 'auto'
+  } = options;
+
+  // For small screens, use smaller images
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const targetWidth = Math.min(maxWidth * devicePixelRatio, 1920);
+  const targetHeight = Math.min(maxHeight * devicePixelRatio, 1080);
+
+  // Get base URL
+  const baseUrl = getImageUrl(imagePath);
+  
+  // If it's already a processed URL or external URL, return as is
+  if (imagePath.startsWith('http') || imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
+    return baseUrl;
+  }
+
+  // Add responsive parameters for server-side processing if available
+  // This assumes the server can handle query parameters for image optimization
+  const separator = baseUrl.includes('?') ? '&' : '?';
+  return `${baseUrl}${separator}w=${Math.round(targetWidth)}&h=${Math.round(targetHeight)}&q=${Math.round(quality * 100)}`;
+};
+
+/**
+ * Preloads multiple images concurrently with progress tracking
+ * @param {string[]} imageUrls - Array of image URLs to preload
+ * @param {Function} onProgress - Progress callback (loaded, total)
+ * @returns {Promise} - Promise that resolves when all images are loaded
+ */
+export const preloadImages = async (imageUrls, onProgress) => {
+  if (!imageUrls || imageUrls.length === 0) return [];
+
+  let loaded = 0;
+  const total = imageUrls.length;
+  
+  const preloadPromises = imageUrls.map(async (url) => {
+    try {
+      const img = await preloadImage(url);
+      loaded++;
+      if (onProgress) onProgress(loaded, total);
+      return img;
+    } catch (error) {
+      loaded++;
+      if (onProgress) onProgress(loaded, total);
+      console.warn('Failed to preload image:', url, error);
+      return null;
+    }
+  });
+
+  return Promise.all(preloadPromises);
+};
+
+/**
  * Clears the image URL cache
  */
 export const clearImageCache = () => {

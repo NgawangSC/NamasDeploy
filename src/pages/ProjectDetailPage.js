@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
-import { getImageUrl } from "../utils/imageUtils"
+import { getImageUrl, preloadImage, getResponsiveImageUrl, preloadImages } from "../utils/imageUtils"
 import ApiService from "../services/api"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import OptimizedImage from "../components/OptimizedImage"
 import SEO from "../components/SEO"
 import "./ProjectDetailPage.css"
 
@@ -20,6 +21,9 @@ const ProjectDetailPage = () => {
   const [showDesignTeamModal, setShowDesignTeamModal] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0)
+  const [preloadedImages, setPreloadedImages] = useState(new Set())
+  const [imageLoadingStates, setImageLoadingStates] = useState({})
+  const [preloadProgress, setPreloadProgress] = useState({ loaded: 0, total: 0 })
 
   useEffect(() => {
     // Fetch projects on mount if not already loaded
@@ -70,6 +74,51 @@ const ProjectDetailPage = () => {
       fetchSingleProject()
     }
   }, [id, projects])
+
+  // Preload adjacent images for better navigation experience
+  const preloadAdjacentImages = useCallback(async (projectImages, currentIndex) => {
+    if (!projectImages || projectImages.length <= 1) return
+    
+    const indicesToPreload = []
+    const prevIndex = currentIndex === 0 ? projectImages.length - 1 : currentIndex - 1
+    const nextIndex = currentIndex === projectImages.length - 1 ? 0 : currentIndex + 1
+    
+    indicesToPreload.push(prevIndex, nextIndex)
+    
+    for (const index of indicesToPreload) {
+      const imageUrl = projectImages[index]
+      if (imageUrl && !preloadedImages.has(imageUrl)) {
+        try {
+          await preloadImage(imageUrl)
+          setPreloadedImages(prev => new Set([...prev, imageUrl]))
+        } catch (error) {
+          console.warn('Failed to preload image:', imageUrl, error)
+        }
+      }
+    }
+  }, [preloadedImages])
+
+  // Preload images when project loads
+  useEffect(() => {
+    if (project && project.images && Array.isArray(project.images) && project.images.length > 1) {
+      const imagesToPreload = project.images.map(img => getImageUrl(img))
+      
+      // Preload all images with progress tracking
+      preloadImages(imagesToPreload, (loaded, total) => {
+        setPreloadProgress({ loaded, total })
+      }).then(() => {
+        setPreloadedImages(new Set(imagesToPreload))
+      })
+    }
+  }, [project])
+
+  // Preload adjacent images for immediate navigation
+  useEffect(() => {
+    if (project && project.images && Array.isArray(project.images) && project.images.length > 0) {
+      const projectImages = project.images.map(img => getImageUrl(img))
+      preloadAdjacentImages(projectImages, currentImageIndex)
+    }
+  }, [project, currentImageIndex, preloadAdjacentImages])
 
   const handlePrevImage = () => {
     if (project && project.images && project.images.length > 0) {
@@ -183,11 +232,34 @@ const ProjectDetailPage = () => {
     )
   }
 
-  // Handle both single image and multiple images
+  // Handle both single image and multiple images with responsive sizing
   const projectImages = project.images && Array.isArray(project.images) && project.images.length > 0 
-    ? project.images.map(img => getImageUrl(img))
+    ? project.images.map(img => getResponsiveImageUrl(img, {
+        maxWidth: window.innerWidth > 1200 ? 1200 : window.innerWidth,
+        maxHeight: window.innerHeight * 0.7, // Gallery height is 70vh
+        quality: 0.9
+      }))
     : project.image 
-      ? [getImageUrl(project.image)] 
+      ? [getResponsiveImageUrl(project.image, {
+          maxWidth: window.innerWidth > 1200 ? 1200 : window.innerWidth,
+          maxHeight: window.innerHeight * 0.7,
+          quality: 0.9
+        })] 
+      : ["/placeholder.svg"]
+
+  // Also prepare high-res versions for fullscreen
+  const fullscreenImages = project.images && Array.isArray(project.images) && project.images.length > 0 
+    ? project.images.map(img => getResponsiveImageUrl(img, {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 0.95
+      }))
+    : project.image 
+      ? [getResponsiveImageUrl(project.image, {
+          maxWidth: 1920,
+          maxHeight: 1080,
+          quality: 0.95
+        })] 
       : ["/placeholder.svg"]
 
   const projectDescription = project.description || [project.category, project.location, project.year].filter(Boolean).join(" • ") || "Project by NAMAS Bhutan."
@@ -224,14 +296,27 @@ const ProjectDetailPage = () => {
           )}
 
           <div className="gallery-image-container">
-            <img
+            <OptimizedImage
               src={projectImages[currentImageIndex] || "/placeholder.svg"}
               alt={project.title}
               className="gallery-image clickable-image"
+              placeholder="/images/placeholder.png"
               onClick={() => openFullscreen(currentImageIndex)}
-              onError={(e) => {
-                console.warn('Project detail image failed to load:', projectImages[currentImageIndex]);
-                e.target.src = "/placeholder.svg?height=400&width=600&text=Image+Not+Found";
+              onLoad={() => {
+                setImageLoadingStates(prev => ({
+                  ...prev,
+                  [currentImageIndex]: 'loaded'
+                }))
+              }}
+              onError={() => {
+                console.warn('Project detail image failed to load:', projectImages[currentImageIndex])
+                setImageLoadingStates(prev => ({
+                  ...prev,
+                  [currentImageIndex]: 'error'
+                }))
+              }}
+              style={{
+                cursor: 'pointer'
               }}
             />
                           <div className="project-title-overlay">
@@ -239,6 +324,19 @@ const ProjectDetailPage = () => {
                 {projectImages.length > 1 && (
                   <div className="image-counter">
                     {currentImageIndex + 1} / {projectImages.length}
+                    {preloadProgress.total > 0 && preloadProgress.loaded < preloadProgress.total && (
+                      <div className="preload-progress">
+                        <small>Loading images: {preloadProgress.loaded}/{preloadProgress.total}</small>
+                        <div className="progress-bar">
+                          <div 
+                            className="progress-fill"
+                            style={{
+                              width: `${(preloadProgress.loaded / preloadProgress.total) * 100}%`
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                               <button 
@@ -378,13 +476,23 @@ const ProjectDetailPage = () => {
             )}
 
             <div className="fullscreen-image-container">
-              <img
-                src={projectImages[fullscreenImageIndex] || "/placeholder.svg"}
+              <OptimizedImage
+                src={fullscreenImages[fullscreenImageIndex] || "/placeholder.svg"}
                 alt={`${project.title} - Image ${fullscreenImageIndex + 1}`}
                 className="fullscreen-image"
-                onError={(e) => {
-                  console.warn('Fullscreen image failed to load:', projectImages[fullscreenImageIndex]);
-                  e.target.src = "/placeholder.svg?height=800&width=1200&text=Image+Not+Found";
+                placeholder="/images/placeholder.png"
+                onLoad={() => {
+                  setImageLoadingStates(prev => ({
+                    ...prev,
+                    [`fullscreen-${fullscreenImageIndex}`]: 'loaded'
+                  }))
+                }}
+                onError={() => {
+                  console.warn('Fullscreen image failed to load:', fullscreenImages[fullscreenImageIndex])
+                  setImageLoadingStates(prev => ({
+                    ...prev,
+                    [`fullscreen-${fullscreenImageIndex}`]: 'error'
+                  }))
                 }}
               />
             </div>
