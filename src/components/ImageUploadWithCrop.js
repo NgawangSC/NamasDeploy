@@ -277,6 +277,7 @@ const ImageUploadWithCrop = ({
           onCropComplete={handleCropComplete}
           onCancel={handleCropCancel}
           aspectRatio={aspectRatio}
+          originalFile={currentCropFile.file}
         />
       )}
     </div>
