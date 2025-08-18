@@ -270,7 +270,7 @@ const ImageUploadWithCrop = ({
       {/* Image Cropper Modal */}
       {currentCropFile && (
         <ImageCropper
-          imageFile={currentCropFile.file}
+          imageSrc={currentCropFile.preview}
           onCropComplete={handleCropComplete}
           onCancel={handleCropCancel}
           aspectRatio={aspectRatio}
