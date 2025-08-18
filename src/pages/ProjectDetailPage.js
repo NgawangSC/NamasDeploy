@@ -100,13 +100,13 @@ const ProjectDetailPage = () => {
 
   const handleFullscreenPrev = () => {
     if (project && project.images && project.images.length > 0) {
-      setFullscreenImageIndex((prev) => (prev === 0 ? projectImages.length - 1 : prev - 1))
+      setFullscreenImageIndex((prev) => (prev === 0 ? project.images.length - 1 : prev - 1))
     }
   }
 
   const handleFullscreenNext = () => {
     if (project && project.images && project.images.length > 0) {
-      setFullscreenImageIndex((prev) => (prev === projectImages.length - 1 ? 0 : prev + 1))
+      setFullscreenImageIndex((prev) => (prev === project.images.length - 1 ? 0 : prev + 1))
     }
   }
 
