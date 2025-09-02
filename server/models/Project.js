@@ -21,7 +21,7 @@ const projectSchema = new mongoose.Schema({
   },
   area: {
     type: String,
-    required: true
+    default: 'Not specified'
   },
   year: {
     type: String,
@@ -29,11 +29,11 @@ const projectSchema = new mongoose.Schema({
   },
   images: [{
     type: String,
-    required: true
+    default: []
   }],
   coverImage: {
     type: String,
-    required: true
+    default: null
   },
   featured: {
     type: Boolean,
@@ -46,15 +46,18 @@ const projectSchema = new mongoose.Schema({
   },
   client: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   budget: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   duration: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   services: [{
     type: String,

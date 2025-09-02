@@ -1,9 +1,11 @@
+require('dotenv').config(); // Load environment variables
 const connectDB = require('./config/database');
 const { Project } = require('./models');
 
 async function testMongoDB() {
   try {
     console.log('🔄 Testing MongoDB connection...');
+    console.log('📡 MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
     
     // Try to connect to MongoDB
     await connectDB();
