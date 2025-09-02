@@ -7,8 +7,29 @@ const nodemailer = require("nodemailer")
 require("dotenv").config() // Load environment variables
 const { createBackup } = require("./data-backup")
 
+// MongoDB connection and models
+const connectDB = require("./config/database")
+const { Project, TeamMember, Blog, Client, Contact } = require("./models")
+const projectService = require("./services/projectService")
+
 const app = express()
 const PORT = process.env.PORT || 8080
+
+// Initialize MongoDB connection
+let isMongoConnected = false
+const initializeMongoDB = async () => {
+  try {
+    await connectDB()
+    isMongoConnected = true
+    console.log('✅ MongoDB initialized successfully')
+  } catch (error) {
+    console.log('⚠️ MongoDB not available, falling back to file-based storage')
+    isMongoConnected = false
+  }
+}
+
+// Initialize MongoDB on startup
+initializeMongoDB()
 
 // Get allowed origins from environment variables
 const allowedOrigins = (() => {
@@ -93,12 +114,45 @@ const verifyEmailConnection = async () => {
   }
 }
 
-// Load data from files
-const teamMembers = loadData(TEAM_MEMBERS_FILE)
-const projects = loadData(PROJECTS_FILE)
-const blogPosts = loadData(BLOGS_FILE)
-const clients = loadData(CLIENTS_FILE)
-const contacts = loadData(CONTACTS_FILE)
+// Load data from files (fallback when MongoDB is not available)
+let teamMembers = []
+let projects = []
+let blogPosts = []
+let clients = []
+let contacts = []
+
+// Function to load data from MongoDB or fallback to files
+const loadDataFromSource = async () => {
+  if (isMongoConnected) {
+    try {
+      console.log('📊 Loading data from MongoDB...')
+      teamMembers = await TeamMember.find({}).sort({ order: 1 })
+      projects = await Project.find({}).sort({ createdAt: -1 })
+      blogPosts = await Blog.find({ published: true }).sort({ createdAt: -1 })
+      clients = await Client.find({ active: true }).sort({ order: 1 })
+      contacts = await Contact.find({}).sort({ createdAt: -1 })
+      console.log('✅ Data loaded from MongoDB')
+    } catch (error) {
+      console.error('❌ Error loading from MongoDB, falling back to files:', error)
+      loadDataFromFiles()
+    }
+  } else {
+    loadDataFromFiles()
+  }
+}
+
+const loadDataFromFiles = () => {
+  console.log('📁 Loading data from files...')
+  teamMembers = loadData(TEAM_MEMBERS_FILE)
+  projects = loadData(PROJECTS_FILE)
+  blogPosts = loadData(BLOGS_FILE)
+  clients = loadData(CLIENTS_FILE)
+  contacts = loadData(CONTACTS_FILE)
+  console.log('✅ Data loaded from files')
+}
+
+// Initialize data loading
+loadDataFromSource()
 
 // Migration: Fix existing projects without cover images
 function migrateProjectCoverImages() {
@@ -427,49 +481,119 @@ app.post("/api/backup", (req, res) => {
 
 // PROJECT ROUTES
 // GET all projects with optional pagination
-app.get("/api/projects", (req, res) => {
-  const page = Number.parseInt(req.query.page) || 1
-  const limit = Number.parseInt(req.query.limit) || 0 // 0 means no limit (return all)
-  const startIndex = (page - 1) * limit
+app.get("/api/projects", async (req, res) => {
+  try {
+    const page = Number.parseInt(req.query.page) || 1
+    const limit = Number.parseInt(req.query.limit) || 0 // 0 means no limit (return all)
+    const startIndex = (page - 1) * limit
 
-  let result = projects
-  let totalPages = 1
+    let result, totalCount
 
-  if (limit > 0) {
-    result = projects.slice(startIndex, startIndex + limit)
-    totalPages = Math.ceil(projects.length / limit)
+    if (isMongoConnected) {
+      // Use MongoDB
+      if (limit > 0) {
+        result = await Project.find({})
+          .sort({ createdAt: -1 })
+          .skip(startIndex)
+          .limit(limit)
+        totalCount = await Project.countDocuments({})
+      } else {
+        result = await Project.find({}).sort({ createdAt: -1 })
+        totalCount = result.length
+      }
+    } else {
+      // Fallback to file-based storage
+      let projects = loadData(PROJECTS_FILE)
+      if (limit > 0) {
+        result = projects.slice(startIndex, startIndex + limit)
+        totalCount = projects.length
+      } else {
+        result = projects
+        totalCount = projects.length
+      }
+    }
+
+    const totalPages = limit > 0 ? Math.ceil(totalCount / limit) : 1
+
+    res.json({
+      success: true,
+      data: result,
+      count: result.length,
+      total: totalCount,
+      page: limit > 0 ? page : 1,
+      totalPages: totalPages,
+      hasMore: limit > 0 ? page < totalPages : false,
+    })
+  } catch (error) {
+    console.error("❌ Error fetching projects:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch projects",
+      details: error.message
+    })
   }
-
-  res.json({
-    success: true,
-    data: result,
-    count: result.length,
-    total: projects.length,
-    page: limit > 0 ? page : 1,
-    totalPages: totalPages,
-    hasMore: limit > 0 ? page < totalPages : false,
-  })
 })
 
 // GET featured projects (for hero banner) - MUST come before /:id route
-app.get("/api/projects/featured", (req, res) => {
-  const featuredProjects = projects.filter((project) => project.featured === true).slice(0, 8)
-  res.json({
-    success: true,
-    data: featuredProjects,
-    count: featuredProjects.length,
-  })
+app.get("/api/projects/featured", async (req, res) => {
+  try {
+    let featuredProjects
+
+    if (isMongoConnected) {
+      featuredProjects = await Project.find({ featured: true })
+        .sort({ createdAt: -1 })
+        .limit(8)
+    } else {
+      // Fallback to file-based storage
+      const projects = loadData(PROJECTS_FILE)
+      featuredProjects = projects.filter((project) => project.featured === true).slice(0, 8)
+    }
+
+    res.json({
+      success: true,
+      data: featuredProjects,
+      count: featuredProjects.length,
+    })
+  } catch (error) {
+    console.error("❌ Error fetching featured projects:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch featured projects",
+      details: error.message
+    })
+  }
 })
 
 // GET single project by ID - MUST come after /featured route
-app.get("/api/projects/:id", (req, res) => {
+app.get("/api/projects/:id", async (req, res) => {
   try {
     const projectId = req.params.id
     
-    // Try to find project by both string and number ID for backward compatibility
-    const project = projects.find(p => {
-      return p.id === Number.parseInt(projectId) || p.id === projectId || p.id.toString() === projectId
-    })
+    let project
+
+    if (isMongoConnected) {
+      // Try to find by MongoDB ObjectId first
+      if (projectId.match(/^[0-9a-fA-F]{24}$/)) {
+        project = await Project.findById(projectId)
+      }
+      
+      // If not found by ObjectId, try to find by legacy ID
+      if (!project) {
+        project = await Project.findOne({ 
+          $or: [
+            { id: Number.parseInt(projectId) },
+            { id: projectId },
+            { id: projectId.toString() }
+          ]
+        })
+      }
+    } else {
+      // Fallback to file-based storage
+      const projects = loadData(PROJECTS_FILE)
+      project = projects.find(p => {
+        return p.id === Number.parseInt(projectId) || p.id === projectId || p.id.toString() === projectId
+      })
+    }
     
     if (!project) {
       return res.status(404).json({
@@ -494,13 +618,12 @@ app.get("/api/projects/:id", (req, res) => {
 })
 
 // POST new project
-app.post("/api/projects", upload.array('images', 10), (req, res) => {
+app.post("/api/projects", upload.array('images', 10), async (req, res) => {
   try {
     console.log("📝 Creating new project:", req.body)
     
     // Parse project data from request body
     const projectData = {
-      id: Date.now(),
       title: req.body.title,
       description: req.body.description,
       category: req.body.category,
@@ -509,19 +632,17 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
       client: req.body.client,
       designTeam: req.body.designTeam, 
       featured: req.body.featured === 'true' || req.body.featured === true,
-      status: req.body.status || 'completed',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      status: req.body.status || 'completed'
     }
     
     // Handle uploaded images
     if (req.files && req.files.length > 0) {
       projectData.images = req.files.map(file => `/uploads/${file.filename}`)
       // Set the first uploaded image as the cover image
-      projectData.image = projectData.images[0]
+      projectData.coverImage = projectData.images[0]
     } else {
       projectData.images = []
-      projectData.image = null
+      projectData.coverImage = null
     }
     
     // Validate required fields
@@ -532,17 +653,28 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
       })
     }
     
-    // Add to projects array
-    projects.push(projectData)
-    
-    // Save to file
-    saveData(PROJECTS_FILE, projects)
-    
-    console.log("✅ Project created successfully:", projectData.title)
+    let savedProject
+
+    if (isMongoConnected) {
+      // Save to MongoDB
+      const project = new Project(projectData)
+      savedProject = await project.save()
+      console.log("✅ Project created successfully in MongoDB:", savedProject.title)
+    } else {
+      // Fallback to file-based storage
+      const projects = loadData(PROJECTS_FILE)
+      projectData.id = Date.now()
+      projectData.createdAt = new Date().toISOString()
+      projectData.updatedAt = new Date().toISOString()
+      projects.push(projectData)
+      saveData(PROJECTS_FILE, projects)
+      savedProject = projectData
+      console.log("✅ Project created successfully in file:", savedProject.title)
+    }
     
     res.status(201).json({
       success: true,
-      data: projectData,
+      data: savedProject,
       message: "Project created successfully"
     })
     
@@ -557,61 +689,112 @@ app.post("/api/projects", upload.array('images', 10), (req, res) => {
 })
 
 // PUT update existing project
-app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
+app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
   try {
-    const projectId = parseInt(req.params.id)
-    const projectIndex = projects.findIndex(p => p.id === projectId)
-    
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
-    }
-    
+    const projectId = req.params.id
     console.log("📝 Updating project:", projectId, req.body)
     
-    // Get existing project
-    const existingProject = projects[projectIndex]
-    
-    // Parse updated data from request body
-    const updatedData = {
-      ...existingProject,
-      title: req.body.title || existingProject.title,
-      description: req.body.description || existingProject.description,
-      category: req.body.category || existingProject.category,
-      location: req.body.location || existingProject.location,
-      year: req.body.year || existingProject.year,
-      client: req.body.client || existingProject.client,
-      designTeam: req.body.designTeam || existingProject.designTeam,
-      featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
-      status: req.body.status || existingProject.status,
-      updatedAt: new Date().toISOString()
-    }
-    
-    // Handle uploaded images
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map(file => `/uploads/${file.filename}`)
-      // Keep existing images and add new ones
-      updatedData.images = [...(existingProject.images || []), ...newImages]
-      
-      // If no cover image exists, set the first image as cover
-      if (!updatedData.image && updatedData.images.length > 0) {
-        updatedData.image = updatedData.images[0]
+    let existingProject, updatedProject
+
+    if (isMongoConnected) {
+      // Find project in MongoDB
+      if (projectId.match(/^[0-9a-fA-F]{24}$/)) {
+        existingProject = await Project.findById(projectId)
+      } else {
+        existingProject = await Project.findOne({ 
+          $or: [
+            { id: Number.parseInt(projectId) },
+            { id: projectId },
+            { id: projectId.toString() }
+          ]
+        })
       }
+      
+      if (!existingProject) {
+        return res.status(404).json({
+          success: false,
+          error: "Project not found"
+        })
+      }
+
+      // Parse updated data from request body
+      const updatedData = {
+        title: req.body.title || existingProject.title,
+        description: req.body.description || existingProject.description,
+        category: req.body.category || existingProject.category,
+        location: req.body.location || existingProject.location,
+        year: req.body.year || existingProject.year,
+        client: req.body.client || existingProject.client,
+        designTeam: req.body.designTeam || existingProject.designTeam,
+        featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
+        status: req.body.status || existingProject.status
+      }
+      
+      // Handle uploaded images
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map(file => `/uploads/${file.filename}`)
+        // Keep existing images and add new ones
+        updatedData.images = [...(existingProject.images || []), ...newImages]
+        
+        // If no cover image exists, set the first image as cover
+        if (!updatedData.coverImage && updatedData.images.length > 0) {
+          updatedData.coverImage = updatedData.images[0]
+        }
+      }
+
+      updatedProject = await Project.findByIdAndUpdate(projectId, updatedData, { new: true })
+      console.log("✅ Project updated successfully in MongoDB:", updatedProject.title)
+    } else {
+      // Fallback to file-based storage
+      const projects = loadData(PROJECTS_FILE)
+      const projectIndex = projects.findIndex(p => p.id === parseInt(projectId))
+      
+      if (projectIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Project not found"
+        })
+      }
+      
+      existingProject = projects[projectIndex]
+      
+      // Parse updated data from request body
+      const updatedData = {
+        ...existingProject,
+        title: req.body.title || existingProject.title,
+        description: req.body.description || existingProject.description,
+        category: req.body.category || existingProject.category,
+        location: req.body.location || existingProject.location,
+        year: req.body.year || existingProject.year,
+        client: req.body.client || existingProject.client,
+        designTeam: req.body.designTeam || existingProject.designTeam,
+        featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
+        status: req.body.status || existingProject.status,
+        updatedAt: new Date().toISOString()
+      }
+      
+      // Handle uploaded images
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map(file => `/uploads/${file.filename}`)
+        // Keep existing images and add new ones
+        updatedData.images = [...(existingProject.images || []), ...newImages]
+        
+        // If no cover image exists, set the first image as cover
+        if (!updatedData.image && updatedData.images.length > 0) {
+          updatedData.image = updatedData.images[0]
+        }
+      }
+      
+      // Update the project in the array
+      projects[projectIndex] = updatedData
+      saveData(PROJECTS_FILE, projects)
+      updatedProject = updatedData
+      console.log("✅ Project updated successfully in file:", updatedProject.title)
     }
-    
-    // Update the project in the array
-    projects[projectIndex] = updatedData
-    
-    // Save to file
-    saveData(PROJECTS_FILE, projects)
-    
-    console.log("✅ Project updated successfully:", updatedData.title)
     
     res.json({
       success: true,
-      data: updatedData,
+      data: updatedProject,
       message: "Project updated successfully"
     })
     
@@ -626,33 +809,57 @@ app.put("/api/projects/:id", upload.array('images', 10), (req, res) => {
 })
 
 // DELETE project
-app.delete("/api/projects/:id", (req, res) => {
+app.delete("/api/projects/:id", async (req, res) => {
   try {
-    const projectId = parseInt(req.params.id)
-    const projectIndex = projects.findIndex(p => p.id === projectId)
+    const projectId = req.params.id
+    console.log("🗑️ Deleting project:", projectId)
     
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
+    let deletedProject
+
+    if (isMongoConnected) {
+      // Delete from MongoDB
+      if (projectId.match(/^[0-9a-fA-F]{24}$/)) {
+        deletedProject = await Project.findByIdAndDelete(projectId)
+      } else {
+        deletedProject = await Project.findOneAndDelete({ 
+          $or: [
+            { id: Number.parseInt(projectId) },
+            { id: projectId },
+            { id: projectId.toString() }
+          ]
+        })
+      }
+      
+      if (!deletedProject) {
+        return res.status(404).json({
+          success: false,
+          error: "Project not found"
+        })
+      }
+      
+      console.log("✅ Project deleted successfully from MongoDB:", deletedProject.title)
+    } else {
+      // Fallback to file-based storage
+      const projects = loadData(PROJECTS_FILE)
+      const projectIndex = projects.findIndex(p => p.id === parseInt(projectId))
+      
+      if (projectIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Project not found"
+        })
+      }
+      
+      deletedProject = projects[projectIndex]
+      projects.splice(projectIndex, 1)
+      saveData(PROJECTS_FILE, projects)
+      console.log("✅ Project deleted successfully from file:", deletedProject.title)
     }
-    
-    // Get the project before deletion for cleanup
-    const projectToDelete = projects[projectIndex]
-    
-    // Remove project from array
-    projects.splice(projectIndex, 1)
-    
-    // Save updated data to file
-    saveData(PROJECTS_FILE, projects)
-    
-    console.log("🗑️ Project deleted successfully:", projectToDelete.title)
     
     res.json({
       success: true,
-      message: "Project deleted successfully",
-      data: { id: projectId }
+      data: deletedProject,
+      message: "Project deleted successfully"
     })
     
   } catch (error) {
