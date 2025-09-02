@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
-const winston = require('winston');
 
 const connectDB = async () => {
   try {
+    // Check if MONGODB_URI is defined
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is not set');
+    }
+
+    console.log('🔗 Attempting to connect to MongoDB...');
+    console.log('📡 Connection string:', process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')); // Hide credentials in logs
+
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       // Connection options for production
       maxPoolSize: 10, // Maintain up to 10 socket connections
