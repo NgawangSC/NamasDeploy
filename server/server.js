@@ -1184,10 +1184,13 @@ app.put("/api/projects/:id/cover", (req, res) => {
 // PARTNERS ROUTES
 app.get("/api/partners", (req, res) => {
   try {
+    console.log("🔍 Partners route called, Origin:", req.headers.origin)
+    console.log("🔍 Response headers before sending:", res.getHeaders())
     res.json({
       success: true,
       data: partners,
       count: partners.length,
+      debug: "CORS fix test - " + new Date().toISOString()
     })
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch partners" })
