@@ -204,7 +204,7 @@ function HomePage() {
                     <>
                       <div className="project-image">
                         <img 
-                          src={getImageUrl(project.image) || "/images/placeholder.png"} 
+                          src={getImageUrl(project.image || project.coverImage) || "/images/placeholder.png"} 
                           alt={project.alt || project.name} 
                           className="project-img" 
                         />
@@ -228,7 +228,7 @@ function HomePage() {
                       </div>
                       <div className="project-image">
                         <img 
-                          src={getImageUrl(project.image) || "/images/placeholder.png"} 
+                          src={getImageUrl(project.image || project.coverImage) || "/images/placeholder.png"} 
                           alt={project.alt || project.name} 
                           className="project-img" 
                         />

@@ -204,7 +204,7 @@ const HospitalityPage = () => {
             <div key={slideIndex} className="hospitality-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="hospitality-project-half">
-                                      <div className="hospitality-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                                      <div className="hospitality-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image || project.coverImage)})` }}>
                     <div className="hospitality-project-overlay-content">
                       <div className="hospitality-project-text-content">
                         <h2 className="hospitality-project-title">{project.title}</h2>

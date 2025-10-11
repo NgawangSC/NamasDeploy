@@ -196,7 +196,7 @@ const DesignPage = () => {
             <div key={slideIndex} className="projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="project-half">
-                  <div className="project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                  <div className="project-background" style={{ backgroundImage: `url(${getImageUrl(project.image || project.coverImage)})` }}>
                     <div className="project-overlay">
                       <div className="project-content">
                         <h2 className="project-title">{project.title}</h2>

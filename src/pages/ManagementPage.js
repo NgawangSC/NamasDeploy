@@ -204,7 +204,7 @@ const ManagementPage = () => {
             <div key={slideIndex} className="management-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="management-project-half">
-                                      <div className="management-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                                      <div className="management-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image || project.coverImage)})` }}>
                     <div className="management-project-overlay-content">
                       <div className="management-project-text-content">
                         <h2 className="management-project-title">{project.title}</h2>

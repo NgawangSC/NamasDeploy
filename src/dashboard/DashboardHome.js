@@ -107,10 +107,10 @@ const DashboardHome = () => {
             </Link>
           </div>
           <div className="recent-items">
-            {recentProjects.length > 0 ? (
+              {recentProjects.length > 0 ? (
               recentProjects.map((project) => (
                 <div key={project.id} className="recent-item">
-                  <img src={getImageUrl(project.image) || "/placeholder.svg"} alt={project.title || "Project"} />
+                  <img src={getImageUrl(project.image || project.coverImage) || "/placeholder.svg"} alt={project.title || "Project"} />
                   <div className="item-info">
                     <h4>{project.title || "Untitled Project"}</h4>
                     <p>
@@ -165,7 +165,7 @@ const DashboardHome = () => {
             </Link>
           </div>
           <div className="recent-items">
-            {recentClients.length > 0 ? (
+              {recentClients.length > 0 ? (
               recentClients.map((client) => (
                 <div key={client.id} className="recent-item">
                   <img src={getImageUrl(client.logo) || "/placeholder.svg"} alt={client.name || "Client"} />

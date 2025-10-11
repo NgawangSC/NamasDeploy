@@ -349,7 +349,7 @@ const HeroBannerManager = () => {
             <div key={project.id} className="featured-project-card">
               <div className="project-image">
                 <img 
-                  src={getImageUrl(project.image) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
+                  src={getImageUrl(project.image || project.coverImage) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
                   alt={project.title} 
                 />
               </div>
@@ -385,7 +385,7 @@ const HeroBannerManager = () => {
               <div key={project.id} className={`project-card ${featuredProjectIds.has(project.id) ? 'featured' : ''}`}>
                 <div className="project-image">
                   <img 
-                    src={getImageUrl(project.image) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
+                    src={getImageUrl(project.image || project.coverImage) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
                     alt={project.title} 
                   />
                   {featuredProjectIds.has(project.id) && (

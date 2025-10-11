@@ -69,7 +69,7 @@ const HeroBanner = ({ featuredProjects = [] }) => {
             key={project.id}
             className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
             style={{
-              backgroundImage: `url(${getImageUrl(project.image) || '/images/placeholder.png'})`
+              backgroundImage: `url(${getImageUrl(project.image || project.coverImage) || '/images/placeholder.png'})`
             }}
             onClick={() => handleProjectClick(project.id)}
           >

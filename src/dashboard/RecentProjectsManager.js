@@ -89,7 +89,7 @@ const RecentProjectsManager = () => {
             <div key={project.id} className="recent-project-card">
               <div className="project-image">
                 <img 
-                  src={getImageUrl(project.image) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
+                  src={getImageUrl(project.image || project.coverImage) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
                   alt={project.title} 
                 />
               </div>
@@ -124,7 +124,7 @@ const RecentProjectsManager = () => {
               <div key={project.id} className={`project-card ${project.showInRecent ? 'recent' : ''}`}>
                 <div className="project-image">
                   <img 
-                    src={getImageUrl(project.image) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
+                    src={getImageUrl(project.image || project.coverImage) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
                     alt={project.title} 
                   />
                   {project.showInRecent && (

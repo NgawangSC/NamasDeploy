@@ -186,8 +186,8 @@ const ProjectDetailPage = () => {
   // Handle both single image and multiple images
   const projectImages = project.images && Array.isArray(project.images) && project.images.length > 0 
     ? project.images.map(img => getImageUrl(img))
-    : project.image 
-      ? [getImageUrl(project.image)] 
+    : (project.image || project.coverImage) 
+      ? [getImageUrl(project.image || project.coverImage)] 
       : ["/placeholder.svg"]
 
   const projectDescription = project.description || [project.category, project.location, project.year].filter(Boolean).join(" • ") || "Project by NAMAS Bhutan."

@@ -204,7 +204,7 @@ const LandscapePage = () => {
             <div key={slideIndex} className="landscape-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="landscape-project-half">
-                                      <div className="landscape-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                                      <div className="landscape-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image || project.coverImage)})` }}>
                     <div className="landscape-project-overlay-content">
                       <div className="landscape-project-text-content">
                         <h2 className="landscape-project-title">{project.title}</h2>
