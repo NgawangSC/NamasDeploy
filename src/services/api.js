@@ -153,6 +153,49 @@ class ApiService {
     })
   }
 
+  // Partners API
+  static async getPartners() {
+    return this.request("/partners")
+  }
+
+  static async createPartner(partnerData) {
+    const formData = new FormData()
+
+    Object.keys(partnerData).forEach((key) => {
+      if (key !== "logo") {
+        formData.append(key, partnerData[key])
+      }
+    })
+
+    if (partnerData.logo) {
+      formData.append("logo", partnerData.logo)
+    }
+
+    return this.requestMultipart("/partners", formData)
+  }
+
+  static async updatePartner(id, partnerData) {
+    const formData = new FormData()
+
+    Object.keys(partnerData).forEach((key) => {
+      if (key !== "logo") {
+        formData.append(key, partnerData[key])
+      }
+    })
+
+    if (partnerData.logo) {
+      formData.append("logo", partnerData.logo)
+    }
+
+    return this.requestMultipart(`/partners/${id}`, formData, "PUT")
+  }
+
+  static async deletePartner(id) {
+    return this.request(`/partners/${id}`, {
+      method: "DELETE",
+    })
+  }
+
   // Projects API
   static async getProjects() {
     return this.request("/projects")

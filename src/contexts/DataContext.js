@@ -43,6 +43,8 @@ export const DataProvider = ({ children }) => {
     blogs: [],
     // Clients data - will be fetched from API
     clients: [],
+    // Partners data - will be fetched from API
+    partners: [],
     // Team members data - will be fetched from API
     teamMembers: [],
     // Media files
@@ -63,6 +65,7 @@ export const DataProvider = ({ children }) => {
     featuredProjects: true,
     blogs: false,
     clients: true,
+    partners: true,
     teamMembers: false
   });
 
@@ -75,6 +78,7 @@ export const DataProvider = ({ children }) => {
     featuredProjects: null,
     blogs: null,
     clients: null,
+    partners: null,
     teamMembers: null
   });
 
@@ -87,10 +91,11 @@ export const DataProvider = ({ children }) => {
         setData(prev => ({
           ...prev,
           ...parsed,
-          // Don't restore projects, blogs, clients, and teamMembers from localStorage, fetch from API instead
+          // Don't restore projects, blogs, clients, partners, and teamMembers from localStorage, fetch from API instead
           projects: [],
           blogs: [],
           clients: [],
+          partners: [],
           teamMembers: []
         }));
       } catch (error) {
@@ -99,9 +104,9 @@ export const DataProvider = ({ children }) => {
     }
   }, []);
 
-  // Save data to localStorage whenever data changes (excluding projects, blogs, clients, and teamMembers)
+  // Save data to localStorage whenever data changes (excluding projects, blogs, clients, partners, and teamMembers)
   useEffect(() => {
-    const { projects, blogs, clients, teamMembers, ...dataToSave } = data;
+    const { projects, blogs, clients, partners, teamMembers, ...dataToSave } = data;
     localStorage.setItem('websiteData', JSON.stringify(dataToSave));
   }, [data]);
 
@@ -192,6 +197,24 @@ export const DataProvider = ({ children }) => {
       setError(prev => ({ ...prev, clients: err.message }));
     } finally {
       setLoading(prev => ({ ...prev, clients: false }));
+    }
+  }, []);
+
+  const fetchPartners = useCallback(async () => {
+    try {
+      setLoading(prev => ({ ...prev, partners: true }));
+      setError(prev => ({ ...prev, partners: null }));
+      const response = await ApiService.getPartners();
+      const apiPartners = response.data || [];
+      setData(prev => ({
+        ...prev,
+        partners: apiPartners
+      }));
+    } catch (err) {
+      console.error('Error fetching partners:', err);
+      setError(prev => ({ ...prev, partners: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, partners: false }));
     }
   }, []);
 
@@ -563,6 +586,50 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Partners CRUD
+  const addPartner = async (partner) => {
+    try {
+      const response = await ApiService.createPartner(partner);
+      const newPartner = response.data;
+      setData(prev => ({
+        ...prev,
+        partners: [...prev.partners, newPartner]
+      }));
+      return newPartner;
+    } catch (err) {
+      console.error('Error creating partner:', err);
+      throw err;
+    }
+  };
+
+  const updatePartner = async (id, updates) => {
+    try {
+      const response = await ApiService.updatePartner(id, updates);
+      const updatedPartner = response.data;
+      setData(prev => ({
+        ...prev,
+        partners: prev.partners.map(p => p.id === id ? updatedPartner : p)
+      }));
+      return updatedPartner;
+    } catch (err) {
+      console.error('Error updating partner:', err);
+      throw err;
+    }
+  };
+
+  const deletePartner = async (id) => {
+    try {
+      await ApiService.deletePartner(id);
+      setData(prev => ({
+        ...prev,
+        partners: prev.partners.filter(p => p.id !== id)
+      }));
+    } catch (err) {
+      console.error('Error deleting partner:', err);
+      throw err;
+    }
+  };
+
   const addTeamMember = async (member) => {
     try {
       const response = await ApiService.createTeamMember(member);
@@ -638,8 +705,9 @@ export const DataProvider = ({ children }) => {
     fetchFeaturedProjects();
     fetchBlogs();
     fetchClients();
+    fetchPartners();
     fetchTeamMembers();
-  }, [fetchProjects, fetchFeaturedProjects, fetchBlogs, fetchClients, fetchTeamMembers]);
+  }, [fetchProjects, fetchFeaturedProjects, fetchBlogs, fetchClients, fetchPartners, fetchTeamMembers]);
 
   const contextValue = {
     data,
@@ -658,6 +726,9 @@ export const DataProvider = ({ children }) => {
     addClient,
     updateClient,
     deleteClient,
+    addPartner,
+    updatePartner,
+    deletePartner,
     addTeamMember,
     updateTeamMember,
     deleteTeamMember,
@@ -667,6 +738,7 @@ export const DataProvider = ({ children }) => {
     fetchFeaturedProjects,
     fetchBlogs,
     fetchClients,
+    fetchPartners,
     fetchTeamMembers,
     getRecentProjects,
     // Export individual data for easier access
@@ -674,6 +746,7 @@ export const DataProvider = ({ children }) => {
     featuredProjects: data.featuredProjects,
     blogs: data.blogs,
     clients: data.clients,
+    partners: data.partners,
     teamMembers: data.teamMembers,
     media: data.media
   };

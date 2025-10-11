@@ -9,7 +9,7 @@ const { createBackup } = require("./data-backup")
 
 // MongoDB connection and models
 const connectDB = require("./config/database")
-const { Project, TeamMember, Blog, Client, Contact } = require("./models")
+const { Project, TeamMember, Blog, Client, Contact, Partner } = require("./models")
 const projectService = require("./services/projectService")
 
 const app = express()
@@ -72,6 +72,7 @@ const PROJECTS_FILE = path.join(DATA_DIR, "projects.json")
 const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
 const CLIENTS_FILE = path.join(DATA_DIR, "clients.json")
 const CONTACTS_FILE = path.join(DATA_DIR, "contacts.json")
+const PARTNERS_FILE = path.join(DATA_DIR, "partners.json")
 
 // Startup diagnostics
 console.log("Runtime configuration:")
@@ -120,6 +121,7 @@ let projects = []
 let blogPosts = []
 let clients = []
 let contacts = []
+let partners = []
 
 // Function to load data from MongoDB or fallback to files
 const loadDataFromSource = async () => {
@@ -130,6 +132,7 @@ const loadDataFromSource = async () => {
       projects = await Project.find({}).sort({ createdAt: -1 })
       blogPosts = await Blog.find({ published: true }).sort({ createdAt: -1 })
       clients = await Client.find({ active: true }).sort({ order: 1 })
+      partners = await Partner.find({ active: true }).sort({ order: 1 })
       contacts = await Contact.find({}).sort({ createdAt: -1 })
       console.log('✅ Data loaded from MongoDB')
     } catch (error) {
@@ -148,6 +151,7 @@ const loadDataFromFiles = () => {
   blogPosts = loadData(BLOGS_FILE)
   clients = loadData(CLIENTS_FILE)
   contacts = loadData(CONTACTS_FILE)
+  partners = loadData(PARTNERS_FILE)
   console.log('✅ Data loaded from files')
 }
 
@@ -207,7 +211,7 @@ if (!fs.existsSync(DATA_DIR)) {
 try {
   const defaultDataDir = path.join(__dirname, "data")
   if (path.resolve(DATA_DIR) !== path.resolve(defaultDataDir)) {
-    const filesToSeed = ["projects.json", "blogs.json", "clients.json", "contacts.json", "team-members.json"]
+    const filesToSeed = ["projects.json", "blogs.json", "clients.json", "contacts.json", "team-members.json", "partners.json"]
     filesToSeed.forEach((fileName) => {
       const targetPath = path.join(DATA_DIR, fileName)
       const defaultPath = path.join(defaultDataDir, fileName)
@@ -441,6 +445,10 @@ app.get("/api", (req, res) => {
       "POST /api/clients",
       "PUT /api/clients/:id",
       "DELETE /api/clients/:id",
+      "GET /api/partners",
+      "POST /api/partners",
+      "PUT /api/partners/:id",
+      "DELETE /api/partners/:id",
       "GET /api/team-members",
       "POST /api/team-members",
       "PUT /api/team-members/:id",
@@ -1858,6 +1866,10 @@ app.use("*", (req, res) => {
       "POST /api/clients",
       "PUT /api/clients/:id",
       "DELETE /api/clients/:id",
+      "GET /api/partners",
+      "POST /api/partners",
+      "PUT /api/partners/:id",
+      "DELETE /api/partners/:id",
       "GET /api/team-members",
       "POST /api/team-members",
       "PUT /api/team-members/:id",
@@ -1878,7 +1890,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
   console.log(`📡 Server URL: http://0.0.0.0:${PORT}`)
   console.log(
-    `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${teamMembers.length} team members, ${contacts.length} contacts`,
+    `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${partners.length} partners, ${teamMembers.length} team members, ${contacts.length} contacts`,
   )
   
   // Verify email connection

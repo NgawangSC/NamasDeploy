@@ -36,6 +36,7 @@ import HeroBannerManager from "./dashboard/HeroBannerManager"
 import RecentProjectsManager from "./dashboard/RecentProjectsManager"
 import BlogsManager from "./dashboard/BlogsManager"
 import ClientsManager from "./dashboard/ClientsManager"
+import PartnersManager from "./dashboard/PartnersManager"
 import TeamManager from "./dashboard/TeamManager"
 import MediaManager from "./dashboard/MediaManager"
 
@@ -80,6 +81,7 @@ function DashboardRoute({ isAuthenticated, setIsAuthenticated }) {
             <Route path="/recent-projects" element={<RecentProjectsManager />} />
             <Route path="/blogs" element={<BlogsManager />} />
             <Route path="/clients" element={<ClientsManager />} />
+            <Route path="/partners" element={<PartnersManager />} />
             <Route path="/team" element={<TeamManager />} />
             <Route path="/media" element={<MediaManager />} />
           </Routes>

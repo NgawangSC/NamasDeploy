@@ -11,7 +11,7 @@ import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
-  const { getRecentProjects, clients, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects } = useData()
+  const { getRecentProjects, clients, partners, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, fetchPartners } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
@@ -23,7 +23,8 @@ function HomePage() {
     console.log('HomePage: Fetching initial data...')
     fetchClients()
     fetchFeaturedProjects()
-  }, [fetchClients, fetchFeaturedProjects])
+    fetchPartners()
+  }, [fetchClients, fetchFeaturedProjects, fetchPartners])
 
   // Debug featuredProjects
   useEffect(() => {
@@ -42,6 +43,7 @@ function HomePage() {
         fetchClients()
         fetchFeaturedProjects()
         fetchProjects()
+        fetchPartners()
       }, 300)
     }
 
@@ -176,6 +178,8 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      
 
       {/* Projects Section */}
       <section className="projects-section">
@@ -352,6 +356,68 @@ function HomePage() {
             ) : (
               <div className="no-clients">
                 <p>No clients available. Add some clients in the dashboard to see them here!</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Our Partners Section */}
+      <section className="partners-section">
+        <div className="clients-container">
+          <div className="clients-header">
+            <h2 style={{ fontWeight: 600, color: '#333', margin: 0 }}>Our Partners</h2>
+          </div>
+          <div className="clients-carousel">
+            {loading.partners ? (
+              <div className="clients-loading">
+                <MiniLoadingAnimation 
+                  size="medium" 
+                  text="Loading partners..." 
+                  variant="minimal"
+                  className="mini-loading-inline"
+                />
+              </div>
+            ) : partners.length > 0 ? (
+              <>
+                <div className="clients-grid">
+                  {partners
+                    .slice(0, 3)
+                    .map((partner) => (
+                      <div key={partner.id} className="client-card">
+                        <div className="client-logo">
+                          <img 
+                            src={getImageUrl(partner.logo)} 
+                            alt={partner.name}
+                            onError={(e) => {
+                              e.target.src = "/images/placeholder-logo.png"
+                            }}
+                          />
+                          <div className="client-name">{partner.name}</div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                <div className="clients-grid-responsive">
+                  {partners.slice(0, 1).map((partner) => (
+                    <div key={partner.id} className="client-card">
+                      <div className="client-logo">
+                        <img 
+                          src={getImageUrl(partner.logo)} 
+                          alt={partner.name}
+                          onError={(e) => {
+                            e.target.src = "/images/placeholder-logo.png"
+                          }}
+                        />
+                        <div className="client-name">{partner.name}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="no-clients">
+                <p>No partners available. Add some partners in the dashboard to see them here!</p>
               </div>
             )}
           </div>
