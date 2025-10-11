@@ -295,6 +295,17 @@ const corsOptions = {
 // Apply CORS middleware - use the standard cors package
 app.use(cors(corsOptions))
 
+// Manual CORS middleware to ensure headers are always set
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin)
+    res.header('Access-Control-Allow-Credentials', 'true')
+    res.header('Vary', 'Origin')
+  }
+  next()
+})
+
 // Add request logging middleware EARLY
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.url} from ${req.ip}`)
