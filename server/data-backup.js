@@ -29,7 +29,7 @@ const createBackup = () => {
     }
     
     // Copy all data files to backup directory
-    const dataFiles = ['projects.json', 'blogs.json', 'clients.json', 'contacts.json', 'team-members.json']
+    const dataFiles = ['projects.json', 'blogs.json', 'clients.json', 'contacts.json', 'team-members.json', 'partners.json']
     
     dataFiles.forEach(file => {
       const sourcePath = path.join(DATA_DIR, file)

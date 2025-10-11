@@ -5,12 +5,13 @@ import { getImageUrl } from "../utils/imageUtils"
 import "./DashboardHome.css"
 
 const DashboardHome = () => {
-  const { projects, blogs, clients, teamMembers, fetchClients, fetchBlogs, fetchTeamMembers } = useData()
+  const { projects, blogs, clients, partners, teamMembers, fetchClients, fetchBlogs, fetchTeamMembers, fetchPartners } = useData()
 
   // Add default empty arrays to prevent undefined errors
   const safeProjects = projects || []
   const safeBlogs = blogs || []
   const safeClients = clients || []
+  const safePartners = partners || []
   const safeTeamMembers = teamMembers || []
 
   const stats = [
@@ -43,6 +44,13 @@ const DashboardHome = () => {
       color: "#8b5cf6",
     },
     {
+      title: "Total Partners",
+      count: safePartners.length,
+      icon: "🤝",
+      link: "/dashboard/partners",
+      color: "#06b6d4",
+    },
+    {
       title: "Team Members",
       count: safeTeamMembers.length,
       icon: "👥",
@@ -64,10 +72,13 @@ const DashboardHome = () => {
     .sort((a, b) => new Date(b.createdAt || b.updatedAt || b.date || 0) - new Date(a.createdAt || a.updatedAt || a.date || 0))
     .slice(0, 3)
 
-  // Fetch clients, blogs, and team members when component mounts
+  // Fetch clients, partners, blogs, and team members when component mounts
   useEffect(() => {
     if (clients.length === 0) {
       fetchClients()
+    }
+    if (partners.length === 0) {
+      fetchPartners()
     }
     if (blogs.length === 0) {
       fetchBlogs()
@@ -75,7 +86,7 @@ const DashboardHome = () => {
     if (teamMembers.length === 0) {
       fetchTeamMembers()
     }
-  }, [clients.length, blogs.length, teamMembers.length, fetchClients, fetchBlogs, fetchTeamMembers])
+  }, [clients.length, partners.length, blogs.length, teamMembers.length, fetchClients, fetchPartners, fetchBlogs, fetchTeamMembers])
 
   return (
     <div className="dashboard-home">
