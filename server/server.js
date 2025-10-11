@@ -174,8 +174,12 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-// Your existing partners logic
-app.get("/api/partners", (req, res) => {
+// Explicit preflight handlers for partners endpoints
+app.options("/api/partners", cors(corsOptions))
+app.options("/api/partners/:id", cors(corsOptions))
+
+// Your existing partners logic with explicit CORS per-route
+app.get("/api/partners", cors(corsOptions), (req, res) => {
   try {
     res.json({
       success: true,
@@ -188,7 +192,7 @@ app.get("/api/partners", (req, res) => {
 })
 
 // POST create new partner
-app.post("/api/partners", upload.single('logo'), (req, res) => {
+app.post("/api/partners", cors(corsOptions), upload.single('logo'), (req, res) => {
   try {
     const parsedOrder = Number.parseInt(req.body.order)
     const isActive = req.body.active !== undefined ? (req.body.active === 'true' || req.body.active === true) : true
@@ -226,7 +230,7 @@ app.post("/api/partners", upload.single('logo'), (req, res) => {
 })
 
 // PUT update existing partner
-app.put("/api/partners/:id", upload.single('logo'), (req, res) => {
+app.put("/api/partners/:id", cors(corsOptions), upload.single('logo'), (req, res) => {
   try {
     const partnerId = Number.parseInt(req.params.id)
     const partnerIndex = partners.findIndex(p => p.id === partnerId)
@@ -276,7 +280,7 @@ app.put("/api/partners/:id", upload.single('logo'), (req, res) => {
 })
 
 // DELETE partner
-app.delete("/api/partners/:id", (req, res) => {
+app.delete("/api/partners/:id", cors(corsOptions), (req, res) => {
   try {
     const partnerId = Number.parseInt(req.params.id)
     const partnerIndex = partners.findIndex(p => p.id === partnerId)
@@ -665,7 +669,7 @@ app.post("/api/backup", (req, res) => {
 
 // PROJECT ROUTES
 // GET all projects with optional pagination
-app.get("/api/projects", async (req, res) => {
+app.get("/api/projects", cors(corsOptions), async (req, res) => {
   try {
     const page = Number.parseInt(req.query.page) || 1
     const limit = Number.parseInt(req.query.limit) || 0 // 0 means no limit (return all)
@@ -725,7 +729,7 @@ app.get("/api/projects", async (req, res) => {
 })
 
 // GET featured projects (for hero banner) - MUST come before /:id route
-app.get("/api/projects/featured", async (req, res) => {
+app.get("/api/projects/featured", cors(corsOptions), async (req, res) => {
   try {
     let featuredProjects
 
@@ -762,7 +766,7 @@ app.get("/api/projects/featured", async (req, res) => {
 })
 
 // GET single project by ID - MUST come after /featured route
-app.get("/api/projects/:id", async (req, res) => {
+app.get("/api/projects/:id", cors(corsOptions), async (req, res) => {
   try {
     const projectId = req.params.id
     
@@ -815,7 +819,7 @@ app.get("/api/projects/:id", async (req, res) => {
 })
 
 // POST new project
-app.post("/api/projects", upload.array('images', 10), async (req, res) => {
+app.post("/api/projects", cors(corsOptions), upload.array('images', 10), async (req, res) => {
   try {
     console.log("📝 Creating new project:", req.body)
     
@@ -910,7 +914,7 @@ app.post("/api/projects", upload.array('images', 10), async (req, res) => {
 })
 
 // PUT update existing project
-app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
+app.put("/api/projects/:id", cors(corsOptions), upload.array('images', 10), async (req, res) => {
   try {
     const projectId = req.params.id
     console.log("📝 Updating project:", projectId, req.body)
@@ -1064,7 +1068,7 @@ app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
 })
 
 // DELETE project
-app.delete("/api/projects/:id", async (req, res) => {
+app.delete("/api/projects/:id", cors(corsOptions), async (req, res) => {
   try {
     const projectId = req.params.id
     console.log("🗑️ Deleting project:", projectId)
@@ -1128,7 +1132,7 @@ app.delete("/api/projects/:id", async (req, res) => {
 })
 
 // POST add images to existing project
-app.post("/api/projects/:id/images", upload.array('images', 10), (req, res) => {
+app.post("/api/projects/:id/images", cors(corsOptions), upload.array('images', 10), (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
     const projectIndex = projects.findIndex(p => p.id === projectId)
@@ -1179,7 +1183,7 @@ app.post("/api/projects/:id/images", upload.array('images', 10), (req, res) => {
 })
 
 // DELETE remove image from project
-app.delete("/api/projects/:id/images", (req, res) => {
+app.delete("/api/projects/:id/images", cors(corsOptions), (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
     const { imageUrl } = req.body
@@ -1261,7 +1265,7 @@ app.delete("/api/projects/:id/images", (req, res) => {
 })
 
 // PUT set cover image for project
-app.put("/api/projects/:id/cover", (req, res) => {
+app.put("/api/projects/:id/cover", cors(corsOptions), (req, res) => {
   try {
     const projectId = parseInt(req.params.id)
     const { imageUrl } = req.body
@@ -1316,8 +1320,16 @@ app.put("/api/projects/:id/cover", (req, res) => {
   }
 })
 
+// Ensure CORS consistency on other resources as well
+app.options("/api/clients", cors(corsOptions))
+app.options("/api/clients/:id", cors(corsOptions))
+app.options("/api/blogs", cors(corsOptions))
+app.options("/api/blogs/:id", cors(corsOptions))
+app.options("/api/projects", cors(corsOptions))
+app.options("/api/projects/:id", cors(corsOptions))
+
 // Your existing blogs logic
-app.get("/api/blogs", (req, res) => {
+app.get("/api/blogs", cors(corsOptions), (req, res) => {
   try {
     res.json({
       success: true,
@@ -1330,7 +1342,7 @@ app.get("/api/blogs", (req, res) => {
 })
 
 // POST create new blog
-app.post("/api/blogs", upload.single('image'), (req, res) => {
+app.post("/api/blogs", cors(corsOptions), upload.single('image'), (req, res) => {
   try {
     // Handle both 'status' and 'published' fields for backward compatibility
     let status = 'draft'; // Default to draft
@@ -1376,7 +1388,7 @@ app.post("/api/blogs", upload.single('image'), (req, res) => {
 })
 
 // PUT update existing blog
-app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
+app.put("/api/blogs/:id", cors(corsOptions), upload.single('image'), (req, res) => {
   try {
     const blogId = parseInt(req.params.id)
     const blogIndex = blogPosts.findIndex(b => b.id === blogId)
@@ -1433,7 +1445,7 @@ app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
 })
 
 // DELETE blog
-app.delete("/api/blogs/:id", (req, res) => {
+app.delete("/api/blogs/:id", cors(corsOptions), (req, res) => {
   try {
     const blogId = parseInt(req.params.id)
     const blogIndex = blogPosts.findIndex(b => b.id === blogId)
@@ -1468,7 +1480,7 @@ app.delete("/api/blogs/:id", (req, res) => {
 })
 
 // Your existing clients logic
-app.get("/api/clients", (req, res) => {
+app.get("/api/clients", cors(corsOptions), (req, res) => {
   try {
     res.json({
       success: true,
@@ -1481,7 +1493,7 @@ app.get("/api/clients", (req, res) => {
 })
 
 // POST create new client
-app.post("/api/clients", upload.single('logo'), (req, res) => {
+app.post("/api/clients", cors(corsOptions), upload.single('logo'), (req, res) => {
   try {
     const newClient = {
       id: Date.now(),
@@ -1516,7 +1528,7 @@ app.post("/api/clients", upload.single('logo'), (req, res) => {
 })
 
 // PUT update existing client
-app.put("/api/clients/:id", upload.single('logo'), (req, res) => {
+app.put("/api/clients/:id", cors(corsOptions), upload.single('logo'), (req, res) => {
   try {
     const clientId = parseInt(req.params.id)
     const clientIndex = clients.findIndex(c => c.id === clientId)
@@ -1562,7 +1574,7 @@ app.put("/api/clients/:id", upload.single('logo'), (req, res) => {
 })
 
 // DELETE client
-app.delete("/api/clients/:id", (req, res) => {
+app.delete("/api/clients/:id", cors(corsOptions), (req, res) => {
   try {
     const clientId = parseInt(req.params.id)
     const clientIndex = clients.findIndex(c => c.id === clientId)
@@ -1597,7 +1609,7 @@ app.delete("/api/clients/:id", (req, res) => {
 })
 
 // Your existing team members logic
-app.get("/api/team-members", (req, res) => {
+app.get("/api/team-members", cors(corsOptions), (req, res) => {
   try {
     res.json({
       success: true,
@@ -1610,7 +1622,7 @@ app.get("/api/team-members", (req, res) => {
 })
 
 // POST create new team member
-app.post("/api/team-members", upload.single('image'), (req, res) => {
+app.post("/api/team-members", cors(corsOptions), upload.single('image'), (req, res) => {
   try {
     const newMember = {
       id: Date.now(),
@@ -1647,7 +1659,7 @@ app.post("/api/team-members", upload.single('image'), (req, res) => {
 })
 
 // PUT update existing team member
-app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
+app.put("/api/team-members/:id", cors(corsOptions), upload.single('image'), (req, res) => {
   try {
     const memberId = parseInt(req.params.id)
     const memberIndex = teamMembers.findIndex(m => m.id === memberId)
@@ -1695,7 +1707,7 @@ app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
 })
 
 // DELETE team member
-app.delete("/api/team-members/:id", (req, res) => {
+app.delete("/api/team-members/:id", cors(corsOptions), (req, res) => {
   try {
     const memberId = parseInt(req.params.id)
     const memberIndex = teamMembers.findIndex(m => m.id === memberId)
@@ -1730,7 +1742,7 @@ app.delete("/api/team-members/:id", (req, res) => {
 })
 
 // POST upload media files
-app.post("/api/media/upload", upload.array('images', 10), (req, res) => {
+app.post("/api/media/upload", cors(corsOptions), upload.array('images', 10), (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
@@ -1760,7 +1772,7 @@ app.post("/api/media/upload", upload.array('images', 10), (req, res) => {
 })
 
 // POST contact form submission
-app.post("/api/contact", async (req, res) => {
+app.post("/api/contact", cors(corsOptions), async (req, res) => {
   try {
     const newContact = {
       id: Date.now(),
@@ -1831,7 +1843,7 @@ app.post("/api/contact", async (req, res) => {
 })
 
 // Test email endpoint (for debugging)
-app.post("/api/test-email", async (req, res) => {
+app.post("/api/test-email", cors(corsOptions), async (req, res) => {
   try {
     console.log('🧪 Testing email configuration...')
     
