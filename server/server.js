@@ -204,141 +204,6 @@ function migrateProjectCoverImages() {
 // Run migration on startup
 migrateProjectCoverImages()
 
-// Partners API routes (defined after data loading)
-app.get("/api/partners", (req, res) => {
-  try {
-    res.json({
-      success: true,
-      data: partners,
-      count: partners.length,
-    })
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch partners" })
-  }
-})
-
-// POST create new partner
-app.post("/api/partners", upload.single('logo'), (req, res) => {
-  try {
-    const parsedOrder = Number.parseInt(req.body.order)
-    const isActive = req.body.active !== undefined ? (req.body.active === 'true' || req.body.active === true) : true
-
-    const newPartner = {
-      id: Date.now(),
-      name: req.body.name,
-      description: req.body.description,
-      website: req.body.website,
-      logo: req.file ? `/uploads/${req.file.filename}` : null,
-      order: Number.isNaN(parsedOrder) ? partners.length : parsedOrder,
-      active: isActive,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-
-    partners.push(newPartner)
-    saveData(PARTNERS_FILE, partners)
-
-    console.log("✅ Partner created successfully:", newPartner.name)
-
-    res.json({
-      success: true,
-      data: newPartner,
-      message: "Partner created successfully"
-    })
-  } catch (error) {
-    console.error("❌ Error creating partner:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to create partner",
-      details: error.message
-    })
-  }
-})
-
-// PUT update existing partner
-app.put("/api/partners/:id", upload.single('logo'), (req, res) => {
-  try {
-    const partnerId = Number.parseInt(req.params.id)
-    const partnerIndex = partners.findIndex(p => p.id === partnerId)
-
-    if (partnerIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Partner not found"
-      })
-    }
-
-    const existingPartner = partners[partnerIndex]
-    const parsedOrder = Number.parseInt(req.body.order)
-    const isActive = req.body.active !== undefined
-      ? (req.body.active === 'true' || req.body.active === true)
-      : existingPartner.active
-
-    const updatedPartner = {
-      ...existingPartner,
-      name: req.body.name || existingPartner.name,
-      description: req.body.description || existingPartner.description,
-      website: req.body.website || existingPartner.website,
-      logo: req.file ? `/uploads/${req.file.filename}` : existingPartner.logo,
-      order: Number.isNaN(parsedOrder) ? existingPartner.order : parsedOrder,
-      active: isActive,
-      updatedAt: new Date().toISOString()
-    }
-
-    partners[partnerIndex] = updatedPartner
-    saveData(PARTNERS_FILE, partners)
-
-    console.log("✅ Partner updated successfully:", updatedPartner.name)
-
-    res.json({
-      success: true,
-      data: updatedPartner,
-      message: "Partner updated successfully"
-    })
-  } catch (error) {
-    console.error("❌ Error updating partner:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to update partner",
-      details: error.message
-    })
-  }
-})
-
-// DELETE partner
-app.delete("/api/partners/:id", (req, res) => {
-  try {
-    const partnerId = Number.parseInt(req.params.id)
-    const partnerIndex = partners.findIndex(p => p.id === partnerId)
-
-    if (partnerIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Partner not found"
-      })
-    }
-
-    const deletedPartner = partners[partnerIndex]
-    partners.splice(partnerIndex, 1)
-    saveData(PARTNERS_FILE, partners)
-
-    console.log("🗑️ Partner deleted successfully:", deletedPartner.name)
-
-    res.json({
-      success: true,
-      message: "Partner deleted successfully",
-      data: { id: partnerId }
-    })
-  } catch (error) {
-    console.error("❌ Error deleting partner:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to delete partner",
-      details: error.message
-    })
-  }
-})
-
 function loadData(filePath) {
   try {
     if (fs.existsSync(filePath)) {
@@ -1559,6 +1424,141 @@ app.delete("/api/clients/:id", (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to delete client",
+      details: error.message
+    })
+  }
+})
+
+// Partners API routes
+app.get("/api/partners", (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: partners,
+      count: partners.length,
+    })
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch partners" })
+  }
+})
+
+// POST create new partner
+app.post("/api/partners", upload.single('logo'), (req, res) => {
+  try {
+    const parsedOrder = Number.parseInt(req.body.order)
+    const isActive = req.body.active !== undefined ? (req.body.active === 'true' || req.body.active === true) : true
+
+    const newPartner = {
+      id: Date.now(),
+      name: req.body.name,
+      description: req.body.description,
+      website: req.body.website,
+      logo: req.file ? `/uploads/${req.file.filename}` : null,
+      order: Number.isNaN(parsedOrder) ? partners.length : parsedOrder,
+      active: isActive,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    partners.push(newPartner)
+    saveData(PARTNERS_FILE, partners)
+
+    console.log("✅ Partner created successfully:", newPartner.name)
+
+    res.json({
+      success: true,
+      data: newPartner,
+      message: "Partner created successfully"
+    })
+  } catch (error) {
+    console.error("❌ Error creating partner:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to create partner",
+      details: error.message
+    })
+  }
+})
+
+// PUT update existing partner
+app.put("/api/partners/:id", upload.single('logo'), (req, res) => {
+  try {
+    const partnerId = Number.parseInt(req.params.id)
+    const partnerIndex = partners.findIndex(p => p.id === partnerId)
+
+    if (partnerIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Partner not found"
+      })
+    }
+
+    const existingPartner = partners[partnerIndex]
+    const parsedOrder = Number.parseInt(req.body.order)
+    const isActive = req.body.active !== undefined
+      ? (req.body.active === 'true' || req.body.active === true)
+      : existingPartner.active
+
+    const updatedPartner = {
+      ...existingPartner,
+      name: req.body.name || existingPartner.name,
+      description: req.body.description || existingPartner.description,
+      website: req.body.website || existingPartner.website,
+      logo: req.file ? `/uploads/${req.file.filename}` : existingPartner.logo,
+      order: Number.isNaN(parsedOrder) ? existingPartner.order : parsedOrder,
+      active: isActive,
+      updatedAt: new Date().toISOString()
+    }
+
+    partners[partnerIndex] = updatedPartner
+    saveData(PARTNERS_FILE, partners)
+
+    console.log("✅ Partner updated successfully:", updatedPartner.name)
+
+    res.json({
+      success: true,
+      data: updatedPartner,
+      message: "Partner updated successfully"
+    })
+  } catch (error) {
+    console.error("❌ Error updating partner:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to update partner",
+      details: error.message
+    })
+  }
+})
+
+// DELETE partner
+app.delete("/api/partners/:id", (req, res) => {
+  try {
+    const partnerId = Number.parseInt(req.params.id)
+    const partnerIndex = partners.findIndex(p => p.id === partnerId)
+
+    if (partnerIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Partner not found"
+      })
+    }
+
+    const deletedPartner = partners[partnerIndex]
+    partners.splice(partnerIndex, 1)
+    saveData(PARTNERS_FILE, partners)
+
+    console.log("🗑️ Partner deleted successfully:", deletedPartner.name)
+
+    res.json({
+      success: true,
+      message: "Partner deleted successfully",
+      data: { id: partnerId }
+    })
+  } catch (error) {
+    console.error("❌ Error deleting partner:", error)
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete partner",
       details: error.message
     })
   }
