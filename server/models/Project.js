@@ -13,7 +13,16 @@ const projectSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Residential', 'Commercial', 'Interior Design', 'Renovation', 'Remodeling', 'Landscape', 'Other']
+    enum: [
+      'Residential',
+      'Commercial',
+      'Interior Design',
+      'Interior Build',
+      'Renovation',
+      'Remodeling',
+      'Landscape',
+      'Other'
+    ]
   },
   location: {
     type: String,
@@ -41,10 +50,15 @@ const projectSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['completed', 'ongoing', 'planned'],
+    enum: ['completed', 'ongoing', 'planned', 'In Progress'],
     default: 'completed'
   },
   client: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  designTeam: {
     type: String,
     trim: true,
     default: ''
