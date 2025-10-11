@@ -124,6 +124,41 @@ console.log("  DATA_DIR:", DATA_DIR, DATA_DIR.includes(__dirname) ? "(internal)"
 console.log("  UPLOADS_DIR:", UPLOADS_DIR, UPLOADS_DIR.includes(__dirname) ? "(internal)" : "(external)")
 console.log("  ALLOWED_ORIGINS:", allowedOrigins)
 
+// ✅ CORS CONFIGURATION USING ENVIRONMENT VARIABLES (moved BEFORE routes)
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true)
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      console.log(`CORS blocked origin: ${origin}`)
+      callback(new Error("Not allowed by CORS"))
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Access-Control-Request-Method",
+    "Access-Control-Request-Headers",
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  preflightContinue: false,
+}
+
+// Apply defensive CORS header middleware and cors() FIRST
+app.use(addCorsHeaders)
+app.use(cors(corsOptions))
+
+// Add explicit preflight handler BEFORE any routes
+app.options("*", cors(corsOptions))
+
 // Email configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -405,37 +440,7 @@ try {
 
 // Setup uploads (already initialized above); keep for clarity but no-op now
 
-// ✅ CORS CONFIGURATION USING ENVIRONMENT VARIABLES
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true)
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      console.log(`CORS blocked origin: ${origin}`)
-      callback(new Error("Not allowed by CORS"))
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "Accept",
-    "Origin",
-    "Access-Control-Request-Method",
-    "Access-Control-Request-Headers",
-  ],
-  credentials: true,
-  optionsSuccessStatus: 200,
-  preflightContinue: false,
-}
-
-// Apply defensive CORS header middleware and cors() FIRST
-app.use(addCorsHeaders)
-app.use(cors(corsOptions))
+// (CORS already applied earlier)
 
 // Add request logging middleware EARLY
 app.use((req, res, next) => {
@@ -465,8 +470,7 @@ app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR, {
   }
 }))
 
-// Add explicit preflight handler
-app.options("*", cors(corsOptions))
+// (Preflight already handled earlier)
 
 // TEST ROUTE - Add this EARLY
 app.get("/test", (req, res) => {
