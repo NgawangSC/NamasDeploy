@@ -204,7 +204,7 @@ const SupervisionPage = () => {
             <div key={slideIndex} className="supervision-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="supervision-project-half">
-                                      <div className="supervision-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                                      <div className="supervision-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image || project.coverImage)})` }}>
                     <div className="supervision-project-overlay-content">
                       <div className="supervision-project-text-content">
                         <h2 className="supervision-project-title">{project.title}</h2>

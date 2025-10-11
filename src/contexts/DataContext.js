@@ -114,10 +114,15 @@ export const DataProvider = ({ children }) => {
       
       const response = await ApiService.getProjects();
       const apiProjects = response.data || [];
+      // Normalize image fields for downstream components
+      const normalizedProjects = apiProjects.map(p => ({
+        ...p,
+        image: p.image || p.coverImage || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : p.image)
+      }))
       
       setData(prev => ({
         ...prev,
-        projects: apiProjects
+        projects: normalizedProjects
       }));
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -225,7 +230,12 @@ export const DataProvider = ({ children }) => {
       console.log('DataContext: Calling ApiService.getFeaturedProjects()...');
       const response = await ApiService.getFeaturedProjects();
       console.log('DataContext: API response:', response);
-      const featured = response.data || [];
+      const featuredRaw = response.data || [];
+      // Normalize image fields for featured list as well
+      const featured = featuredRaw.map(p => ({
+        ...p,
+        image: p.image || p.coverImage || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : p.image)
+      }))
       console.log('DataContext: Featured projects data:', featured);
       
       setData(prev => ({

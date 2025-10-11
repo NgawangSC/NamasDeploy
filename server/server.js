@@ -668,11 +668,13 @@ app.post("/api/projects", upload.array('images', 10), async (req, res) => {
     // Handle uploaded images
     if (req.files && req.files.length > 0) {
       projectData.images = req.files.map(file => `/uploads/${file.filename}`)
-      // Set the first uploaded image as the cover image
+      // Set the first uploaded image as the cover image and primary image for backward compatibility
       projectData.coverImage = projectData.images[0]
+      projectData.image = projectData.coverImage
     } else {
       projectData.images = []
       projectData.coverImage = null
+      projectData.image = null
     }
     
     // Validate required fields
@@ -794,6 +796,8 @@ app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
         if (!updatedData.coverImage && updatedData.images.length > 0) {
           updatedData.coverImage = updatedData.images[0]
         }
+        // Always keep primary image in sync
+        updatedData.image = updatedData.coverImage || updatedData.image
       }
 
       updatedProject = await Project.findByIdAndUpdate(projectId, updatedData, { new: true })
@@ -851,9 +855,11 @@ app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
         updatedData.images = [...(existingProject.images || []), ...newImages]
         
         // If no cover image exists, set the first image as cover
-        if (!updatedData.image && updatedData.images.length > 0) {
-          updatedData.image = updatedData.images[0]
+        if (!updatedData.coverImage && updatedData.images.length > 0) {
+          updatedData.coverImage = updatedData.images[0]
         }
+        // Always keep primary image in sync
+        updatedData.image = updatedData.coverImage || updatedData.image
       }
       
       // Update the project in the array
@@ -1051,7 +1057,8 @@ app.delete("/api/projects/:id/images", (req, res) => {
     // If this was the cover image, update it
     if (project.image === imageUrl) {
       const newCoverImage = project.images.length > 0 ? project.images[0] : null
-      project.image = newCoverImage
+    project.image = newCoverImage
+    project.coverImage = newCoverImage
       console.log(`🖼️ Updated cover image to: ${newCoverImage}`)
     }
     

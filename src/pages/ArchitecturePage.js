@@ -204,7 +204,7 @@ const ArchitecturePage = () => {
             <div key={slideIndex} className="architect-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="architect-project-half">
-                                      <div className="architect-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                                      <div className="architect-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image || project.coverImage)})` }}>
                     <div className="architect-project-overlay-content">
                       <div className="architect-project-text-content">
                         <h2 className="architect-project-title">{project.title}</h2>
