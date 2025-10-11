@@ -490,20 +490,26 @@ app.get("/api/projects", async (req, res) => {
     let result, totalCount
 
     if (isMongoConnected) {
-      // Use MongoDB
-      if (limit > 0) {
-        result = await Project.find({})
-          .sort({ createdAt: -1 })
-          .skip(startIndex)
-          .limit(limit)
-        totalCount = await Project.countDocuments({})
-      } else {
-        result = await Project.find({}).sort({ createdAt: -1 })
-        totalCount = result.length
+      try {
+        if (limit > 0) {
+          result = await Project.find({})
+            .sort({ createdAt: -1 })
+            .skip(startIndex)
+            .limit(limit)
+          totalCount = await Project.countDocuments({})
+        } else {
+          result = await Project.find({}).sort({ createdAt: -1 })
+          totalCount = result.length
+        }
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
       }
-    } else {
+    }
+
+    if (!isMongoConnected) {
       // Fallback to file-based storage
-      let projects = loadData(PROJECTS_FILE)
+      const projects = loadData(PROJECTS_FILE)
       if (limit > 0) {
         result = projects.slice(startIndex, startIndex + limit)
         totalCount = projects.length
@@ -540,10 +546,17 @@ app.get("/api/projects/featured", async (req, res) => {
     let featuredProjects
 
     if (isMongoConnected) {
-      featuredProjects = await Project.find({ featured: true })
-        .sort({ createdAt: -1 })
-        .limit(8)
-    } else {
+      try {
+        featuredProjects = await Project.find({ featured: true })
+          .sort({ createdAt: -1 })
+          .limit(8)
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
       // Fallback to file-based storage
       const projects = loadData(PROJECTS_FILE)
       featuredProjects = projects.filter((project) => project.featured === true).slice(0, 8)
@@ -622,6 +635,23 @@ app.post("/api/projects", upload.array('images', 10), async (req, res) => {
   try {
     console.log("📝 Creating new project:", req.body)
     
+    // Normalize status to known canonical values
+    const normalizeStatus = (value) => {
+      if (!value) return 'In Progress'
+      const normalized = String(value).trim()
+      const map = new Map([
+        ['completed', 'Completed'],
+        ['Completed', 'Completed'],
+        ['in progress', 'In Progress'],
+        ['In Progress', 'In Progress'],
+        ['ongoing', 'In Progress'],
+        ['on hold', 'On Hold'],
+        ['On Hold', 'On Hold'],
+        ['planned', 'In Progress']
+      ])
+      return map.get(normalized) || map.get(normalized.toLowerCase()) || 'In Progress'
+    }
+
     // Parse project data from request body
     const projectData = {
       title: req.body.title,
@@ -632,7 +662,7 @@ app.post("/api/projects", upload.array('images', 10), async (req, res) => {
       client: req.body.client,
       designTeam: req.body.designTeam, 
       featured: req.body.featured === 'true' || req.body.featured === true,
-      status: req.body.status || 'completed'
+      status: normalizeStatus(req.body.status)
     }
     
     // Handle uploaded images
@@ -656,11 +686,18 @@ app.post("/api/projects", upload.array('images', 10), async (req, res) => {
     let savedProject
 
     if (isMongoConnected) {
-      // Save to MongoDB
-      const project = new Project(projectData)
-      savedProject = await project.save()
-      console.log("✅ Project created successfully in MongoDB:", savedProject.title)
-    } else {
+      try {
+        // Save to MongoDB
+        const project = new Project(projectData)
+        savedProject = await project.save()
+        console.log("✅ Project created successfully in MongoDB:", savedProject.title)
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB save failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
       // Fallback to file-based storage
       const projects = loadData(PROJECTS_FILE)
       projectData.id = Date.now()
@@ -717,6 +754,23 @@ app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
         })
       }
 
+      // Normalize status to known canonical values
+      const normalizeStatus = (value) => {
+        if (!value) return existingProject.status
+        const normalized = String(value).trim()
+        const map = new Map([
+          ['completed', 'Completed'],
+          ['Completed', 'Completed'],
+          ['in progress', 'In Progress'],
+          ['In Progress', 'In Progress'],
+          ['ongoing', 'In Progress'],
+          ['on hold', 'On Hold'],
+          ['On Hold', 'On Hold'],
+          ['planned', 'In Progress']
+        ])
+        return map.get(normalized) || map.get(normalized.toLowerCase()) || existingProject.status
+      }
+
       // Parse updated data from request body
       const updatedData = {
         title: req.body.title || existingProject.title,
@@ -727,7 +781,7 @@ app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
         client: req.body.client || existingProject.client,
         designTeam: req.body.designTeam || existingProject.designTeam,
         featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
-        status: req.body.status || existingProject.status
+        status: normalizeStatus(req.body.status)
       }
       
       // Handle uploaded images
@@ -758,6 +812,23 @@ app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
       
       existingProject = projects[projectIndex]
       
+      // Normalize status to known canonical values
+      const normalizeStatus = (value, fallback) => {
+        if (!value) return fallback
+        const normalized = String(value).trim()
+        const map = new Map([
+          ['completed', 'Completed'],
+          ['Completed', 'Completed'],
+          ['in progress', 'In Progress'],
+          ['In Progress', 'In Progress'],
+          ['ongoing', 'In Progress'],
+          ['on hold', 'On Hold'],
+          ['On Hold', 'On Hold'],
+          ['planned', 'In Progress']
+        ])
+        return map.get(normalized) || map.get(normalized.toLowerCase()) || fallback
+      }
+
       // Parse updated data from request body
       const updatedData = {
         ...existingProject,
@@ -769,7 +840,7 @@ app.put("/api/projects/:id", upload.array('images', 10), async (req, res) => {
         client: req.body.client || existingProject.client,
         designTeam: req.body.designTeam || existingProject.designTeam,
         featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingProject.featured,
-        status: req.body.status || existingProject.status,
+        status: normalizeStatus(req.body.status, existingProject.status),
         updatedAt: new Date().toISOString()
       }
       
