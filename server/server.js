@@ -49,6 +49,31 @@ const allowedOrigins = (() => {
   return ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
 })()
 
+// Global CORS headers middleware (defensive): ensure headers on all responses
+// and short-circuit preflight even if downstream middleware throws
+const addCorsHeaders = (req, res, next) => {
+  try {
+    const requestOrigin = req.headers.origin
+    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+      res.setHeader('Access-Control-Allow-Origin', requestOrigin)
+      res.setHeader('Vary', 'Origin')
+      res.setHeader('Access-Control-Allow-Credentials', 'true')
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+      res.setHeader(
+        'Access-Control-Allow-Headers',
+        req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
+      )
+    }
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204)
+    }
+  } catch (_) {
+    // fall through to next middleware on any unexpected error
+  }
+  next()
+}
+
 // Prefer external volume at /data when available unless explicitly overridden
 const DEFAULT_BASE_DIR = (() => {
   if (fs.existsSync('/data')) return '/data'
@@ -73,6 +98,24 @@ const BLOGS_FILE = path.join(DATA_DIR, "blogs.json")
 const CLIENTS_FILE = path.join(DATA_DIR, "clients.json")
 const CONTACTS_FILE = path.join(DATA_DIR, "contacts.json")
 const PARTNERS_FILE = path.join(DATA_DIR, "partners.json")
+
+// Ensure uploads directory exists EARLY for multer
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true })
+}
+
+// Initialize multer EARLY so routes can reference it
+const earlyStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOADS_DIR)
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
+    cb(null, uniqueSuffix + path.extname(file.originalname))
+  },
+})
+
+const upload = multer({ storage: earlyStorage })
 
 // Startup diagnostics
 console.log("Runtime configuration:")
@@ -360,22 +403,7 @@ try {
   console.warn("Could not seed external DATA_DIR:", seedErr.message)
 }
 
-// Setup uploads
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true })
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOADS_DIR)
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
-    cb(null, uniqueSuffix + path.extname(file.originalname))
-  },
-})
-
-const upload = multer({ storage })
+// Setup uploads (already initialized above); keep for clarity but no-op now
 
 // ✅ CORS CONFIGURATION USING ENVIRONMENT VARIABLES
 const corsOptions = {
@@ -405,7 +433,8 @@ const corsOptions = {
   preflightContinue: false,
 }
 
-// Apply CORS middleware FIRST
+// Apply defensive CORS header middleware and cors() FIRST
+app.use(addCorsHeaders)
 app.use(cors(corsOptions))
 
 // Add request logging middleware EARLY
@@ -420,11 +449,19 @@ app.use(express.urlencoded({ extended: true }))
 
 // Serve uploaded files with proper CORS headers
 app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR, {
-  setHeaders: (res, path, stat) => {
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.set('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+  setHeaders: (res, filePath, stat) => {
+    const requestOrigin = res.req && res.req.headers ? res.req.headers.origin : undefined
+    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+      res.set('Access-Control-Allow-Origin', requestOrigin)
+      res.set('Access-Control-Allow-Credentials', 'true')
+    } else {
+      // Explicitly vary on Origin and avoid wildcard when credentials may be used
+      res.set('Access-Control-Allow-Origin', 'null')
+    }
+    res.set('Vary', 'Origin')
+    res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+    res.set('Cache-Control', 'public, max-age=31536000') // 1 year cache
   }
 }))
 
