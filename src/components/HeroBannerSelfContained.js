@@ -149,7 +149,7 @@ const HeroBannerSelfContained = () => {
           <h1>Welcome to Our Architecture Studio</h1>
           <p>Creating beautiful and innovative architectural solutions</p>
           <div className="hero-empty-message">
-            <p>Add some projects in the dashboard to see them featured here!</p>
+            <p>Couldn't find any projects.</p>
             <p className="hero-empty-subtitle">Projects marked as "featured" will appear in this hero banner carousel.</p>
             
             {/* Debug information */}
