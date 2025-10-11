@@ -71,6 +71,16 @@ This guide will help you set up MongoDB for your NAMAS Architecture backend to e
    - Check the console output for success messages
    - Your data is now stored in MongoDB and will persist across deployments
 
+## Enabling MongoDB in the running server
+
+1. Create a `.env` file in `server/` with a valid `MONGODB_URI`.
+2. Restart your server deployment so it picks up the env var.
+3. The API will automatically use MongoDB if the connection succeeds. If it fails, it will fall back to JSON files in `DATA_DIR`.
+
+### Notes
+- The API normalizes MongoDB documents to include `id` and `image` fields for backward compatibility with the dashboard/frontend.
+- Image management endpoints (`POST /api/projects/:id/images`, `DELETE /api/projects/:id/images`, `PUT /api/projects/:id/cover`) now work with MongoDB when connected.
+
 ## Environment Configuration
 
 Create a `.env` file in the server directory with:

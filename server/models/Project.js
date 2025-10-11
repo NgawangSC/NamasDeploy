@@ -68,7 +68,28 @@ const projectSchema = new mongoose.Schema({
     trim: true
   }]
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: (_doc, ret) => {
+      // Normalize id
+      if (ret._id) {
+        ret.id = ret._id.toString();
+        delete ret._id;
+      }
+      // Backward-compat: expose `image` alias of `coverImage`
+      if (!ret.image && ret.coverImage) {
+        ret.image = ret.coverImage;
+      }
+      // Ensure images is always an array
+      if (!Array.isArray(ret.images)) {
+        ret.images = ret.images ? [ret.images] : [];
+      }
+      return ret;
+    }
+  },
+  toObject: { virtuals: true, versionKey: false }
 });
 
 // Index for better query performance

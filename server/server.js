@@ -126,11 +126,11 @@ const loadDataFromSource = async () => {
   if (isMongoConnected) {
     try {
       console.log('📊 Loading data from MongoDB...')
-      teamMembers = await TeamMember.find({}).sort({ order: 1 })
-      projects = await Project.find({}).sort({ createdAt: -1 })
-      blogPosts = await Blog.find({ published: true }).sort({ createdAt: -1 })
-      clients = await Client.find({ active: true }).sort({ order: 1 })
-      contacts = await Contact.find({}).sort({ createdAt: -1 })
+      teamMembers = (await TeamMember.find({}).sort({ order: 1 }))?.map(doc => doc.toJSON())
+      projects = (await Project.find({}).sort({ createdAt: -1 }))?.map(doc => doc.toJSON())
+      blogPosts = (await Blog.find({ published: true }).sort({ createdAt: -1 }))?.map(doc => doc.toJSON())
+      clients = (await Client.find({ active: true }).sort({ order: 1 }))?.map(doc => doc.toJSON())
+      contacts = (await Contact.find({}).sort({ createdAt: -1 }))?.map(doc => doc.toJSON())
       console.log('✅ Data loaded from MongoDB')
     } catch (error) {
       console.error('❌ Error loading from MongoDB, falling back to files:', error)
@@ -873,191 +873,202 @@ app.delete("/api/projects/:id", async (req, res) => {
 })
 
 // POST add images to existing project
-app.post("/api/projects/:id/images", upload.array('images', 10), (req, res) => {
+app.post("/api/projects/:id/images", upload.array('images', 10), async (req, res) => {
   try {
-    const projectId = parseInt(req.params.id)
-    const projectIndex = projects.findIndex(p => p.id === projectId)
-    
-    if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
-    }
-    
+    const paramId = req.params.id
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: "No images uploaded"
+      return res.status(400).json({ success: false, error: "No images uploaded" })
+    }
+
+    const newImages = req.files.map(file => `/uploads/${file.filename}`)
+
+    if (isMongoConnected) {
+      let project
+      if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+        project = await Project.findById(paramId)
+      }
+      if (!project) {
+        project = await Project.findOne({
+          $or: [
+            { id: Number.parseInt(paramId) },
+            { id: paramId },
+            { id: paramId.toString() }
+          ]
+        })
+      }
+
+      if (!project) {
+        return res.status(404).json({ success: false, error: "Project not found" })
+      }
+
+      const mergedImages = [...(project.images || []), ...newImages]
+      const coverImage = project.coverImage || mergedImages[0] || null
+
+      project.images = mergedImages
+      if (!project.coverImage && coverImage) project.coverImage = coverImage
+      project.updatedAt = new Date()
+      await project.save()
+
+      return res.json({
+        success: true,
+        message: "Images added successfully",
+        data: { project: project.toJSON(), projectId: project.id, newImages, totalImages: project.images.length }
       })
     }
-    
-    // Add new images to the project
-    const newImages = req.files.map(file => `/uploads/${file.filename}`)
+
+    // Fallback to file storage
+    const projectId = parseInt(paramId)
+    const projectIndex = projects.findIndex(p => p.id === projectId)
+    if (projectIndex === -1) {
+      return res.status(404).json({ success: false, error: "Project not found" })
+    }
     projects[projectIndex].images = [...(projects[projectIndex].images || []), ...newImages]
     projects[projectIndex].updatedAt = new Date().toISOString()
-    
-    // Save to file
+    if (!projects[projectIndex].image && projects[projectIndex].images.length > 0) {
+      projects[projectIndex].image = projects[projectIndex].images[0]
+    }
     saveData(PROJECTS_FILE, projects)
-    
     console.log("📷 Images added to project:", projects[projectIndex].title)
-    
     res.json({
       success: true,
       message: "Images added successfully",
-      data: {
-        project: projects[projectIndex],
-        projectId: projectId,
-        newImages: newImages,
-        totalImages: projects[projectIndex].images.length
-      }
+      data: { project: projects[projectIndex], projectId, newImages, totalImages: projects[projectIndex].images.length }
     })
-    
+
   } catch (error) {
     console.error("❌ Error adding images to project:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to add images",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to add images", details: error.message })
   }
 })
 
 // DELETE remove image from project
-app.delete("/api/projects/:id/images", (req, res) => {
+app.delete("/api/projects/:id/images", async (req, res) => {
   try {
-    const projectId = parseInt(req.params.id)
+    const paramId = req.params.id
     const { imageUrl } = req.body
-    
+
     if (!imageUrl) {
-      return res.status(400).json({
-        success: false,
-        error: "Image URL is required"
-      })
+      return res.status(400).json({ success: false, error: "Image URL is required" })
     }
-    
+
+    if (isMongoConnected) {
+      let project
+      if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+        project = await Project.findById(paramId)
+      }
+      if (!project) {
+        project = await Project.findOne({
+          $or: [
+            { id: Number.parseInt(paramId) },
+            { id: paramId },
+            { id: paramId.toString() }
+          ]
+        })
+      }
+
+      if (!project) {
+        return res.status(404).json({ success: false, error: "Project not found" })
+      }
+
+      if (!Array.isArray(project.images)) {
+        return res.status(400).json({ success: false, error: "Project has no images array" })
+      }
+
+      const imageIndex = project.images.indexOf(imageUrl)
+      if (imageIndex === -1) {
+        return res.status(404).json({ success: false, error: "Image not found in project" })
+      }
+
+      project.images.splice(imageIndex, 1)
+      if (project.coverImage === imageUrl) {
+        project.coverImage = project.images.length > 0 ? project.images[0] : null
+      }
+      project.updatedAt = new Date()
+      await project.save()
+
+      return res.json({ success: true, message: "Image removed successfully", data: project.toJSON() })
+    }
+
+    // Fallback to file storage
+    const projectId = parseInt(paramId)
     const projectIndex = projects.findIndex(p => p.id === projectId)
-    
     if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
+      return res.status(404).json({ success: false, error: "Project not found" })
     }
-    
-    // Remove image from project
     const project = projects[projectIndex]
-    
-    // Ensure project has images array
     if (!project.images || !Array.isArray(project.images)) {
-      return res.status(400).json({
-        success: false,
-        error: "Project has no images array"
-      })
+      return res.status(400).json({ success: false, error: "Project has no images array" })
     }
-    
     const imageIndex = project.images.indexOf(imageUrl)
-    
-    console.log(`🔍 Looking for image: ${imageUrl}`)
-    console.log(`📋 Current images:`, project.images)
-    console.log(`📍 Image index: ${imageIndex}`)
-    
     if (imageIndex === -1) {
-      console.log(`❌ Image not found in project images`)
-      return res.status(404).json({
-        success: false,
-        error: "Image not found in project"
-      })
+      return res.status(404).json({ success: false, error: "Image not found in project" })
     }
-    
-    // Remove the image
     project.images.splice(imageIndex, 1)
     project.updatedAt = new Date().toISOString()
-    
-    console.log(`✂️ Removed image at index ${imageIndex}`)
-    console.log(`📋 Remaining images:`, project.images)
-    
-    // If this was the cover image, update it
     if (project.image === imageUrl) {
-      const newCoverImage = project.images.length > 0 ? project.images[0] : null
-      project.image = newCoverImage
-      console.log(`🖼️ Updated cover image to: ${newCoverImage}`)
+      project.image = project.images.length > 0 ? project.images[0] : null
     }
-    
-    // Save to file
     saveData(PROJECTS_FILE, projects)
-    
-    console.log("🗑️ Image removed from project:", project.title)
-    
-    res.json({
-      success: true,
-      message: "Image removed successfully",
-      data: project
-    })
-    
+    res.json({ success: true, message: "Image removed successfully", data: project })
+
   } catch (error) {
     console.error("❌ Error removing image from project:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to remove image",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to remove image", details: error.message })
   }
 })
 
 // PUT set cover image for project
-app.put("/api/projects/:id/cover", (req, res) => {
+app.put("/api/projects/:id/cover", async (req, res) => {
   try {
-    const projectId = parseInt(req.params.id)
+    const paramId = req.params.id
     const { imageUrl } = req.body
-    
     if (!imageUrl) {
-      return res.status(400).json({
-        success: false,
-        error: "Image URL is required"
-      })
+      return res.status(400).json({ success: false, error: "Image URL is required" })
     }
-    
+
+    if (isMongoConnected) {
+      let project
+      if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+        project = await Project.findById(paramId)
+      }
+      if (!project) {
+        project = await Project.findOne({
+          $or: [
+            { id: Number.parseInt(paramId) },
+            { id: paramId },
+            { id: paramId.toString() }
+          ]
+        })
+      }
+      if (!project) {
+        return res.status(404).json({ success: false, error: "Project not found" })
+      }
+      if (!Array.isArray(project.images) || !project.images.includes(imageUrl)) {
+        return res.status(400).json({ success: false, error: "Image not found in project images" })
+      }
+      project.coverImage = imageUrl
+      project.updatedAt = new Date()
+      await project.save()
+      return res.json({ success: true, message: "Cover image set successfully", data: project.toJSON() })
+    }
+
+    const projectId = parseInt(paramId)
     const projectIndex = projects.findIndex(p => p.id === projectId)
-    
     if (projectIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Project not found"
-      })
+      return res.status(404).json({ success: false, error: "Project not found" })
     }
-    
-    // Check if the image exists in the project's images
     const project = projects[projectIndex]
     if (!project.images || !project.images.includes(imageUrl)) {
-      return res.status(400).json({
-        success: false,
-        error: "Image not found in project images"
-      })
+      return res.status(400).json({ success: false, error: "Image not found in project images" })
     }
-    
-    // Set as cover image
     project.image = imageUrl
     project.updatedAt = new Date().toISOString()
-    
-    // Save to file
     saveData(PROJECTS_FILE, projects)
-    
-    console.log("🖼️ Cover image set for project:", project.title)
-    
-    res.json({
-      success: true,
-      message: "Cover image set successfully",
-      data: project
-    })
-    
+    res.json({ success: true, message: "Cover image set successfully", data: project })
+
   } catch (error) {
     console.error("❌ Error setting cover image:", error)
-    res.status(500).json({
-      success: false,
-      error: "Failed to set cover image",
-      details: error.message
-    })
+    res.status(500).json({ success: false, error: "Failed to set cover image", details: error.message })
   }
 })
 
