@@ -97,4 +97,3 @@ projectSchema.index({ category: 1, featured: 1 });
 projectSchema.index({ title: 'text', description: 'text' });
 
 module.exports = mongoose.model('Project', projectSchema);
-s
