@@ -54,6 +54,8 @@ const allowedOrigins = (() => {
 const addCorsHeaders = (req, res, next) => {
   try {
     const requestOrigin = req.headers.origin
+    
+    // Set CORS headers for allowed origins
     if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
       res.setHeader('Access-Control-Allow-Origin', requestOrigin)
       res.setHeader('Vary', 'Origin')
@@ -64,12 +66,13 @@ const addCorsHeaders = (req, res, next) => {
         req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
       )
     }
-
+    
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
       return res.sendStatus(204)
     }
-  } catch (_) {
-    // fall through to next middleware on any unexpected error
+  } catch (error) {
+    console.error('CORS middleware error:', error)
   }
   next()
 }
