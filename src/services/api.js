@@ -16,14 +16,21 @@ class ApiService {
     const config = {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         ...options.headers,
       },
-      // Add credentials for CORS
-      credentials: "include",
-      // Add mode for CORS
+      // Use CORS mode explicitly, but avoid credentials unless needed
       mode: "cors",
       ...options,
+    }
+
+    // Only set JSON Content-Type when sending a non-FormData body
+    const hasBody = config.body !== undefined && config.body !== null
+    const isFormData = typeof FormData !== 'undefined' && hasBody && config.body instanceof FormData
+    if (hasBody && !isFormData) {
+      config.headers = {
+        "Content-Type": "application/json",
+        ...config.headers,
+      }
     }
 
     try {
@@ -73,7 +80,6 @@ class ApiService {
         method: method,
         body: formData,
         // Don't set Content-Type for FormData - let browser set it with boundary
-        credentials: "include",
         mode: "cors",
       })
 

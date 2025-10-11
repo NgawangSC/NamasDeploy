@@ -74,6 +74,40 @@ const addCorsHeaders = (req, res, next) => {
   next()
 }
 
+// ✅ CORS CONFIGURATION USING ENVIRONMENT VARIABLES
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true)
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      console.log(`CORS blocked origin: ${origin}`)
+      callback(new Error("Not allowed by CORS"))
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Access-Control-Request-Method",
+    "Access-Control-Request-Headers",
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  preflightContinue: false,
+}
+
+// Apply defensive CORS header middleware and cors() FIRST (before any routes)
+app.use(addCorsHeaders)
+app.use(cors(corsOptions))
+// Add explicit preflight handler early
+app.options("*", cors(corsOptions))
+
 // Prefer external volume at /data when available unless explicitly overridden
 const DEFAULT_BASE_DIR = (() => {
   if (fs.existsSync('/data')) return '/data'
@@ -405,38 +439,6 @@ try {
 
 // Setup uploads (already initialized above); keep for clarity but no-op now
 
-// ✅ CORS CONFIGURATION USING ENVIRONMENT VARIABLES
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true)
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      console.log(`CORS blocked origin: ${origin}`)
-      callback(new Error("Not allowed by CORS"))
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "Accept",
-    "Origin",
-    "Access-Control-Request-Method",
-    "Access-Control-Request-Headers",
-  ],
-  credentials: true,
-  optionsSuccessStatus: 200,
-  preflightContinue: false,
-}
-
-// Apply defensive CORS header middleware and cors() FIRST
-app.use(addCorsHeaders)
-app.use(cors(corsOptions))
-
 // Add request logging middleware EARLY
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.url} from ${req.ip}`)
@@ -465,8 +467,7 @@ app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR, {
   }
 }))
 
-// Add explicit preflight handler
-app.options("*", cors(corsOptions))
+// Preflight already handled earlier
 
 // TEST ROUTE - Add this EARLY
 app.get("/test", (req, res) => {
@@ -1993,6 +1994,18 @@ app.post("/api/search", (req, res) => {
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error("Server Error:", error)
+
+  // Ensure CORS headers are present even on errors
+  try {
+    const requestOrigin = req.headers.origin
+    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+      res.setHeader('Access-Control-Allow-Origin', requestOrigin)
+      res.setHeader('Vary', 'Origin')
+      res.setHeader('Access-Control-Allow-Credentials', 'true')
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+      res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin')
+    }
+  } catch (_) {}
 
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
