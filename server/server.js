@@ -303,20 +303,8 @@ const corsOptions = {
   preflightContinue: false,
 }
 
-// Apply comprehensive CORS middleware
-app.use(addCorsHeaders)
+// Apply CORS middleware - use the standard cors package
 app.use(cors(corsOptions))
-
-// Additional CORS middleware to ensure headers are always set
-app.use((req, res, next) => {
-  const requestOrigin = req.headers.origin
-  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-    res.setHeader('Access-Control-Allow-Origin', requestOrigin)
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Vary', 'Origin')
-  }
-  next()
-})
 
 // Add request logging middleware EARLY
 app.use((req, res, next) => {
