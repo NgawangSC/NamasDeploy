@@ -13,16 +13,7 @@ const projectSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: [
-      'Residential',
-      'Commercial',
-      'Interior Design',
-      'Interior Build',
-      'Renovation',
-      'Remodeling',
-      'Landscape',
-      'Other'
-    ]
+    // Allow any category string to align with frontend options
   },
   location: {
     type: String,
@@ -50,8 +41,9 @@ const projectSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['completed', 'ongoing', 'planned', 'In Progress'],
-    default: 'completed'
+    // Support both legacy (lowercase) and new (Title Case) statuses
+    enum: ['completed', 'ongoing', 'planned', 'In Progress', 'Completed', 'On Hold'],
+    default: 'In Progress'
   },
   client: {
     type: String,
