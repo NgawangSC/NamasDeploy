@@ -31,22 +31,58 @@ const initializeMongoDB = async () => {
 // Initialize MongoDB on startup
 initializeMongoDB()
 
-// Get allowed origins from environment variables
+// Get allowed origins from environment variables with automatic www/apex expansion
 const allowedOrigins = (() => {
+  const expandOrigins = (origins) => {
+    const result = new Set()
+
+    origins
+      .map((s) => (typeof s === 'string' ? s.trim() : ''))
+      .filter(Boolean)
+      .forEach((origin) => {
+        const normalized = origin.replace(/\/$/, '')
+        result.add(normalized)
+
+        // Try to add counterpart (www <> apex) for the same protocol
+        try {
+          const url = new URL(normalized)
+          const protocol = url.protocol
+          const hostname = url.hostname
+
+          if (hostname.startsWith('www.')) {
+            const apex = `${protocol}//${hostname.slice(4)}`
+            result.add(apex)
+          } else if (/^[^.]+\.[^.]+$/.test(hostname)) {
+            // Only add www. for simple apex like example.com (avoid adding for deep subdomains)
+            const withWww = `${protocol}//www.${hostname}`
+            result.add(withWww)
+          }
+        } catch (_) {
+          // If not a valid URL, skip expansion
+        }
+      })
+
+    return Array.from(result)
+  }
+
   const candidates = [
     process.env.ALLOWED_ORIGINS,
     process.env.CORS_ORIGIN,
     process.env.CORS_ORIGINS,
     [process.env.FRONTEND_URL, process.env.CPANEL_DOMAIN].filter(Boolean).join(","),
   ].filter(Boolean)
-  const selected = candidates.find((v) => typeof v === "string" && v.trim().length > 0)
-  if (selected) {
-    return selected
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-  }
-  return ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
+
+  const selected = candidates.find((v) => typeof v === 'string' && v.trim().length > 0)
+  const baseList = selected
+    ? selected.split(',').map((s) => s.trim()).filter(Boolean)
+    : [
+        'https://www.namasbhutan.com',
+        'https://namasbhutan.com',
+        'http://localhost:3000',
+        'http://localhost:5173',
+      ]
+
+  return expandOrigins(baseList)
 })()
 
 // Prefer external volume at /data when available unless explicitly overridden
@@ -383,12 +419,15 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true)
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      console.log(`CORS blocked origin: ${origin}`)
-      callback(new Error("Not allowed by CORS"))
+    // Normalize origin by stripping trailing slash
+    const normalized = origin.replace(/\/$/, '')
+
+    if (allowedOrigins.includes(normalized)) {
+      return callback(null, true)
     }
+
+    console.log(`CORS blocked origin: ${origin}`)
+    return callback(new Error("Not allowed by CORS"))
   },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
@@ -421,6 +460,7 @@ app.use(express.urlencoded({ extended: true }))
 // Serve uploaded files with proper CORS headers
 app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR, {
   setHeaders: (res, path, stat) => {
+    // Allow all origins for static files to simplify asset loading across domains
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
