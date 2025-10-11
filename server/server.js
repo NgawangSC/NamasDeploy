@@ -49,30 +49,7 @@ const allowedOrigins = (() => {
   return ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
 })()
 
-// Global CORS headers middleware (defensive): ensure headers on all responses
-// and short-circuit preflight even if downstream middleware throws
-const addCorsHeaders = (req, res, next) => {
-  try {
-    const requestOrigin = req.headers.origin
-    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-      res.setHeader('Access-Control-Allow-Origin', requestOrigin)
-      res.setHeader('Vary', 'Origin')
-      res.setHeader('Access-Control-Allow-Credentials', 'true')
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-      res.setHeader(
-        'Access-Control-Allow-Headers',
-        req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
-      )
-    }
-
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(204)
-    }
-  } catch (_) {
-    // fall through to next middleware on any unexpected error
-  }
-  next()
-}
+// Remove the defensive CORS headers middleware - it was causing conflicts
 
 // Prefer external volume at /data when available unless explicitly overridden
 const DEFAULT_BASE_DIR = (() => {
@@ -139,7 +116,95 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-// Your existing partners logic
+// Move partners routes after data loading
+
+// Partners routes will be defined after data loading
+
+// Target email for contact form submissions
+const CONTACT_EMAIL = 'namasdesign2021@gmail.com'
+
+// Verify email connection on startup
+const verifyEmailConnection = async () => {
+  try {
+    await transporter.verify()
+    console.log('✅ Email server connection verified successfully')
+    return true
+  } catch (error) {
+    console.error('❌ Email server connection failed:', error.message)
+    console.error('Email configuration:', {
+      user: process.env.EMAIL_USER ? '***configured***' : 'NOT SET',
+      pass: process.env.EMAIL_PASS ? '***configured***' : 'NOT SET'
+    })
+    return false
+  }
+}
+
+// Load data from files (fallback when MongoDB is not available)
+let teamMembers = []
+let projects = []
+let blogPosts = []
+let clients = []
+let contacts = []
+let partners = []
+
+// Function to load data from MongoDB or fallback to files
+const loadDataFromSource = async () => {
+  if (isMongoConnected) {
+    try {
+      console.log('📊 Loading data from MongoDB...')
+      teamMembers = await TeamMember.find({}).sort({ order: 1 })
+      projects = await Project.find({}).sort({ createdAt: -1 })
+      blogPosts = await Blog.find({ published: true }).sort({ createdAt: -1 })
+      clients = await Client.find({ active: true }).sort({ order: 1 })
+      partners = await Partner.find({ active: true }).sort({ order: 1 })
+      contacts = await Contact.find({}).sort({ createdAt: -1 })
+      console.log('✅ Data loaded from MongoDB')
+    } catch (error) {
+      console.error('❌ Error loading from MongoDB, falling back to files:', error)
+      loadDataFromFiles()
+    }
+  } else {
+    loadDataFromFiles()
+  }
+}
+
+const loadDataFromFiles = () => {
+  console.log('📁 Loading data from files...')
+  teamMembers = loadData(TEAM_MEMBERS_FILE)
+  projects = loadData(PROJECTS_FILE)
+  blogPosts = loadData(BLOGS_FILE)
+  clients = loadData(CLIENTS_FILE)
+  contacts = loadData(CONTACTS_FILE)
+  partners = loadData(PARTNERS_FILE)
+  console.log('✅ Data loaded from files')
+}
+
+// Initialize data loading
+loadDataFromSource()
+
+// Migration: Fix existing projects without cover images
+function migrateProjectCoverImages() {
+  let needsSave = false
+  
+  projects.forEach(project => {
+    // If project has images but no cover image, set the first image as cover
+    if (!project.image && project.images && Array.isArray(project.images) && project.images.length > 0) {
+      project.image = project.images[0]
+      needsSave = true
+      console.log(`🔧 Fixed cover image for project: ${project.title}`)
+    }
+  })
+  
+  if (needsSave) {
+    saveData(PROJECTS_FILE, projects)
+    console.log(`✅ Migration completed: Fixed cover images for existing projects`)
+  }
+}
+
+// Run migration on startup
+migrateProjectCoverImages()
+
+// Partners API routes (defined after data loading)
 app.get("/api/partners", (req, res) => {
   try {
     res.json({
@@ -274,90 +339,6 @@ app.delete("/api/partners/:id", (req, res) => {
   }
 })
 
-// Target email for contact form submissions
-const CONTACT_EMAIL = 'namasdesign2021@gmail.com'
-
-// Verify email connection on startup
-const verifyEmailConnection = async () => {
-  try {
-    await transporter.verify()
-    console.log('✅ Email server connection verified successfully')
-    return true
-  } catch (error) {
-    console.error('❌ Email server connection failed:', error.message)
-    console.error('Email configuration:', {
-      user: process.env.EMAIL_USER ? '***configured***' : 'NOT SET',
-      pass: process.env.EMAIL_PASS ? '***configured***' : 'NOT SET'
-    })
-    return false
-  }
-}
-
-// Load data from files (fallback when MongoDB is not available)
-let teamMembers = []
-let projects = []
-let blogPosts = []
-let clients = []
-let contacts = []
-let partners = []
-
-// Function to load data from MongoDB or fallback to files
-const loadDataFromSource = async () => {
-  if (isMongoConnected) {
-    try {
-      console.log('📊 Loading data from MongoDB...')
-      teamMembers = await TeamMember.find({}).sort({ order: 1 })
-      projects = await Project.find({}).sort({ createdAt: -1 })
-      blogPosts = await Blog.find({ published: true }).sort({ createdAt: -1 })
-      clients = await Client.find({ active: true }).sort({ order: 1 })
-      partners = await Partner.find({ active: true }).sort({ order: 1 })
-      contacts = await Contact.find({}).sort({ createdAt: -1 })
-      console.log('✅ Data loaded from MongoDB')
-    } catch (error) {
-      console.error('❌ Error loading from MongoDB, falling back to files:', error)
-      loadDataFromFiles()
-    }
-  } else {
-    loadDataFromFiles()
-  }
-}
-
-const loadDataFromFiles = () => {
-  console.log('📁 Loading data from files...')
-  teamMembers = loadData(TEAM_MEMBERS_FILE)
-  projects = loadData(PROJECTS_FILE)
-  blogPosts = loadData(BLOGS_FILE)
-  clients = loadData(CLIENTS_FILE)
-  contacts = loadData(CONTACTS_FILE)
-  partners = loadData(PARTNERS_FILE)
-  console.log('✅ Data loaded from files')
-}
-
-// Initialize data loading
-loadDataFromSource()
-
-// Migration: Fix existing projects without cover images
-function migrateProjectCoverImages() {
-  let needsSave = false
-  
-  projects.forEach(project => {
-    // If project has images but no cover image, set the first image as cover
-    if (!project.image && project.images && Array.isArray(project.images) && project.images.length > 0) {
-      project.image = project.images[0]
-      needsSave = true
-      console.log(`🔧 Fixed cover image for project: ${project.title}`)
-    }
-  })
-  
-  if (needsSave) {
-    saveData(PROJECTS_FILE, projects)
-    console.log(`✅ Migration completed: Fixed cover images for existing projects`)
-  }
-}
-
-// Run migration on startup
-migrateProjectCoverImages()
-
 function loadData(filePath) {
   try {
     if (fs.existsSync(filePath)) {
@@ -433,8 +414,7 @@ const corsOptions = {
   preflightContinue: false,
 }
 
-// Apply defensive CORS header middleware and cors() FIRST
-app.use(addCorsHeaders)
+// Apply CORS middleware FIRST
 app.use(cors(corsOptions))
 
 // Add request logging middleware EARLY
@@ -449,19 +429,11 @@ app.use(express.urlencoded({ extended: true }))
 
 // Serve uploaded files with proper CORS headers
 app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR, {
-  setHeaders: (res, filePath, stat) => {
-    const requestOrigin = res.req && res.req.headers ? res.req.headers.origin : undefined
-    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-      res.set('Access-Control-Allow-Origin', requestOrigin)
-      res.set('Access-Control-Allow-Credentials', 'true')
-    } else {
-      // Explicitly vary on Origin and avoid wildcard when credentials may be used
-      res.set('Access-Control-Allow-Origin', 'null')
-    }
-    res.set('Vary', 'Origin')
-    res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
-    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
-    res.set('Cache-Control', 'public, max-age=31536000') // 1 year cache
+  setHeaders: (res, path, stat) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.set('Cache-Control', 'public, max-age=31536000'); // 1 year cache
   }
 }))
 
