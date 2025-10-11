@@ -1181,6 +1181,22 @@ app.put("/api/projects/:id/cover", (req, res) => {
   }
 })
 
+// TEST ENDPOINT FOR CORS
+app.get("/api/partners-test", (req, res) => {
+  try {
+    console.log("🧪 Test route called, Origin:", req.headers.origin)
+    console.log("🧪 Response headers:", res.getHeaders())
+    res.json({
+      success: true,
+      message: "Test endpoint working",
+      timestamp: new Date().toISOString(),
+      origin: req.headers.origin
+    })
+  } catch (error) {
+    res.status(500).json({ error: "Test failed" })
+  }
+})
+
 // PARTNERS ROUTES
 app.get("/api/partners", (req, res) => {
   try {
