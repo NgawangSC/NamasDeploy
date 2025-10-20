@@ -540,7 +540,6 @@
 .client-arrow:hover {
   background: #333;
   color: white;
-  transform: scale(1.1);
 }
 
 .client-arrow-left {
@@ -548,7 +547,7 @@
 }
 
 .client-arrow-left:hover {
-  transform: translateX(-25px) scale(1.1);
+  transform: translateX(-25px);
 }
 
 .client-arrow-right {
@@ -556,7 +555,7 @@
 }
 
 .client-arrow-right:hover {
-  transform: translateX(25px) scale(1.1);
+  transform: translateX(25px);
 }
 
 /* Desktop clients arrows (outside responsive grid) */
@@ -581,7 +580,7 @@
 .clients-arrow:hover {
   background: #333;
   color: white;
-  transform: translateY(-50%) scale(1.1);
+  transform: translateY(-50%);
 }
 
 .clients-arrow-left {
@@ -925,7 +924,7 @@
   }
 
   .client-arrow-left:hover {
-    transform: translateX(-20px) scale(1.1);
+    transform: translateX(-20px);
   }
 
   .client-arrow-right {
@@ -933,7 +932,7 @@
   }
 
   .client-arrow-right:hover {
-    transform: translateX(20px) scale(1.1);
+    transform: translateX(20px);
   }
 
 

@@ -11,7 +11,7 @@ const imageUrlCache = new Map();
  */
 export const getImageUrl = (imagePath, bustCache = false) => {
   if (!imagePath) {
-    return "/images/placeholder-logo.png";
+    return "/images/project1.png";
   }
   
   // For cache busting or immediate processing, skip cache check
