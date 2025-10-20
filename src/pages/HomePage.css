@@ -478,12 +478,6 @@
   background: white;
 }
 
-/* Partners Section - reuse clients visuals */
-.partners-section {
-  padding: 60px 40px 100px;
-  background: white;
-  border-top: 1px solid #eee;
-}
 
 .clients-container {
   max-width: 1200px;
