@@ -921,10 +921,6 @@ button {
   justify-content: center;
 }
 
-.clients-arrow:hover {
-  background: rgba(0, 0, 0, 0.05);
-  transform: scale(1.1);
-}
 
 .clients-arrow-left {
   order: -1;
@@ -1035,18 +1031,8 @@ button {
   color: #333;
 }
 
-.client-arrow:hover {
-  background: #333;
-  color: white;
-}
 
-.client-arrow-left:hover {
-  transform: translateX(-25px);
-}
 
-.client-arrow-right:hover {
-  transform: translateX(25px);
-}
 
 .client-arrow-left {
   transform: translateX(-25px);
@@ -1194,13 +1180,7 @@ button {
     transform: translateX(20px);
   }
 
-  .client-arrow-left:hover {
-    transform: translateX(-20px);
-  }
 
-  .client-arrow-right:hover {
-    transform: translateX(20px);
-  }
 
   .client-card {
     width: 200px;
