@@ -11,11 +11,15 @@ The frontend application at `https://www.namasbhutan.com` was experiencing CORS 
 ## Root Cause Analysis
 1. **CORS Preflight Working**: OPTIONS requests were returning correct CORS headers
 2. **Actual Requests Failing**: GET/POST requests were missing `Access-Control-Allow-Origin` headers
-3. **Middleware Issue**: CORS middleware was configured but not consistently applying headers to all responses
+3. **Route Order Issue**: Partners routes were defined BEFORE CORS middleware was applied (line 207 vs line 420)
+4. **Middleware Issue**: CORS middleware was configured but not consistently applying headers to all responses
 
 ## Solution Implemented
 
-### 1. Enhanced CORS Configuration
+### 1. Fixed Route Order Issue
+**Critical Fix**: Moved partners API routes from line 207 to after CORS middleware (around line 1319) to ensure CORS headers are properly applied.
+
+### 2. Enhanced CORS Configuration
 Updated `server/server.js` with improved CORS handling:
 
 ```javascript
