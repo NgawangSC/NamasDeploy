@@ -393,9 +393,11 @@ const corsOptions = {
     if (!origin) return callback(null, true)
 
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS allowed origin: ${origin}`)
       callback(null, true)
     } else {
-      console.log(`CORS blocked origin: ${origin}`)
+      console.log(`❌ CORS blocked origin: ${origin}`)
+      console.log(`📋 Allowed origins: ${allowedOrigins.join(', ')}`)
       callback(new Error("Not allowed by CORS"))
     }
   },
@@ -417,9 +419,21 @@ const corsOptions = {
 // Apply CORS middleware FIRST
 app.use(cors(corsOptions))
 
+// Add additional CORS headers middleware to ensure they're always present
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin)
+    res.header('Access-Control-Allow-Credentials', 'true')
+  }
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers')
+  next()
+})
+
 // Add request logging middleware EARLY
 app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.url} from ${req.ip}`)
+  console.log(`📥 ${req.method} ${req.url} from ${req.ip} (Origin: ${req.headers.origin || 'none'})`)
   next()
 })
 
