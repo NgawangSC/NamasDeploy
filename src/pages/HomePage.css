@@ -537,26 +537,16 @@
   transition: all 0.3s ease;
 }
 
-.client-arrow:hover {
-  background: #333;
-  color: white;
-}
 
 .client-arrow-left {
   transform: translateX(-25px);
 }
 
-.client-arrow-left:hover {
-  transform: translateX(-25px);
-}
 
 .client-arrow-right {
   transform: translateX(25px);
 }
 
-.client-arrow-right:hover {
-  transform: translateX(25px);
-}
 
 /* Desktop clients arrows (outside responsive grid) */
 .clients-arrow {
@@ -577,11 +567,6 @@
   z-index: 10;
 }
 
-.clients-arrow:hover {
-  background: #333;
-  color: white;
-  transform: translateY(-50%);
-}
 
 .clients-arrow-left {
   left: -25px;
@@ -923,17 +908,11 @@
     transform: translateX(-20px);
   }
 
-  .client-arrow-left:hover {
-    transform: translateX(-20px);
-  }
 
   .client-arrow-right {
     transform: translateX(20px);
   }
 
-  .client-arrow-right:hover {
-    transform: translateX(20px);
-  }
 
 
 
