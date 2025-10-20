@@ -386,7 +386,22 @@ function HomePage() {
               </div>
             ) : partners && partners.length > 0 ? (
               partners.map((partner) => (
-                <div key={partner.id} className="team-member-card">
+                <div 
+                  key={partner.id} 
+                  className={`team-member-card ${partner.website ? 'clickable' : ''}`}
+                  onClick={() => {
+                    if (partner.website) {
+                      // Ensure the URL has a protocol
+                      const url = partner.website.startsWith('http://') || partner.website.startsWith('https://') 
+                        ? partner.website 
+                        : `https://${partner.website}`;
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
+                  style={{
+                    cursor: partner.website ? 'pointer' : 'default'
+                  }}
+                >
                   <div className="team-member-image">
                     <img 
                       src={getImageUrl(partner.logo) || "/images/founder-pic.png"} 
