@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
-import { getImageUrl } from "../utils/imageUtils"
+import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import "./PrivateHomesPage.css"
 
 const PrivateHomesPage = () => {
@@ -199,7 +199,7 @@ const PrivateHomesPage = () => {
             <div key={slideIndex} className="private-homes-projects-display">
               {pair.map((project, index) => (
                 <div key={`${project.id}-${slideIndex}-${index}`} className="private-homes-project-half">
-                                      <div className="private-homes-project-background" style={{ backgroundImage: `url(${getImageUrl(project.image)})` }}>
+                                      <div className="private-homes-project-background" style={{ backgroundImage: `url(${getImageUrl(getProjectImage(project))})` }}>
                     <div className="private-homes-project-overlay-content">
                       <div className="private-homes-project-text-content">
                         <h2 className="private-homes-project-title">{project.title}</h2>

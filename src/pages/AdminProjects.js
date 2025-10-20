@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useProjects, useProjectOperations } from "../hooks/useApi"
 import { useData } from "../contexts/DataContext"
-import { getImageUrl, clearImageCache } from "../utils/imageUtils"
+import { getImageUrl, getProjectImage, clearImageCache } from "../utils/imageUtils"
 import ImageUploadWithCrop from "../components/ImageUploadWithCrop"
 import "./AdminProjects.css"
 
@@ -277,7 +277,7 @@ const AdminProjects = () => {
           <div key={project.id} className="project-card">
             <div className="project-image">
               <img 
-                src={getImageUrl(project.image, true) || "/placeholder.svg"} 
+                src={getImageUrl(getProjectImage(project), true) || "/placeholder.svg"} 
                 alt={project.title}
                 onError={(e) => {
                   e.target.src = "/placeholder.svg"

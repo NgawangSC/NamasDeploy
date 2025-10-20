@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { getImageUrl } from "../utils/imageUtils"
+import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import { heroUtils } from "../utils/heroFix"
 import "./HeroBanner.css"
 import MiniLoadingAnimation from "./MiniLoadingAnimation"
@@ -198,7 +198,7 @@ const HeroBannerSelfContained = () => {
             key={project.id}
             className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
             style={{
-              backgroundImage: `url(${getImageUrl(project.image || project.coverImage) || '/images/placeholder.png'})`
+              backgroundImage: `url(${getImageUrl(getProjectImage(project)) || '/images/placeholder.png'})`
             }}
             onClick={() => handleProjectClick(project.id)}
           >
