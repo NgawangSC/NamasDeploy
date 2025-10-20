@@ -521,10 +521,13 @@
 
 .client-card {
   background: #000000;
-  padding: 20px;
+  padding: 0;
   text-align: center;
   color: white;
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .client-card:hover {
@@ -532,12 +535,16 @@
 }
 
 .client-logo {
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 .client-logo img {
-  width: 150px;
-  height: 150px;
+  width: 100%;
+  height: 75%;
   object-fit: cover;
   border-radius: 0;
   filter: grayscale(100%);
@@ -551,8 +558,14 @@
 .client-name {
   font-size: 1.2rem;
   font-weight: 500;
-  margin: 0 0 5px 0;
+  margin: 0;
   color: white;
+  height: 25%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: #000000;
 }
 
 .no-clients {
@@ -734,8 +747,8 @@
 
 
   .client-logo img {
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 75%;
   }
 }
 
@@ -816,8 +829,8 @@
 
 
   .client-logo img {
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 75%;
   }
 
   .client-name {
