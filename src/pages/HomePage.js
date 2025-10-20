@@ -368,59 +368,37 @@ function HomePage() {
           <div className="clients-header">
             <h2 style={{ fontWeight: 600, color: '#333', margin: 0 }}>Our Partners</h2>
           </div>
-          <div className="clients-carousel">
-            {loading.partners ? (
-              <div className="clients-loading">
-                <MiniLoadingAnimation 
-                  size="medium" 
-                  text="Loading partners..." 
-                  variant="minimal"
-                  className="mini-loading-inline"
-                />
-              </div>
-            ) : partners.length > 0 ? (
-              <>
-                <div className="clients-grid">
-                  {partners
-                    .slice(0, 3)
-                    .map((partner) => (
-                      <div key={partner.id} className="client-card">
-                        <div className="client-logo">
-                          <img 
-                            src={getImageUrl(partner.logo)} 
-                            alt={partner.name}
-                            onError={(e) => {
-                              e.target.src = "/images/placeholder-logo.png"
-                            }}
-                          />
-                          <div className="client-name">{partner.name}</div>
-                        </div>
-                      </div>
-                    ))}
+          {loading.partners ? (
+            <div className="clients-loading">
+              <MiniLoadingAnimation 
+                size="medium" 
+                text="Loading partners..." 
+                variant="minimal"
+                className="mini-loading-inline"
+              />
+            </div>
+          ) : partners.length > 0 ? (
+            <div className="clients-grid">
+              {partners.map((partner) => (
+                <div key={partner.id} className="client-card">
+                  <div className="client-logo">
+                    <img 
+                      src={getImageUrl(partner.logo)} 
+                      alt={partner.name}
+                      onError={(e) => {
+                        e.target.src = "/images/placeholder-logo.png"
+                      }}
+                    />
+                  </div>
+                  <div className="client-name">{partner.name}</div>
                 </div>
-                <div className="clients-grid-responsive">
-                  {partners.slice(0, 1).map((partner) => (
-                    <div key={partner.id} className="client-card">
-                      <div className="client-logo">
-                        <img 
-                          src={getImageUrl(partner.logo)} 
-                          alt={partner.name}
-                          onError={(e) => {
-                            e.target.src = "/images/placeholder-logo.png"
-                          }}
-                        />
-                        <div className="client-name">{partner.name}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="no-clients">
-                <p>No partners available. Add some partners in the dashboard to see them here!</p>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-clients">
+              <p>No partners available. Add some partners in the dashboard to see them here!</p>
+            </div>
+          )}
         </div>
       </section>
     </div>
