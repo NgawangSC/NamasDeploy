@@ -412,6 +412,32 @@ export const resizeImageWithQuality = async (file, maxWidth = 1920, maxHeight = 
 };
 
 /**
+ * Gets the primary image for a project (coverImage or first image from images array)
+ * @param {Object} project - Project object
+ * @returns {string|null} - Image path or null if no image available
+ */
+export const getProjectImage = (project) => {
+  if (!project) return null;
+  
+  // Use coverImage first (preferred for display)
+  if (project.coverImage) {
+    return project.coverImage;
+  }
+  
+  // Fall back to first image from images array
+  if (project.images && Array.isArray(project.images) && project.images.length > 0) {
+    return project.images[0];
+  }
+  
+  // Legacy support for single image field
+  if (project.image) {
+    return project.image;
+  }
+  
+  return null;
+};
+
+/**
  * Optimizes an image file for web usage while preserving quality
  * @param {File} file - Image file to optimize
  * @param {Object} options - Optimization options

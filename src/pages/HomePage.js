@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
-import { getImageUrl } from "../utils/imageUtils"
+import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import ApiService from "../services/api"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
@@ -72,7 +72,7 @@ function HomePage() {
       id: project.id,
       name: project.title,
       year: project.year,
-      image: project.image,
+      image: getProjectImage(project),
       alt: project.title,
       date: project.createdAt || project.date
     };
