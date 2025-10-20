@@ -369,7 +369,7 @@ function HomePage() {
       <section className="our-team-section">
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">Our Partnerss</h2>
+            <h2 className="section-title">Our Partners</h2>
           </div>
           <div className="team-subtitle">
             <h3>Trusted collaborators</h3>
