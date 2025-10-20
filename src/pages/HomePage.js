@@ -12,7 +12,7 @@ import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
-  const { getRecentProjects, clients, partners, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, fetchPartners, data, fetchTeamMembers } = useData()
+  const { getRecentProjects, clients, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, data, fetchTeamMembers } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
@@ -24,9 +24,8 @@ function HomePage() {
     console.log('HomePage: Fetching initial data...')
     fetchClients()
     fetchFeaturedProjects()
-    fetchPartners()
     fetchTeamMembers()
-  }, [fetchClients, fetchFeaturedProjects, fetchPartners, fetchTeamMembers])
+  }, [fetchClients, fetchFeaturedProjects, fetchTeamMembers])
 
   // Debug featuredProjects
   useEffect(() => {
@@ -45,7 +44,6 @@ function HomePage() {
         fetchClients()
         fetchFeaturedProjects()
         fetchProjects()
-        fetchPartners()
         fetchTeamMembers()
       }, 300)
     }
