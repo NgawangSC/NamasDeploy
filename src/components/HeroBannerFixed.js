@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { getImageUrl } from "../utils/imageUtils"
+import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import "./HeroBanner.css"
 
 const HeroBannerFixed = ({ featuredProjects = [] }) => {
@@ -143,7 +143,7 @@ const HeroBannerFixed = ({ featuredProjects = [] }) => {
             key={project.id}
             className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
             style={{
-              backgroundImage: `url(${getImageUrl(project.image) || '/images/placeholder.png'})`
+              backgroundImage: `url(${getImageUrl(getProjectImage(project)) || '/images/placeholder.png'})`
             }}
             onClick={() => handleProjectClick(project.id)}
           >

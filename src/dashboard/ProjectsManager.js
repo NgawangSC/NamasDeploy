@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useData } from "../contexts/DataContext"
-import { getImageUrl } from "../utils/imageUtils"
+import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import ViewFilter from "../components/ViewFilter"
 import ImageUploadWithCrop from "../components/ImageUploadWithCrop"
 import "./ProjectsManager.css"
@@ -334,7 +334,7 @@ const ProjectsManager = () => {
   const ProjectListView = ({ project }) => (
     <div className="project-list-item">
       <div className="project-list-image">
-        <img src={getImageUrl(project.image || project.coverImage) || "/placeholder.svg"} alt={project.title} />
+        <img src={getImageUrl(getProjectImage(project)) || "/placeholder.svg"} alt={project.title} />
         {project.featured && <span className="featured-badge">Featured</span>}
         {(() => {
           const imageCount = project.images && Array.isArray(project.images) 
@@ -383,7 +383,7 @@ const ProjectsManager = () => {
   const ProjectDetailView = ({ project }) => (
     <div className="project-card">
       <div className="project-image">
-        <img src={getImageUrl(project.image || project.coverImage) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
+        <img src={getImageUrl(getProjectImage(project)) || "/placeholder.svg?height=200&width=300&text=No+Image"} alt={project.title} />
         {project.featured && <span className="featured-badge">Featured</span>}
         {(() => {
           const imageCount = project.images && Array.isArray(project.images) 

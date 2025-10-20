@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useData } from "../contexts/DataContext"
-import { getImageUrl } from "../utils/imageUtils"
+import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import "./RecentProjectsManager.css"
 
 const RecentProjectsManager = () => {
@@ -89,7 +89,7 @@ const RecentProjectsManager = () => {
             <div key={project.id} className="recent-project-card">
               <div className="project-image">
                 <img 
-                  src={getImageUrl(project.image) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
+                  src={getImageUrl(getProjectImage(project)) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
                   alt={project.title} 
                 />
               </div>
@@ -124,7 +124,7 @@ const RecentProjectsManager = () => {
               <div key={project.id} className={`project-card ${project.showInRecent ? 'recent' : ''}`}>
                 <div className="project-image">
                   <img 
-                    src={getImageUrl(project.image) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
+                    src={getImageUrl(getProjectImage(project)) || "/placeholder.svg?height=150&width=200&text=No+Image"} 
                     alt={project.title} 
                   />
                   {project.showInRecent && (
