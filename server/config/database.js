@@ -8,18 +8,25 @@ const connectDB = async () => {
     }
 
     console.log('🔗 Attempting to connect to MongoDB...');
-    console.log('📡 Connection string:', process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')); // Hide credentials in logs
+    console.log('📡 Connection string:', process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')); // Hide credentials
 
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // Connection options for production
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      bufferCommands: false, // Disable mongoose buffering
+      // ✅ Important for Atlas
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      ssl: true,                      // Use SSL (TLS)
+      tlsAllowInvalidCertificates: true, // Helps fix Windows TLS issues
+      retryWrites: true,
+
+      // Optional performance options
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
     });
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    
+
     // Log connection events
     mongoose.connection.on('connected', () => {
       console.log('📡 Mongoose connected to MongoDB');
@@ -42,8 +49,7 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
-    // Rethrow so callers can decide whether to fallback or not
-    throw error;
+    throw error; // rethrow so test file can handle it
   }
 };
 
