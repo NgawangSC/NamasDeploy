@@ -500,12 +500,96 @@
 }
 
 
+/* Base styles for clients carousel */
+.clients-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Client slider navigation */
+.client-slider-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Client arrow styles - similar to testimonial arrows */
+.client-arrow {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.client-arrow:hover {
+  background: #333;
+  color: white;
+  transform: scale(1.1);
+}
+
+.client-arrow-left {
+  transform: translateX(-25px);
+}
+
+.client-arrow-left:hover {
+  transform: translateX(-25px) scale(1.1);
+}
+
+.client-arrow-right {
+  transform: translateX(25px);
+}
+
+.client-arrow-right:hover {
+  transform: translateX(25px) scale(1.1);
+}
+
+/* Desktop clients arrows (outside responsive grid) */
 .clients-arrow {
-  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.3s ease;
+  z-index: 10;
 }
 
 .clients-arrow:hover {
-  display: none;
+  background: #333;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.clients-arrow-left {
+  left: -25px;
+}
+
+.clients-arrow-right {
+  right: -25px;
 }
 
   .clients-grid {
@@ -733,7 +817,7 @@
   }
 
   .clients-grid-responsive {
-    display: none;
+    display: block;
   }
 
   .clients-arrow {
@@ -741,7 +825,12 @@
   }
 
   .client-slider-nav {
-    display: none;
+    display: flex;
+  }
+
+  .client-arrow {
+    width: 45px;
+    height: 45px;
   }
 
 
@@ -815,7 +904,7 @@
   }
 
   .clients-grid-responsive {
-    display: none;
+    display: block;
   }
 
   .clients-arrow {
@@ -823,7 +912,28 @@
   }
 
   .client-slider-nav {
-    display: none;
+    display: flex;
+  }
+
+  .client-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .client-arrow-left {
+    transform: translateX(-20px);
+  }
+
+  .client-arrow-left:hover {
+    transform: translateX(-20px) scale(1.1);
+  }
+
+  .client-arrow-right {
+    transform: translateX(20px);
+  }
+
+  .client-arrow-right:hover {
+    transform: translateX(20px) scale(1.1);
   }
 
 
