@@ -1040,6 +1040,14 @@ button {
   color: white;
 }
 
+.client-arrow-left:hover {
+  transform: translateX(-25px);
+}
+
+.client-arrow-right:hover {
+  transform: translateX(25px);
+}
+
 .client-arrow-left {
   transform: translateX(-25px);
 }
@@ -1183,6 +1191,14 @@ button {
   }
 
   .client-arrow-right {
+    transform: translateX(20px);
+  }
+
+  .client-arrow-left:hover {
+    transform: translateX(-20px);
+  }
+
+  .client-arrow-right:hover {
     transform: translateX(20px);
   }
 
