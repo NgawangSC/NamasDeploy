@@ -366,17 +366,17 @@ function HomePage() {
       </section>
 
       {/* Our Partners Section */}
-      <section className="our-partners-section">
+      <section className="our-team-section">
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">Our Partners</h2>
           </div>
-          <div className="partners-subtitle">
+          <div className="team-subtitle">
             <h3>Trusted collaborators</h3>
           </div>
-          <div className="partners-grid">
+          <div className="team-grid">
             {loading.partners ? (
-              <div className="partners-loading">
+              <div className="team-loading">
                 <MiniLoadingAnimation 
                   size="medium" 
                   text="Loading partners..." 
@@ -386,36 +386,25 @@ function HomePage() {
               </div>
             ) : partners && partners.length > 0 ? (
               partners.map((partner) => (
-                <div key={partner.id} className="partner-card">
-                  <div className="partner-logo">
+                <div key={partner.id} className="team-member-card">
+                  <div className="team-member-image">
                     <img 
-                      src={getImageUrl(partner.logo) || "/images/placeholder-logo.png"} 
+                      src={getImageUrl(partner.logo) || "/images/founder-pic.png"} 
                       alt={partner.name}
                       onError={(e) => {
-                        e.target.src = "/images/placeholder-logo.png";
+                        e.target.src = "/images/founder-pic.png";
                       }}
                     />
                   </div>
-                  <div className="partner-info">
-                    <h4 className="partner-name">{partner.name}</h4>
-                    {partner.description && (
-                      <p className="partner-description">{partner.description}</p>
-                    )}
-                    {partner.website && (
-                      <a 
-                        href={partner.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="partner-website"
-                      >
-                        Visit Website
-                      </a>
-                    )}
+                  <div className="team-member-info">
+                    <h4 className="team-member-name">{partner.name}</h4>
+                    <p className="team-member-title">{partner.description || "Partner"}</p>
+                    <p className="team-member-position">{partner.website || ""}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="no-partners">
+              <div className="no-team-members">
                 <p>No partners found. Add partners through the dashboard to display them here.</p>
               </div>
             )}
