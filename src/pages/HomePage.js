@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
+import ApiService from "../services/api"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
 import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
@@ -11,7 +12,7 @@ import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
-  const { getRecentProjects, clients, partners, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, fetchPartners } = useData()
+  const { getRecentProjects, clients, partners, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, fetchPartners, data, fetchTeamMembers } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
@@ -24,7 +25,8 @@ function HomePage() {
     fetchClients()
     fetchFeaturedProjects()
     fetchPartners()
-  }, [fetchClients, fetchFeaturedProjects, fetchPartners])
+    fetchTeamMembers()
+  }, [fetchClients, fetchFeaturedProjects, fetchPartners, fetchTeamMembers])
 
   // Debug featuredProjects
   useEffect(() => {
@@ -44,6 +46,7 @@ function HomePage() {
         fetchFeaturedProjects()
         fetchProjects()
         fetchPartners()
+        fetchTeamMembers()
       }, 300)
     }
 
@@ -362,62 +365,47 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Our Partners Section */}
-      <section className="partners-section">
-        <div className="clients-container">
-          <div className="clients-header">
-            <h2 style={{ fontWeight: 600, color: '#333', margin: 0 }}>Our Partners</h2>
+      {/* Our Team Section */}
+      <section className="our-team-section">
+        <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">Our Team</h2>
           </div>
-          <div className="clients-carousel">
-            {loading.partners ? (
-              <div className="clients-loading">
+          <div className="team-subtitle">
+            <h3>Experts ready to serve</h3>
+          </div>
+          <div className="team-grid">
+            {loading.teamMembers ? (
+              <div className="team-loading">
                 <MiniLoadingAnimation 
                   size="medium" 
-                  text="Loading partners..." 
+                  text="Loading team members..." 
                   variant="minimal"
                   className="mini-loading-inline"
                 />
               </div>
-            ) : partners.length > 0 ? (
-              <>
-                <div className="clients-grid">
-                  {partners
-                    .slice(0, 3)
-                    .map((partner) => (
-                      <div key={partner.id} className="client-card">
-                        <div className="client-logo">
-                          <img 
-                            src={getImageUrl(partner.logo)} 
-                            alt={partner.name}
-                            onError={(e) => {
-                              e.target.src = "/images/placeholder-logo.png"
-                            }}
-                          />
-                          <div className="client-name">{partner.name}</div>
-                        </div>
-                      </div>
-                    ))}
+            ) : data.teamMembers && data.teamMembers.length > 0 ? (
+              data.teamMembers.map((member) => (
+                <div key={member.id} className="team-member-card">
+                  <div className="team-member-image">
+                    <img 
+                      src={ApiService.getImageUrl(member.image) || "/images/founder-pic.png"} 
+                      alt={member.name}
+                      onError={(e) => {
+                        e.target.src = "/images/founder-pic.png";
+                      }}
+                    />
+                  </div>
+                  <div className="team-member-info">
+                    <h4 className="team-member-name">{member.name}</h4>
+                    <p className="team-member-title">{member.title}</p>
+                    <p className="team-member-position">{member.position}</p>
+                  </div>
                 </div>
-                <div className="clients-grid-responsive">
-                  {partners.slice(0, 1).map((partner) => (
-                    <div key={partner.id} className="client-card">
-                      <div className="client-logo">
-                        <img 
-                          src={getImageUrl(partner.logo)} 
-                          alt={partner.name}
-                          onError={(e) => {
-                            e.target.src = "/images/placeholder-logo.png"
-                          }}
-                        />
-                        <div className="client-name">{partner.name}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
+              ))
             ) : (
-              <div className="no-clients">
-                <p>No partners available. Add some partners in the dashboard to see them here!</p>
+              <div className="no-team-members">
+                <p>No team members found. Add team members through the dashboard to display them here.</p>
               </div>
             )}
           </div>
