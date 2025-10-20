@@ -744,11 +744,17 @@
     display: none;
   }
 
-
+  .client-card {
+    height: 240px;
+  }
 
   .client-logo img {
-    width: 160px;
-    height: 160px;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .client-name {
+    font-size: 1rem;
   }
 }
 
@@ -826,15 +832,17 @@
     display: none;
   }
 
-
+  .client-card {
+    height: 200px;
+  }
 
   .client-logo img {
-    width: 160px;
-    height: 160px;
+    width: 100%;
+    height: 100%;
   }
 
   .client-name {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -954,10 +962,13 @@
 
 .team-member-card {
   background: #000000;
-  padding: 20px;
+  padding: 0;
   text-align: center;
   color: white;
   transition: transform 0.3s ease;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
 }
 
 .team-member-card:hover {
@@ -970,12 +981,16 @@
 }
 
 .team-member-image {
-  margin-bottom: 10px;
+  height: 75%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .team-member-image img {
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 0;
   filter: grayscale(100%);
@@ -986,22 +1001,31 @@
   filter: grayscale(0%);
 }
 
+.team-member-info {
+  height: 25%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
 .team-member-name {
   font-size: 1.2rem;
   font-weight: 500;
-  margin: 0 0 5px 0;
+  margin: 0 0 3px 0;
   color: white;
 }
 
 .team-member-title {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 300;
-  margin: 0 0 3px 0;
+  margin: 0 0 2px 0;
   color: #adb5bd;
 }
 
 .team-member-position {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 300;
   margin: 0;
   color: #adb5bd;
@@ -1056,9 +1080,22 @@
     font-size: 1.3rem;
   }
 
+  .team-member-card {
+    height: 200px;
+  }
+
   .team-member-image img {
-    width: 160px;
-    height: 160px;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .team-member-name {
+    font-size: 1rem;
+  }
+  
+  .team-member-title,
+  .team-member-position {
+    font-size: 0.7rem;
   }
 
   .section-title {
