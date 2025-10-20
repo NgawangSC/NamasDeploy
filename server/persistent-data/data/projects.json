@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "title": "Sample Residential Project",
+    "description": "A beautiful residential project showcasing modern architecture",
+    "category": "Residential",
+    "location": "Thimphu, Bhutan",
+    "year": "2024",
+    "featured": true,
+    "status": "Completed",
+    "images": [],
+    "coverImage": null,
+    "client": "Private Client",
+    "designTeam": "NAMAS Architecture Team",
+    "createdAt": "2025-10-20T20:56:00.208Z",
+    "updatedAt": "2025-10-20T20:56:00.209Z"
+  }
+]
