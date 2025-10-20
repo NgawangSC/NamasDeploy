@@ -12,7 +12,7 @@ import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
-  const { getRecentProjects, clients, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, data, fetchTeamMembers } = useData()
+  const { getRecentProjects, clients, partners, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, fetchPartners, data, fetchTeamMembers } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
@@ -24,8 +24,9 @@ function HomePage() {
     console.log('HomePage: Fetching initial data...')
     fetchClients()
     fetchFeaturedProjects()
+    fetchPartners()
     fetchTeamMembers()
-  }, [fetchClients, fetchFeaturedProjects, fetchTeamMembers])
+  }, [fetchClients, fetchFeaturedProjects, fetchPartners, fetchTeamMembers])
 
   // Debug featuredProjects
   useEffect(() => {
@@ -44,6 +45,7 @@ function HomePage() {
         fetchClients()
         fetchFeaturedProjects()
         fetchProjects()
+        fetchPartners()
         fetchTeamMembers()
       }, 300)
     }
@@ -363,47 +365,58 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Our Team Section */}
-      <section className="our-team-section">
+      {/* Our Partners Section */}
+      <section className="our-partners-section">
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">Our Team</h2>
+            <h2 className="section-title">Our Partners</h2>
           </div>
-          <div className="team-subtitle">
-            <h3>Experts ready to serve</h3>
+          <div className="partners-subtitle">
+            <h3>Trusted collaborators</h3>
           </div>
-          <div className="team-grid">
-            {loading.teamMembers ? (
-              <div className="team-loading">
+          <div className="partners-grid">
+            {loading.partners ? (
+              <div className="partners-loading">
                 <MiniLoadingAnimation 
                   size="medium" 
-                  text="Loading team members..." 
+                  text="Loading partners..." 
                   variant="minimal"
                   className="mini-loading-inline"
                 />
               </div>
-            ) : data.teamMembers && data.teamMembers.length > 0 ? (
-              data.teamMembers.map((member) => (
-                <div key={member.id} className="team-member-card">
-                  <div className="team-member-image">
+            ) : partners && partners.length > 0 ? (
+              partners.map((partner) => (
+                <div key={partner.id} className="partner-card">
+                  <div className="partner-logo">
                     <img 
-                      src={ApiService.getImageUrl(member.image) || "/images/founder-pic.png"} 
-                      alt={member.name}
+                      src={getImageUrl(partner.logo) || "/images/placeholder-logo.png"} 
+                      alt={partner.name}
                       onError={(e) => {
-                        e.target.src = "/images/founder-pic.png";
+                        e.target.src = "/images/placeholder-logo.png";
                       }}
                     />
                   </div>
-                  <div className="team-member-info">
-                    <h4 className="team-member-name">{member.name}</h4>
-                    <p className="team-member-title">{member.title}</p>
-                    <p className="team-member-position">{member.position}</p>
+                  <div className="partner-info">
+                    <h4 className="partner-name">{partner.name}</h4>
+                    {partner.description && (
+                      <p className="partner-description">{partner.description}</p>
+                    )}
+                    {partner.website && (
+                      <a 
+                        href={partner.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="partner-website"
+                      >
+                        Visit Website
+                      </a>
+                    )}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="no-team-members">
-                <p>No team members found. Add team members through the dashboard to display them here.</p>
+              <div className="no-partners">
+                <p>No partners found. Add partners through the dashboard to display them here.</p>
               </div>
             )}
           </div>
