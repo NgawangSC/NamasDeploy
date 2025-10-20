@@ -1,261 +1,408 @@
-"use client"
-
-import { useState, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import "./ExteriorPage.css"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
+import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
+import ExperienceBox from "../components/ExperienceBox"
+import MiniLoadingAnimation from "../components/MiniLoadingAnimation"
+import SEO from "../components/SEO"
+import "./HomePage.css"
 
-const ExteriorPage = () => {
+function HomePage() {
   const navigate = useNavigate()
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [startX, setStartX] = useState(0)
-  const [translateX, setTranslateX] = useState(0)
-  const sliderRef = useRef(null)
+  const { getRecentProjects, clients, partners, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, fetchPartners } = useData()
+  const [selectedTestimonial, setSelectedTestimonial] = useState(0)
+  const [currentClientSlide, setCurrentClientSlide] = useState(0)
 
-  const projects = [
+  const totalClientSlides = Math.max(1, Math.ceil(clients.length / 3))
+  const totalClientSlidesResponsive = Math.max(1, clients.length)
+
+  // Fetch data on component mount
+  useEffect(() => {
+    console.log('HomePage: Fetching initial data...')
+    fetchClients()
+    fetchFeaturedProjects()
+    fetchPartners()
+  }, [fetchClients, fetchFeaturedProjects, fetchPartners])
+
+  // Debug featuredProjects
+  useEffect(() => {
+    console.log('HomePage: featuredProjects changed:', featuredProjects)
+    console.log('HomePage: featuredProjects length:', featuredProjects?.length || 0)
+  }, [featuredProjects])
+
+  // Also fetch data when the window gains focus (user returns from dashboard)
+  useEffect(() => {
+    let timeoutId
+    
+    const handleFocus = () => {
+      // Debounce to prevent multiple rapid calls
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        fetchClients()
+        fetchFeaturedProjects()
+        fetchProjects()
+        fetchPartners()
+      }, 300)
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      clearTimeout(timeoutId)
+    }
+  }, [fetchClients, fetchFeaturedProjects, fetchProjects])
+
+  // Refresh featured projects periodically to ensure hero banner is up to date
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchFeaturedProjects()
+    }, 30000) // Refresh every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [fetchFeaturedProjects])
+
+  // Get the 6 most recent projects from the dashboard
+  const recentProjects = getRecentProjects(6).map(project => {
+    return {
+      id: project.id,
+      name: project.title,
+      year: project.year,
+      image: project.image,
+      alt: project.title,
+      date: project.createdAt || project.date
+    };
+  })
+
+  const testimonials = [
     {
       id: 1,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project1.png",
-      category: "Residential",
-      location: "Bhutan",
-      year: "2023",
+      name: "Jennifer Hilbertson",
+      quote:
+        "The Seascape Villas project constitutes one of the first urban interventions in this very unique context, a landscape dominated by mountains and sea.",
+      title: "Architecture Critic",
     },
     {
       id: 2,
-      title: "Dechen Barwa Wangi Phodrang",
-      image: "/images/project2.png",
-      category: "Cultural",
-      location: "Bhutan",
-      year: "2023",
+      name: "Michael Chen",
+      quote:
+        "Their innovative approach to sustainable design has transformed our understanding of modern architecture. Every project tells a unique story.",
+      title: "Urban Planner",
     },
     {
       id: 3,
-      title: "Modern Villa Complex",
-      image: "/images/project3.png",
-      category: "Residential",
-      location: "Thimphu",
-      year: "2022",
+      name: "Sarah Williams",
+      quote:
+        "Working with this team was an exceptional experience. They brought our vision to life while exceeding all our expectations for functionality and beauty.",
+      title: "Property Developer",
     },
     {
       id: 4,
-      title: "Traditional Heritage Center",
-      image: "/images/project4.png",
-      category: "Cultural",
-      location: "Paro",
-      year: "2022",
-    },
-    {
-      id: 5,
-      title: "Contemporary Office Building",
-      image: "/images/project5.png",
-      category: "Commercial",
-      location: "Thimphu",
-      year: "2021",
-    },
-    {
-      id: 6,
-      title: "Monastery Restoration",
-      image: "/images/project6.png",
-      category: "Religious",
-      location: "Punakha",
-      year: "2021",
+      name: "David Rodriguez",
+      quote:
+        "The attention to detail and commitment to excellence is evident in every aspect of their work. Truly masters of their craft.",
+      title: "Interior Designer",
     },
   ]
 
-  const totalSlides = Math.ceil(projects.length / 2)
-
-  const handleMouseDown = (e) => {
-    setIsDragging(true)
-    setStartX(e.clientX)
-    setTranslateX(0)
+  // Testimonial slider functions
+  const nextTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev + 1) % testimonials.length)
   }
 
-  const handleMouseMove = (e) => {
-    if (!isDragging) return
-
-    const currentX = e.clientX
-    const diff = currentX - startX
-    setTranslateX(diff)
+  const prevTestimonial = () => {
+    setSelectedTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
   }
 
-  const handleMouseUp = (e) => {
-    if (!isDragging) return
-
-    setIsDragging(false)
-    const currentX = e.clientX
-    const diff = currentX - startX
-
-    // Threshold for slide change (150px)
-    if (Math.abs(diff) > 150) {
-      if (diff < 0 && currentSlide < totalSlides - 1) {
-        // Drag left - next slide
-        setCurrentSlide((prev) => prev + 1)
-      } else if (diff > 0 && currentSlide > 0) {
-        // Drag right - previous slide
-        setCurrentSlide((prev) => prev - 1)
-      }
-    }
-
-    setTranslateX(0)
+  const nextClientSlide = () => {
+    // Check if we're on a responsive breakpoint (this is a simple check, you might want to use a proper media query hook)
+    const isResponsive = window.innerWidth <= 768
+    const maxSlides = isResponsive ? totalClientSlidesResponsive : totalClientSlides
+    setCurrentClientSlide((prev) => (prev + 1) % maxSlides)
   }
 
-  const handleTouchStart = (e) => {
-    setIsDragging(true)
-    setStartX(e.touches[0].clientX)
-    setTranslateX(0)
+  const prevClientSlide = () => {
+    const isResponsive = window.innerWidth <= 768
+    const maxSlides = isResponsive ? totalClientSlidesResponsive : totalClientSlides
+    setCurrentClientSlide((prev) => (prev - 1 + maxSlides) % maxSlides)
   }
 
-  const handleTouchMove = (e) => {
-    if (!isDragging) return
-
-    const currentX = e.touches[0].clientX
-    const diff = currentX - startX
-    setTranslateX(diff)
-  }
-
-  const handleTouchEnd = (e) => {
-    if (!isDragging) return
-
-    setIsDragging(false)
-    const currentX = e.changedTouches[0].clientX
-    const diff = currentX - startX
-
-    if (Math.abs(diff) > 150) {
-      if (diff < 0 && currentSlide < totalSlides - 1) {
-        setCurrentSlide((prev) => prev + 1)
-      } else if (diff > 0 && currentSlide > 0) {
-        setCurrentSlide((prev) => prev - 1)
-      }
-    }
-
-    setTranslateX(0)
-  }
-
-  const handleReadClick = (projectId) => {
+  const handleReadMore = (projectId) => {
     navigate(`/project/${projectId}`)
   }
 
-  // Get all project pairs for smooth sliding
-  const getAllProjectPairs = () => {
-    const pairs = []
-    for (let i = 0; i < totalSlides; i++) {
-      const startIndex = i * 2
-      const pair = projects.slice(startIndex, startIndex + 2)
-      pairs.push(pair)
-    }
-    return pairs
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "NAMAS Bhutan",
+    "url": process.env.REACT_APP_SITE_URL || "https://www.namasbhutan.com",
+    "logo": (process.env.REACT_APP_SITE_URL || "https://www.namasbhutan.com") + "/android-chrome-192x192.png",
+    "sameAs": []
   }
 
-  const projectPairs = getAllProjectPairs()
-
   return (
-    <div className="design-page">
-      <div
-        className="slider-container"
-        ref={sliderRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div
-          className="projects-slider"
-          style={{
-            transform: `translateX(${-currentSlide * 100 + (translateX / window.innerWidth) * 100}%)`,
-            transition: isDragging ? "none" : "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-          }}
-        >
-          {projectPairs.map((pair, slideIndex) => (
-            <div key={slideIndex} className="projects-display">
-              {pair.map((project, index) => (
-                <div key={`${project.id}-${slideIndex}-${index}`} className="project-half">
-                  <div className="project-background" style={{ backgroundImage: `url(${project.image})` }}>
-                    <div className="project-overlay">
-                      <div className="project-content">
-                        <h2 className="project-title">{project.title}</h2>
-                        <span className="read-text" onClick={() => handleReadClick(project.id)}>
-                          READ
-                        </span>
+    <div className="homepage">
+      <SEO
+        title="NAMAS Bhutan — Architecture, Planning, Interiors & Construction"
+        description="Integrated design and build studio in Bhutan delivering architecture, planning, interior design, construction, supervision and project management."
+        image="/android-chrome-512x512.png"
+        type="website"
+        schema={[organizationSchema]}
+      />
+      {/* Hero Banner Section with Featured Projects - Self-Contained Version */}
+      <HeroBannerSelfContained />
+
+      {/* About Us Section */}
+      <section className="about-section">
+        <div className="about-container">
+          <div className="about-content">
+            <div className="experience-card">
+              <ExperienceBox />
+            </div>
+            <div className="about-text-side">
+              <div className="about-header">ABOUT US</div>
+              <h2 className="about-title">Awesome Design for Bhutan</h2>
+              <div className="about-description">
+                <p>
+                  Based on collective work and shared knowledge, Architecture-Studio aims to favour dialogue and debate,
+                  to transform individual knowledge into increased creative potential.
+                </p>
+                <p>
+                  Our Studio is a architecture practice based in Prague, Czech and Venice. Today, it includes 150
+                  architects, urban planners, landscape and interior designers of 25 different nationalities. The
+                  company principle of Architecture-Studio is the collective conception.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      
+
+      {/* Projects Section */}
+      <section className="projects-section">
+        <div className="projects-container">
+          <div className="projects-header">
+            <div className="projects-label">LAST PROJECTS</div>
+            <h2 className="projects-title">Make it with passion.</h2>
+          </div>
+          <div className="projects-grid">
+            {loading.projects ? (
+              <div className="projects-loading">
+                <MiniLoadingAnimation 
+                  size="large" 
+                  text="Loading projects..." 
+                  variant="default"
+                  className="mini-loading-inline"
+                />
+              </div>
+            ) : recentProjects.length > 0 ? (
+              recentProjects.map((project, index) => (
+                <div 
+                  key={project.id} 
+                  className={`project-card ${index % 2 === 1 ? "project-card-reverse" : ""}`}
+                >
+                  {index % 2 === 0 ? (
+                    <>
+                      <div className="project-image">
+                        <img 
+                          src={getImageUrl(project.image) || "/images/placeholder.png"} 
+                          alt={project.alt || project.name} 
+                          className="project-img" 
+                        />
+                      </div>
+                      <div className="project-details">
+                        <div className="project-year">{project.year}</div>
+                        <h3 className="project-name">{project.name}</h3>
+                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                          Read <ChevronRight size={16} />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="project-details">
+                        <div className="project-year">{project.year}</div>
+                        <h3 className="project-name">{project.name}</h3>
+                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                          Read <ChevronRight size={16} />
+                        </button>
+                      </div>
+                      <div className="project-image">
+                        <img 
+                          src={getImageUrl(project.image) || "/images/placeholder.png"} 
+                          alt={project.alt || project.name} 
+                          className="project-img" 
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="no-projects">
+                <p>No projects available. Add some projects in the dashboard to see them here!</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials-section">
+        <div className="testimonials-container">
+          <div className="testimonials-header">
+            <div className="testimonials-label">TESTIMONIALS</div>
+            <h2 className="testimonials-title">They love us</h2>
+          </div>
+          <div className="testimonials-content">
+            <div className="testimonials-list">
+              {testimonials.map((testimonial, index) => (
+                <button
+                  key={testimonial.id}
+                  className={`testimonial-name-btn ${index === selectedTestimonial ? 'active' : ''}`}
+                  onClick={() => setSelectedTestimonial(index)}
+                >
+                  {testimonial.name}
+                </button>
+              ))}
+            </div>
+            <div className="testimonial-quote-container">
+              <div className="testimonial-slider-nav">
+                <button onClick={prevTestimonial} className="testimonial-arrow testimonial-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextTestimonial} className="testimonial-arrow testimonial-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </div>
+              <div className="quote-mark">"</div>
+              <div className="testimonial-quote">{testimonials[selectedTestimonial].quote}</div>
+              <div className="testimonial-author">-{testimonials[selectedTestimonial].name}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Clients Section */}
+      <section className="clients-section">
+        <div className="clients-container">
+          <div className="clients-header">
+            <img src="/images/people-clients.png" alt="People Clients" className="clients-title-image" />
+          </div>
+          <div className="clients-carousel">
+            {loading.clients ? (
+              <div className="clients-loading">
+                <MiniLoadingAnimation 
+                  size="medium" 
+                  text="Loading clients..." 
+                  variant="minimal"
+                  className="mini-loading-inline"
+                />
+              </div>
+            ) : clients.length > 0 ? (
+              <>
+                <div className="clients-grid">
+                  {clients
+                    .slice(currentClientSlide * 3, (currentClientSlide + 1) * 3)
+                    .map((client) => (
+                      <div key={client.id} className="client-card">
+                        <div className="client-logo">
+                          <img 
+                            src={getImageUrl(client.logo)} 
+                            alt={client.name}
+                            onError={(e) => {
+                              e.target.src = "/images/placeholder-logo.png"
+                            }}
+                          />
+                          <div className="client-name">{client.name}</div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                <div className="clients-grid-responsive">
+                  {clients.slice(currentClientSlide, currentClientSlide + 1).map((client) => (
+                    <div key={client.id} className="client-card">
+                      <div className="client-logo">
+                        <img 
+                          src={getImageUrl(client.logo)} 
+                          alt={client.name}
+                          onError={(e) => {
+                            e.target.src = "/images/placeholder-logo.png"
+                          }}
+                        />
+                        <div className="client-name">{client.name}</div>
                       </div>
                     </div>
+                  ))}
+                  <div className="client-slider-nav">
+                    <button onClick={prevClientSlide} className="client-arrow client-arrow-left">
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button onClick={nextClientSlide} className="client-arrow client-arrow-right">
+                      <ChevronRight size={24} />
+                    </button>
                   </div>
+                </div>
+                <button onClick={prevClientSlide} className="clients-arrow clients-arrow-left">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextClientSlide} className="clients-arrow clients-arrow-right">
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            ) : (
+              <div className="no-clients">
+                <p>No clients available. Add some clients in the dashboard to see them here!</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Our Partners Section */}
+      <section className="partners-section">
+        <div className="clients-container">
+          <div className="clients-header">
+            <h2 style={{ fontWeight: 600, color: '#333', margin: 0 }}>Our Partners</h2>
+          </div>
+          {loading.partners ? (
+            <div className="clients-loading">
+              <MiniLoadingAnimation 
+                size="medium" 
+                text="Loading partners..." 
+                variant="minimal"
+                className="mini-loading-inline"
+              />
+            </div>
+          ) : partners.length > 0 ? (
+            <div className="clients-grid">
+              {partners.map((partner) => (
+                <div key={partner.id} className="client-card">
+                  <div className="client-logo">
+                    <img 
+                      src={getImageUrl(partner.logo)} 
+                      alt={partner.name}
+                      onError={(e) => {
+                        e.target.src = "/images/placeholder-logo.png"
+                      }}
+                    />
+                  </div>
+                  <div className="client-name">{partner.name}</div>
                 </div>
               ))}
             </div>
-          ))}
+          ) : (
+            <div className="no-clients">
+              <p>No partners available. Add some partners in the dashboard to see them here!</p>
+            </div>
+          )}
         </div>
-      </div>
-
-      <div className="filter-section">
-        <div className="filter-controls">
-          <div className="filter-item">
-            <span>YEAR</span>
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className="filter-item">
-            <span>LOCATION</span>
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className="filter-item">
-            <span>CATEGORY</span>
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
-
-        <div className="social-icons">
-          <a href="#" className="social-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M18 2H15C13.6739 2 12.4021 2.52678 11.4645 3.46447C10.5268 4.40215 10 5.67392 10 7V10H7V14H10V22H14V14H17L18 10H14V7C14 6.73478 14.1054 6.48043 14.2929 6.29289C14.4804 6.10536 14.7348 6 15 6H18V2Z"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </a>
-          <a href="#" className="social-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="white" strokeWidth="2" />
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37Z" stroke="white" strokeWidth="2" />
-              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </a>
-          <a href="#" className="social-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M22.54 6.42A2.78 2.78 0 0 0 20.58 4.46C18.88 4 12 4 12 4S5.12 4 3.42 4.46A2.78 2.78 0 0 0 1.46 6.42C1 8.12 1 12 1 12S1 15.88 1.46 17.58A2.78 2.78 0 0 0 3.42 19.54C5.12 20 12 20 12 20S18.88 20 20.58 19.54A2.78 2.78 0 0 0 22.54 17.58C23 15.88 23 12 23 12S23 8.12 22.54 6.42Z"
-                stroke="white"
-                strokeWidth="2"
-              />
-              <polygon points="9.75,15.02 15.5,12 9.75,8.98" fill="white" />
-            </svg>
-          </a>
-          <a href="#" className="social-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
+      </section>
     </div>
   )
 }
 
-export default ExteriorPage
+export default HomePage
