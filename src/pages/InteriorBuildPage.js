@@ -112,28 +112,18 @@ const InteriorBuildPage = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return
-
     const currentX = e.clientX
-    const diff = currentX - startX
-    setTranslateX(diff)
+    setTranslateX(currentX - startX)
   }
 
   const handleMouseUp = (e) => {
     if (!isDragging) return
-
     setIsDragging(false)
-    const currentX = e.clientX
-    const diff = currentX - startX
+    const diff = e.clientX - startX
 
-    // Threshold for slide change (150px)
     if (Math.abs(diff) > 150) {
-      if (diff < 0 && currentSlide < totalSlides - 1) {
-        // Drag left - next slide
-        setCurrentSlide((prev) => prev + 1)
-      } else if (diff > 0 && currentSlide > 0) {
-        // Drag right - previous slide
-        setCurrentSlide((prev) => prev - 1)
-      }
+      if (diff < 0 && currentSlide < totalSlides - 1) setCurrentSlide(prev => prev + 1)
+      else if (diff > 0 && currentSlide > 0) setCurrentSlide(prev => prev - 1)
     }
 
     setTranslateX(0)
@@ -148,25 +138,18 @@ const InteriorBuildPage = () => {
 
   const handleTouchMove = (e) => {
     if (!isDragging) return
-
     const currentX = e.touches[0].clientX
-    const diff = currentX - startX
-    setTranslateX(diff)
+    setTranslateX(currentX - startX)
   }
 
   const handleTouchEnd = (e) => {
     if (!isDragging) return
-
     setIsDragging(false)
-    const currentX = e.changedTouches[0].clientX
-    const diff = currentX - startX
+    const diff = e.changedTouches[0].clientX - startX
 
     if (Math.abs(diff) > 150) {
-      if (diff < 0 && currentSlide < totalSlides - 1) {
-        setCurrentSlide((prev) => prev + 1)
-      } else if (diff > 0 && currentSlide > 0) {
-        setCurrentSlide((prev) => prev - 1)
-      }
+      if (diff < 0 && currentSlide < totalSlides - 1) setCurrentSlide(prev => prev + 1)
+      else if (diff > 0 && currentSlide > 0) setCurrentSlide(prev => prev - 1)
     }
 
     setTranslateX(0)
@@ -197,8 +180,6 @@ const InteriorBuildPage = () => {
   }
 
   const projectPairs = getAllProjectPairs()
-
-
 
   return (
     <div className="interior-build-page">
