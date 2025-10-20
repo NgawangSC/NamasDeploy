@@ -536,8 +536,8 @@
 }
 
 .client-logo img {
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
   border-radius: 0;
   filter: grayscale(100%);
@@ -734,8 +734,8 @@
 
 
   .client-logo img {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
   }
 }
 
@@ -816,8 +816,8 @@
 
 
   .client-logo img {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
   }
 
   .client-name {
@@ -961,8 +961,8 @@
 }
 
 .team-member-image img {
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
   border-radius: 0;
   filter: grayscale(100%);
@@ -1044,8 +1044,8 @@
   }
 
   .team-member-image img {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
   }
 
   .section-title {
