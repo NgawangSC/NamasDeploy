@@ -4,10 +4,12 @@ import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl, getProjectImage } from "../utils/imageUtils"
+import { useProjectNavigation, validateProjectForNavigation } from "../utils/navigationUtils"
 import "./PrivateHomesPage.css"
 
 const PrivateHomesPage = () => {
   const navigate = useNavigate()
+  const navigateToProject = useProjectNavigation('PrivateHomesPage')
   const { projects: allProjects, loading, fetchProjects } = useData()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -150,10 +152,12 @@ const PrivateHomesPage = () => {
     setTranslateX(0)
   }
 
-  const handleReadClick = (e, projectId) => {
+  const handleReadClick = (e, project) => {
     e.preventDefault()
     e.stopPropagation()
-    navigate(`/project/${projectId}`)
+    if (validateProjectForNavigation(project, 'PrivateHomesPage', true)) {
+      navigateToProject(project.id)
+    }
   }
 
   const getAllProjectPairs = () => {
@@ -203,7 +207,10 @@ const PrivateHomesPage = () => {
                     <div className="private-homes-project-overlay-content">
                       <div className="private-homes-project-text-content">
                         <h2 className="private-homes-project-title">{project.title}</h2>
-                        <span onClick={(e) => handleReadClick(e, project.id)} className="private-homes-read-link">
+                        <span 
+                          onClick={(e) => handleReadClick(e, project)} 
+                          className="private-homes-read-link"
+                        >
                           READ
                         </span>
                       </div>

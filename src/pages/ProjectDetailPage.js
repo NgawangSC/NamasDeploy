@@ -41,26 +41,32 @@ const ProjectDetailPage = () => {
   }, [loading.projects, fetchProjects])
 
   useEffect(() => {
+    console.log('ProjectDetailPage: Looking for project with ID:', id)
+    console.log('ProjectDetailPage: Available projects:', projects.map(p => ({ id: p.id, title: p.title })))
+    
     const foundProject = projects.find((p) => {
       // Handle both string and number IDs for backward compatibility
       return p.id === Number.parseInt(id) || p.id === id || p.id.toString() === id
     })
     
     if (foundProject) {
+      console.log('ProjectDetailPage: Found project:', foundProject.title)
       setProject(foundProject)
       setCurrentImageIndex(0)
     } else if (projects.length > 0) {
+      console.log('ProjectDetailPage: Project not found in loaded projects, trying API...')
       // If we have projects loaded but can't find this one, try fetching it individually
       const fetchSingleProject = async () => {
         try {
           setSingleProjectLoading(true)
           const response = await ApiService.getProject(id)
           if (response.success && response.data) {
+            console.log('ProjectDetailPage: Found project via API:', response.data.title)
             setProject(response.data)
             setCurrentImageIndex(0)
           }
         } catch (error) {
-          console.error('Error fetching single project:', error)
+          console.error('ProjectDetailPage: Error fetching single project:', error)
           // Project not found - will show "not found" message
         } finally {
           setSingleProjectLoading(false)
@@ -68,6 +74,8 @@ const ProjectDetailPage = () => {
       }
       
       fetchSingleProject()
+    } else {
+      console.log('ProjectDetailPage: No projects loaded yet, waiting...')
     }
   }, [id, projects])
 
@@ -176,9 +184,24 @@ const ProjectDetailPage = () => {
       <div className="project-loading">
         <h2>Project not found</h2>
         <p>The project you're looking for doesn't exist or may have been removed.</p>
-        <button onClick={() => navigate('/')} className="back-home-btn">
-          Go Back to Home
-        </button>
+        <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+          Project ID: {id}
+        </p>
+        <div style={{ marginTop: '20px' }}>
+          <button onClick={() => navigate('/')} className="back-home-btn" style={{ marginRight: '10px' }}>
+            Go Back to Home
+          </button>
+          <button 
+            onClick={() => {
+              console.log('Retrying project fetch...')
+              fetchProjects()
+            }} 
+            className="back-home-btn"
+            style={{ background: '#2196F3' }}
+          >
+            Retry Loading
+          </button>
+        </div>
       </div>
     )
   }

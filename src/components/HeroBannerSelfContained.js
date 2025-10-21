@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import { heroUtils } from "../utils/heroFix"
+import { useProjectNavigation, validateProjectForNavigation } from "../utils/navigationUtils"
 import "./HeroBanner.css"
 import MiniLoadingAnimation from "./MiniLoadingAnimation"
 
 const HeroBannerSelfContained = () => {
   const navigate = useNavigate()
+  const navigateToProject = useProjectNavigation('HeroBannerSelfContained')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [featuredProjects, setFeaturedProjects] = useState([])
   const [loading, setLoading] = useState(true)
@@ -89,8 +91,10 @@ const HeroBannerSelfContained = () => {
     setCurrentSlide(index)
   }
 
-  const handleProjectClick = (projectId) => {
-    navigate(`/project/${projectId}`)
+  const handleProjectClick = (project) => {
+    if (validateProjectForNavigation(project, 'HeroBannerSelfContained', true)) {
+      navigateToProject(project.id)
+    }
   }
 
   const handleRetry = () => {
@@ -200,7 +204,7 @@ const HeroBannerSelfContained = () => {
             style={{
               backgroundImage: `url(${getImageUrl(getProjectImage(project)) || '/images/placeholder.png'})`
             }}
-            onClick={() => handleProjectClick(project.id)}
+            onClick={() => handleProjectClick(project)}
           >
             <div className="hero-overlay" />
             <div className="hero-content">

@@ -4,10 +4,12 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getImageUrl, getProjectImage } from "../utils/imageUtils"
+import { useProjectNavigation, validateProjectForNavigation } from "../utils/navigationUtils"
 import "./HeroBanner.css"
 
 const HeroBanner = ({ featuredProjects = [] }) => {
   const navigate = useNavigate()
+  const navigateToProject = useProjectNavigation('HeroBanner')
   const [currentSlide, setCurrentSlide] = useState(0)
 
   // Debug featured projects
@@ -42,8 +44,10 @@ const HeroBanner = ({ featuredProjects = [] }) => {
     setCurrentSlide(index)
   }
 
-  const handleProjectClick = (projectId) => {
-    navigate(`/project/${projectId}`)
+  const handleProjectClick = (project) => {
+    if (validateProjectForNavigation(project, 'HeroBanner', true)) {
+      navigateToProject(project.id)
+    }
   }
 
   if (!featuredProjects || featuredProjects.length === 0) {
@@ -71,7 +75,7 @@ const HeroBanner = ({ featuredProjects = [] }) => {
             style={{
               backgroundImage: `url(${getImageUrl(getProjectImage(project)) || '/images/placeholder.png'})`
             }}
-            onClick={() => handleProjectClick(project.id)}
+            onClick={() => handleProjectClick(project)}
           >
             <div className="hero-overlay" />
             <div className="hero-content">

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl, getProjectImage } from "../utils/imageUtils"
+import { useProjectNavigation, validateProjectForNavigation } from "../utils/navigationUtils"
 import ApiService from "../services/api"
 import HeroBannerSelfContained from "../components/HeroBannerSelfContained"
 import ExperienceBox from "../components/ExperienceBox"
@@ -12,6 +13,7 @@ import "./HomePage.css"
 
 function HomePage() {
   const navigate = useNavigate()
+  const navigateToProject = useProjectNavigation('HomePage')
   const { getRecentProjects, clients, partners, loading, fetchClients, featuredProjects, fetchFeaturedProjects, fetchProjects, fetchPartners, data, fetchTeamMembers } = useData()
   const [selectedTestimonial, setSelectedTestimonial] = useState(0)
   const [currentClientSlide, setCurrentClientSlide] = useState(0)
@@ -131,8 +133,10 @@ function HomePage() {
     setCurrentClientSlide((prev) => (prev - 1 + maxSlides) % maxSlides)
   }
 
-  const handleReadMore = (projectId) => {
-    navigate(`/project/${projectId}`)
+  const handleReadMore = (project) => {
+    if (validateProjectForNavigation(project, 'HomePage', true)) {
+      navigateToProject(project.id)
+    }
   }
 
   const organizationSchema = {
@@ -219,7 +223,10 @@ function HomePage() {
                       <div className="project-details">
                         <div className="project-year">{project.year}</div>
                         <h3 className="project-name">{project.name}</h3>
-                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                        <button 
+                          className="project-read-btn" 
+                          onClick={() => handleReadMore(project)}
+                        >
                           Read <ChevronRight size={16} />
                         </button>
                       </div>
@@ -229,7 +236,10 @@ function HomePage() {
                       <div className="project-details">
                         <div className="project-year">{project.year}</div>
                         <h3 className="project-name">{project.name}</h3>
-                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                        <button 
+                          className="project-read-btn" 
+                          onClick={() => handleReadMore(project)}
+                        >
                           Read <ChevronRight size={16} />
                         </button>
                       </div>
