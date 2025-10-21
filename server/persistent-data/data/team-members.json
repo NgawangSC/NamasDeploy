@@ -1,1 +1,41 @@
-[]
+[
+  {
+    "name": "John Doe",
+    "position": "Senior Architect",
+    "bio": "Experienced architect with 10+ years in sustainable design",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "image": null,
+    "order": 1,
+    "active": true,
+    "id": 1761026839616,
+    "createdAt": "2025-10-21T06:07:19.616Z",
+    "updatedAt": "2025-10-21T06:07:19.616Z"
+  },
+  {
+    "name": "Jane Smith",
+    "position": "Lead Designer",
+    "bio": "Creative designer with expertise in sustainable architecture",
+    "email": "jane@example.com",
+    "phone": "+1987654321",
+    "image": null,
+    "order": 2,
+    "active": true,
+    "id": 1761030570125,
+    "createdAt": "2025-10-21T07:09:30.125Z",
+    "updatedAt": "2025-10-21T07:09:30.126Z"
+  },
+  {
+    "name": "Alice Johnson",
+    "position": "Project Manager",
+    "bio": "Experienced project manager specializing in large-scale architectural projects",
+    "email": "alice@example.com",
+    "phone": "+1555123456",
+    "image": null,
+    "order": 3,
+    "active": true,
+    "id": 1761030695558,
+    "createdAt": "2025-10-21T07:11:35.558Z",
+    "updatedAt": "2025-10-21T07:11:35.558Z"
+  }
+]
