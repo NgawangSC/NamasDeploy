@@ -2233,7 +2233,6 @@ app.post("/api/team-members", upload.single('image'), async (req, res) => {
     const memberData = {
       name: req.body.name,
       position: req.body.position || req.body.title, // Accept both position and title
-      bio: req.body.bio || `${req.body.title || req.body.position} with expertise in architecture and design.`, // Generate bio if missing
       email: req.body.email,
       phone: req.body.phone,
       linkedin: req.body.linkedin,
@@ -2331,7 +2330,6 @@ app.put("/api/team-members/:id", upload.single('image'), async (req, res) => {
       const updatedData = {
         name: req.body.name || existingMember.name,
         position: req.body.position || req.body.title || existingMember.position,
-        bio: req.body.bio || existingMember.bio || `${req.body.title || req.body.position || existingMember.position} with expertise in architecture and design.`,
         email: req.body.email || existingMember.email,
         phone: req.body.phone || existingMember.phone,
         linkedin: req.body.linkedin || existingMember.linkedin,
@@ -2361,7 +2359,6 @@ app.put("/api/team-members/:id", upload.single('image'), async (req, res) => {
         name: req.body.name || existingMember.name,
         title: req.body.title || existingMember.title,
         position: req.body.position || req.body.title || existingMember.position,
-        bio: req.body.bio || existingMember.bio || `${req.body.title || req.body.position || existingMember.position} with expertise in architecture and design.`,
         email: req.body.email || existingMember.email,
         phone: req.body.phone || existingMember.phone,
         image: req.file ? `/uploads/${req.file.filename}` : existingMember.image,
