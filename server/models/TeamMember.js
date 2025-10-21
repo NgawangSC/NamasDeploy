@@ -11,10 +11,6 @@ const teamMemberSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  bio: {
-    type: String,
-    required: true
-  },
   image: {
     type: String,
     required: true

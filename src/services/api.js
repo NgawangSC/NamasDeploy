@@ -319,10 +319,6 @@ class ApiService {
   static async createTeamMember(teamMemberData) {
     const { image, ...data } = teamMemberData
 
-    // Ensure bio field is included (required by backend)
-    if (!data.bio && data.title) {
-      data.bio = `${data.title} with expertise in architecture and design.`
-    }
 
     if (image) {
       // Use FormData for file upload
@@ -349,10 +345,6 @@ class ApiService {
   static async updateTeamMember(id, teamMemberData) {
     const { image, ...data } = teamMemberData
 
-    // Ensure bio field is included if missing
-    if (!data.bio && data.title) {
-      data.bio = `${data.title} with expertise in architecture and design.`
-    }
 
     if (image) {
       // Use FormData for file upload
