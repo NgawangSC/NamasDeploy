@@ -120,9 +120,27 @@ export const DataProvider = ({ children }) => {
       const response = await ApiService.getProjects();
       const apiProjects = response.data || [];
       
+      // Validate and fix project data
+      const validatedProjects = apiProjects.map((project, index) => {
+        // Ensure each project has an ID
+        if (!project.id && !project._id) {
+          console.warn('Project missing ID, assigning temporary ID:', project.title || `Project ${index + 1}`)
+          project.id = `temp_${Date.now()}_${index}`
+        }
+        
+        // Use _id as id if id is missing (MongoDB compatibility)
+        if (!project.id && project._id) {
+          project.id = project._id
+        }
+        
+        return project
+      })
+      
+      console.log('DataContext: Loaded and validated projects:', validatedProjects.length)
+      
       setData(prev => ({
         ...prev,
-        projects: apiProjects
+        projects: validatedProjects
       }));
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -251,9 +269,27 @@ export const DataProvider = ({ children }) => {
       const featured = response.data || [];
       console.log('DataContext: Featured projects data:', featured);
       
+      // Validate and fix featured project data
+      const validatedFeatured = featured.map((project, index) => {
+        // Ensure each project has an ID
+        if (!project.id && !project._id) {
+          console.warn('Featured project missing ID, assigning temporary ID:', project.title || `Featured ${index + 1}`)
+          project.id = `temp_featured_${Date.now()}_${index}`
+        }
+        
+        // Use _id as id if id is missing (MongoDB compatibility)
+        if (!project.id && project._id) {
+          project.id = project._id
+        }
+        
+        return project
+      })
+      
+      console.log('DataContext: Loaded and validated featured projects:', validatedFeatured.length)
+      
       setData(prev => ({
         ...prev,
-        featuredProjects: featured
+        featuredProjects: validatedFeatured
       }));
       console.log('DataContext: Featured projects set successfully');
     } catch (err) {
