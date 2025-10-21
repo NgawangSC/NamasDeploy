@@ -29,7 +29,19 @@ const BlogDetailPage = () => {
 
   useEffect(() => {
     if (blogs.length > 0) {
-      const foundBlog = blogs.find((b) => b.id === Number(id))
+      console.log('BlogDetailPage: Looking for blog with ID:', id, 'Type:', typeof id)
+      console.log('BlogDetailPage: Available blogs:', blogs.map(b => ({ id: b.id, _id: b._id, title: b.title })))
+      
+      // Handle both string and number IDs for compatibility
+      const foundBlog = blogs.find((b) => 
+        b.id === id || 
+        b.id === Number(id) || 
+        b.id?.toString() === id ||
+        b._id === id ||
+        b._id?.toString() === id
+      )
+      
+      console.log('BlogDetailPage: Found blog:', foundBlog ? foundBlog.title : 'Not found')
       setBlog(foundBlog || null)
       setLoading(false)
     }

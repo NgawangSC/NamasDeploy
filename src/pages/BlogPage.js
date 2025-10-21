@@ -15,11 +15,19 @@ const BlogPage = () => {
     fetchBlogs()
   }, [fetchBlogs])
 
+  // Debug: Log blogs data
+  useEffect(() => {
+    if (blogs.length > 0) {
+      console.log('BlogPage: Loaded blogs:', blogs.map(b => ({ id: b.id, _id: b._id, title: b.title, published: b.published })))
+    }
+  }, [blogs])
+
   const heroStyle = {
     backgroundColor: 'black',
   }
 
   const handleReadMore = (blogId) => {
+    console.log('BlogPage: Navigating to blog with ID:', blogId, 'Type:', typeof blogId)
     navigate(`/blog/${blogId}`)
   }
 
