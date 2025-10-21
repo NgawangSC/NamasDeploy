@@ -47,7 +47,6 @@ const TeamManager = () => {
     name: '',
     title: '',
     position: '',
-    bio: '',
     image: null
   });
   const [editingMember, setEditingMember] = useState(null);
@@ -90,7 +89,7 @@ const TeamManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.title || !formData.position || !formData.bio) {
+    if (!formData.name || !formData.title || !formData.position) {
       setMessage('Please fill in all required fields');
       return;
     }
@@ -127,7 +126,6 @@ const TeamManager = () => {
       name: member.name,
       title: member.title || member.position, // fallback to position if title doesn't exist
       position: member.position,
-      bio: member.bio || '',
       image: null
     });
   };
@@ -218,19 +216,6 @@ const TeamManager = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="bio">Bio *</label>
-              <textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                placeholder="Brief description of the team member's background and expertise"
-                rows="4"
-                required
-              />
-            </div>
-
-            <div className="form-group">
               <label htmlFor="image">Profile Image</label>
               <input
                 type="file"
@@ -304,4 +289,4 @@ const TeamManager = () => {
   );
 };
 
-export default TeamManager;
+export default TeamManager;t TeamManager;
