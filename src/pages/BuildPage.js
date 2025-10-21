@@ -140,6 +140,10 @@ const BuildPage = () => {
   }
 
   const handleReadClick = (projectId) => {
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID:', projectId)
+      return
+    }
     navigate(`/project/${projectId}`)
   }
 
@@ -203,7 +207,10 @@ const BuildPage = () => {
                     <div className="project-overlay">
                       <div className="project-content">
                         <h2 className="project-title">{project.title}</h2>
-                        <span className="read-text" onClick={() => handleReadClick(project.id)}>
+                        <span className="read-text" onClick={() => {
+                          console.log('Build project clicked:', project)
+                          handleReadClick(project.id)
+                        }}>
                           READ
                         </span>
                       </div>

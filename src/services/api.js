@@ -198,18 +198,36 @@ class ApiService {
 
   // Projects API
   static async getProjects() {
-    return this.request("/projects")
+    try {
+      return await this.request("/projects")
+    } catch (error) {
+      console.error('Failed to fetch projects from API:', error)
+      // Return empty result structure to prevent crashes
+      return { success: false, data: [], error: error.message }
+    }
   }
 
   static async getProject(id) {
-    return this.request(`/projects/${id}`)
+    try {
+      return await this.request(`/projects/${id}`)
+    } catch (error) {
+      console.error(`Failed to fetch project ${id} from API:`, error)
+      // Return empty result structure to prevent crashes
+      return { success: false, data: null, error: error.message }
+    }
   }
 
   static async getFeaturedProjects() {
-    console.log("ApiService: Making request to /projects/featured")
-    const result = await this.request("/projects/featured")
-    console.log("ApiService: getFeaturedProjects result:", result)
-    return result
+    try {
+      console.log("ApiService: Making request to /projects/featured")
+      const result = await this.request("/projects/featured")
+      console.log("ApiService: getFeaturedProjects result:", result)
+      return result
+    } catch (error) {
+      console.error('Failed to fetch featured projects from API:', error)
+      // Return empty result structure to prevent crashes
+      return { success: false, data: [], error: error.message }
+    }
   }
 
   static async createProject(projectData, files = []) {

@@ -158,6 +158,10 @@ const LandscapePage = () => {
   const handleReadClick = (e, projectId) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID:', projectId)
+      return
+    }
     navigate(`/project/${projectId}`)
   }
 
@@ -208,7 +212,10 @@ const LandscapePage = () => {
                     <div className="landscape-project-overlay-content">
                       <div className="landscape-project-text-content">
                         <h2 className="landscape-project-title">{project.title}</h2>
-                        <span onClick={(e) => handleReadClick(e, project.id)} className="landscape-read-link">
+                        <span onClick={(e) => {
+                          console.log('Landscape project clicked:', project)
+                          handleReadClick(e, project.id)
+                        }} className="landscape-read-link">
                           READ
                         </span>
                       </div>

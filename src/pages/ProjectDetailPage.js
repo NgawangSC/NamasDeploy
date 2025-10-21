@@ -41,21 +41,36 @@ const ProjectDetailPage = () => {
   }, [loading.projects, fetchProjects])
 
   useEffect(() => {
+    // Check if ID is valid
+    if (!id || id === 'undefined' || id === 'null') {
+      console.error('Invalid project ID received:', id)
+      setProject(null)
+      return
+    }
+
+    console.log('ProjectDetailPage: Looking for project with ID:', id, 'in projects:', projects.length)
+    
     const foundProject = projects.find((p) => {
       // Handle both string and number IDs for backward compatibility
-      return p.id === Number.parseInt(id) || p.id === id || p.id.toString() === id
+      const match = p.id === Number.parseInt(id) || p.id === id || p.id.toString() === id
+      if (match) {
+        console.log('ProjectDetailPage: Found matching project:', p)
+      }
+      return match
     })
     
     if (foundProject) {
       setProject(foundProject)
       setCurrentImageIndex(0)
     } else if (projects.length > 0) {
+      console.log('ProjectDetailPage: Project not found in loaded projects, trying individual fetch...')
       // If we have projects loaded but can't find this one, try fetching it individually
       const fetchSingleProject = async () => {
         try {
           setSingleProjectLoading(true)
           const response = await ApiService.getProject(id)
           if (response.success && response.data) {
+            console.log('ProjectDetailPage: Successfully fetched individual project:', response.data)
             setProject(response.data)
             setCurrentImageIndex(0)
           }
@@ -172,10 +187,18 @@ const ProjectDetailPage = () => {
   }
 
   if (!project) {
+    const isInvalidId = !id || id === 'undefined' || id === 'null'
     return (
       <div className="project-loading">
         <h2>Project not found</h2>
-        <p>The project you're looking for doesn't exist or may have been removed.</p>
+        {isInvalidId ? (
+          <p>Invalid project ID. Please check the URL or navigate from the project listings.</p>
+        ) : (
+          <p>The project you're looking for doesn't exist or may have been removed.</p>
+        )}
+        <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+          Project ID: {id || 'undefined'}
+        </p>
         <button onClick={() => navigate('/')} className="back-home-btn">
           Go Back to Home
         </button>

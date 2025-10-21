@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import ApiService from '../services/api';
 import { clearImageCache, compressImageToBase64, storeImageLocally, getStoredImage, removeStoredImage } from '../utils/imageUtils';
+import { testProjects, testFeaturedProjects } from '../utils/testData';
 
 const DataContext = createContext();
 
@@ -120,13 +121,29 @@ export const DataProvider = ({ children }) => {
       const response = await ApiService.getProjects();
       const apiProjects = response.data || [];
       
-      setData(prev => ({
-        ...prev,
-        projects: apiProjects
-      }));
+      // If API returns empty or failed, use test data for debugging
+      if (apiProjects.length === 0 && (!response.success || response.success === false)) {
+        console.warn('API failed or returned no projects, using test data for debugging');
+        setData(prev => ({
+          ...prev,
+          projects: testProjects
+        }));
+      } else {
+        setData(prev => ({
+          ...prev,
+          projects: apiProjects
+        }));
+      }
     } catch (err) {
       console.error('Error fetching projects:', err);
+      console.warn('Using test data for debugging due to API error');
       setError(prev => ({ ...prev, projects: err.message }));
+      
+      // Fallback to test data when API fails
+      setData(prev => ({
+        ...prev,
+        projects: testProjects
+      }));
     } finally {
       setLoading(prev => ({ ...prev, projects: false }));
     }
@@ -251,14 +268,30 @@ export const DataProvider = ({ children }) => {
       const featured = response.data || [];
       console.log('DataContext: Featured projects data:', featured);
       
-      setData(prev => ({
-        ...prev,
-        featuredProjects: featured
-      }));
+      // If API returns empty or failed, use test data for debugging
+      if (featured.length === 0 && (!response.success || response.success === false)) {
+        console.warn('API failed or returned no featured projects, using test data for debugging');
+        setData(prev => ({
+          ...prev,
+          featuredProjects: testFeaturedProjects
+        }));
+      } else {
+        setData(prev => ({
+          ...prev,
+          featuredProjects: featured
+        }));
+      }
       console.log('DataContext: Featured projects set successfully');
     } catch (err) {
       console.error('Error fetching featured projects:', err);
+      console.warn('Using test featured projects for debugging due to API error');
       setError(prev => ({ ...prev, featuredProjects: err.message }));
+      
+      // Fallback to test data when API fails
+      setData(prev => ({
+        ...prev,
+        featuredProjects: testFeaturedProjects
+      }));
     } finally {
       setLoading(prev => ({ ...prev, featuredProjects: false }));
     }

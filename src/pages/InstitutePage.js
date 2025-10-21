@@ -143,6 +143,10 @@ const InstitutePage = () => {
   const handleReadClick = (e, projectId) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID:', projectId)
+      return
+    }
     navigate(`/project/${projectId}`)
   }
 
@@ -186,7 +190,10 @@ const InstitutePage = () => {
                     <div className="institute-project-overlay-content">
                       <div className="institute-project-text-content">
                         <h2 className="institute-project-title">{project.title}</h2>
-                        <span onClick={(e) => handleReadClick(e, project.id)} className="institute-read-link">
+                        <span onClick={(e) => {
+                          console.log('Institute project clicked:', project)
+                          handleReadClick(e, project.id)
+                        }} className="institute-read-link">
                           READ
                         </span>
                       </div>

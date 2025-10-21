@@ -132,6 +132,10 @@ function HomePage() {
   }
 
   const handleReadMore = (projectId) => {
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID:', projectId)
+      return
+    }
     navigate(`/project/${projectId}`)
   }
 
@@ -219,7 +223,10 @@ function HomePage() {
                       <div className="project-details">
                         <div className="project-year">{project.year}</div>
                         <h3 className="project-name">{project.name}</h3>
-                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                        <button className="project-read-btn" onClick={() => {
+                          console.log('Homepage project clicked:', project)
+                          handleReadMore(project.id)
+                        }}>
                           Read <ChevronRight size={16} />
                         </button>
                       </div>
@@ -229,7 +236,10 @@ function HomePage() {
                       <div className="project-details">
                         <div className="project-year">{project.year}</div>
                         <h3 className="project-name">{project.name}</h3>
-                        <button className="project-read-btn" onClick={() => handleReadMore(project.id)}>
+                        <button className="project-read-btn" onClick={() => {
+                          console.log('Homepage project clicked:', project)
+                          handleReadMore(project.id)
+                        }}>
                           Read <ChevronRight size={16} />
                         </button>
                       </div>

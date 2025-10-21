@@ -158,6 +158,10 @@ const SupervisionPage = () => {
   const handleReadClick = (e, projectId) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID:', projectId)
+      return
+    }
     navigate(`/project/${projectId}`)
   }
 
@@ -208,7 +212,10 @@ const SupervisionPage = () => {
                     <div className="supervision-project-overlay-content">
                       <div className="supervision-project-text-content">
                         <h2 className="supervision-project-title">{project.title}</h2>
-                        <span onClick={(e) => handleReadClick(e, project.id)} className="supervision-read-link">
+                        <span onClick={(e) => {
+                          console.log('Supervision project clicked:', project)
+                          handleReadClick(e, project.id)
+                        }} className="supervision-read-link">
                           READ
                         </span>
                       </div>

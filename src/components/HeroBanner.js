@@ -43,6 +43,10 @@ const HeroBanner = ({ featuredProjects = [] }) => {
   }
 
   const handleProjectClick = (projectId) => {
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID:', projectId)
+      return
+    }
     navigate(`/project/${projectId}`)
   }
 
@@ -71,7 +75,10 @@ const HeroBanner = ({ featuredProjects = [] }) => {
             style={{
               backgroundImage: `url(${getImageUrl(getProjectImage(project)) || '/images/placeholder.png'})`
             }}
-            onClick={() => handleProjectClick(project.id)}
+            onClick={() => {
+              console.log('Hero banner project clicked:', project)
+              handleProjectClick(project.id)
+            }}
           >
             <div className="hero-overlay" />
             <div className="hero-content">
