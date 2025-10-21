@@ -117,7 +117,7 @@ const ProjectsManager = () => {
       const updatedProject = result.data.project
 
       // Update the project in the state and also update the managingProject
-      await updateProject(managingProject.id, updatedProject)
+      await updateProject(managingProject.id || managingProject._id, updatedProject)
       setManagingProject(updatedProject)
       
       // Refresh projects data to ensure we have the latest information
@@ -171,7 +171,7 @@ const ProjectsManager = () => {
         }
 
         // Update the project in the state and also update the managingProject
-        await updateProject(managingProject.id, updatedProject)
+        await updateProject(managingProject.id || managingProject._id, updatedProject)
         setManagingProject(updatedProject)
         
         console.log('Updated managingProject:', updatedProject)
@@ -188,7 +188,7 @@ const ProjectsManager = () => {
         try {
           await fetchProjects();
           // Find the refreshed project in the current projects state
-          const refreshedProject = projects.find(p => p.id === managingProject.id);
+          const refreshedProject = projects.find(p => (p.id === managingProject.id) || (p._id === managingProject._id) || (p.id === managingProject._id) || (p._id === managingProject.id));
           if (refreshedProject) {
             setManagingProject(refreshedProject);
           }
@@ -221,7 +221,7 @@ const ProjectsManager = () => {
       const updatedProject = result.data
 
       // Update the project in the state and also update the managingProject
-      await updateProject(managingProject.id, updatedProject)
+      await updateProject(managingProject.id || managingProject._id, updatedProject)
       setManagingProject(updatedProject)
       
       alert('Cover image updated successfully!')
@@ -260,7 +260,7 @@ const ProjectsManager = () => {
       })
 
       if (editingProject) {
-        await updateProject(editingProject.id, submitData)
+        await updateProject(editingProject.id || editingProject._id, submitData)
       } else {
         await addProject(submitData)
       }
@@ -360,13 +360,13 @@ const ProjectsManager = () => {
           <div className="project-actions">
             <button onClick={() => handleEdit(project)} className="edit-btn">Edit</button>
             <button onClick={() => handleManageImages(project)} className="manage-images-btn">Images</button>
-            <button onClick={() => handleDelete(project.id)} className="delete-btn">Delete</button>
+            <button onClick={() => handleDelete(project.id || project._id)} className="delete-btn">Delete</button>
             <button 
               onClick={() => toggleFeatured(project)} 
               className={`featured-btn ${project.featured ? 'remove' : 'add'}`}
-              disabled={updatingFeatured === project.id}
+              disabled={updatingFeatured === (project.id || project._id)}
             >
-              {updatingFeatured === project.id 
+              {updatingFeatured === (project.id || project._id) 
                 ? 'Updating...' 
                 : project.featured 
                   ? 'Remove from Hero' 
@@ -410,15 +410,15 @@ const ProjectsManager = () => {
           <button onClick={() => handleManageImages(project)} className="manage-images-btn">
             Manage Images
           </button>
-          <button onClick={() => handleDelete(project.id)} className="delete-btn">
+          <button onClick={() => handleDelete(project.id || project._id)} className="delete-btn">
             Delete
           </button>
           <button 
             onClick={() => toggleFeatured(project)} 
             className={`featured-btn ${project.featured ? 'remove' : 'add'}`}
-            disabled={updatingFeatured === project.id}
+            disabled={updatingFeatured === (project.id || project._id)}
           >
-            {updatingFeatured === project.id 
+            {updatingFeatured === (project.id || project._id) 
               ? 'Updating...' 
               : project.featured 
                 ? 'Remove from Hero' 
@@ -432,12 +432,12 @@ const ProjectsManager = () => {
 
 const toggleFeatured = async (project) => {
   try {
-    setUpdatingFeatured(project.id)
+    setUpdatingFeatured(project.id || project._id)
     const newFeaturedStatus = !project.featured
     const action = newFeaturedStatus ? 'added to' : 'removed from'
     
     // Update the project on the server
-    await updateProject(project.id, { featured: newFeaturedStatus })
+    await updateProject(project.id || project._id, { featured: newFeaturedStatus })
 
     // Refresh the projects list to get updated data
     await fetchProjects()
@@ -709,13 +709,13 @@ const toggleFeatured = async (project) => {
       {viewMode === 'list' ? (
         <div className="projects-list">
           {filteredProjects.map((project) => (
-            <ProjectListView key={project.id} project={project} />
+            <ProjectListView key={project.id || project._id} project={project} />
           ))}
         </div>
       ) : (
         <div className="projects-grid">
           {filteredProjects.map((project) => (
-            <ProjectDetailView key={project.id} project={project} />
+            <ProjectDetailView key={project.id || project._id} project={project} />
           ))}
         </div>
       )}

@@ -344,7 +344,7 @@ export const DataProvider = ({ children }) => {
         
         response = await fetchResponse.json();
         updatedProject = response.data;
-      } else if (typeof updates === 'object' && updates.id) {
+      } else if (typeof updates === 'object' && (updates.id || updates._id)) {
         // Handle direct project object update (from image management operations)
         updatedProject = updates;
       } else {
@@ -355,7 +355,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        projects: prev.projects.map(p => p.id === id ? updatedProject : p)
+        projects: prev.projects.map(p => (p.id === id || p._id === id) ? updatedProject : p)
       }));
       
       // Clear image cache to ensure fresh image URLs
@@ -383,7 +383,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        projects: prev.projects.filter(p => p.id !== id)
+        projects: prev.projects.filter(p => p.id !== id && p._id !== id)
       }));
     } catch (err) {
       console.error('Error deleting project:', err);
