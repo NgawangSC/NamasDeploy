@@ -101,7 +101,7 @@ const ProjectsManager = () => {
       })
 
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/projects/${managingProject.id}/images`, {
+      const response = await fetch(`${apiUrl}/projects/${managingProject.id || managingProject._id}/images`, {
         method: 'POST',
         body: formData,
       })
@@ -145,7 +145,7 @@ const ProjectsManager = () => {
     if (window.confirm('Are you sure you want to remove this image?')) {
       try {
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-        const response = await fetch(`${apiUrl}/projects/${managingProject.id}/images`, {
+        const response = await fetch(`${apiUrl}/projects/${managingProject.id || managingProject._id}/images`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ const ProjectsManager = () => {
         const updatedProject = result.data
 
         // Validate the updated project has the expected structure
-        if (!updatedProject || !updatedProject.id) {
+        if (!updatedProject || (!updatedProject.id && !updatedProject._id)) {
           console.error('Invalid updated project data:', updatedProject)
           throw new Error('Server returned invalid project data')
         }
@@ -204,7 +204,7 @@ const ProjectsManager = () => {
 
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/projects/${managingProject.id}/cover`, {
+      const response = await fetch(`${apiUrl}/projects/${managingProject.id || managingProject._id}/cover`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
