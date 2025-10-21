@@ -1365,52 +1365,113 @@ app.put("/api/projects/:id/cover", async (req, res) => {
   }
 })
 
-// Your existing blogs logic
-app.get("/api/blogs", (req, res) => {
+// GET all blogs
+app.get("/api/blogs", async (req, res) => {
   try {
+    let result
+
+    if (isMongoConnected) {
+      try {
+        result = await Blog.find({ published: true }).sort({ createdAt: -1 })
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      result = loadData(BLOGS_FILE)
+    }
+
     res.json({
       success: true,
-      data: blogPosts,
-      count: blogPosts.length,
+      data: result,
+      count: result.length,
     })
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch blogs" })
+    console.error("❌ Error fetching blogs:", error)
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch blogs",
+      details: error.message
+    })
   }
 })
 
 // POST create new blog
-app.post("/api/blogs", upload.single('image'), (req, res) => {
+app.post("/api/blogs", upload.single('image'), async (req, res) => {
   try {
+    console.log("📝 Creating new blog:", req.body)
+    
+    // Generate slug from title
+    const generateSlug = (title) => {
+      return title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .trim('-') // Remove leading/trailing hyphens
+    }
+
     // Handle both 'status' and 'published' fields for backward compatibility
-    let status = 'draft'; // Default to draft
+    let published = true; // Default to published
     if (req.body.status) {
-      status = req.body.status;
+      published = req.body.status === 'published';
     } else if (req.body.published !== undefined) {
-      status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft';
+      published = (req.body.published === 'true' || req.body.published === true);
     }
     
-    const newBlog = {
-      id: Date.now(),
+    const blogData = {
       title: req.body.title,
       content: req.body.content,
       author: req.body.author || "Admin",
       excerpt: req.body.excerpt || req.body.content?.substring(0, 200),
       category: req.body.category || "",
       tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : req.body.tags) : [],
-      status: status,
-      image: req.file ? `/uploads/${req.file.filename}` : null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      published: published,
+      featured: req.body.featured === 'true' || req.body.featured === true,
+      slug: generateSlug(req.body.title),
+      image: req.file ? `/uploads/${req.file.filename}` : null
     }
     
-    blogPosts.push(newBlog)
-    saveData(BLOGS_FILE, blogPosts)
+    // Validate required fields
+    if (!blogData.title || !blogData.content) {
+      return res.status(400).json({
+        success: false,
+        error: "Title and content are required"
+      })
+    }
     
-    console.log("✅ Blog created successfully:", newBlog.title)
+    let savedBlog
+
+    if (isMongoConnected) {
+      try {
+        // Save to MongoDB
+        const blog = new Blog(blogData)
+        savedBlog = await blog.save()
+        console.log("✅ Blog created successfully in MongoDB:", savedBlog.title)
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB save failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      const blogs = loadData(BLOGS_FILE)
+      blogData.id = Date.now()
+      blogData.createdAt = new Date().toISOString()
+      blogData.updatedAt = new Date().toISOString()
+      blogs.push(blogData)
+      saveData(BLOGS_FILE, blogs)
+      savedBlog = blogData
+      console.log("✅ Blog created successfully in file:", savedBlog.title)
+    }
     
-    res.json({
+    res.status(201).json({
       success: true,
-      data: newBlog,
+      data: savedBlog,
       message: "Blog created successfully"
     })
     
@@ -1425,45 +1486,109 @@ app.post("/api/blogs", upload.single('image'), (req, res) => {
 })
 
 // PUT update existing blog
-app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
+app.put("/api/blogs/:id", upload.single('image'), async (req, res) => {
   try {
-    const blogId = parseInt(req.params.id)
-    const blogIndex = blogPosts.findIndex(b => b.id === blogId)
+    const blogId = req.params.id
+    console.log("📝 Updating blog:", blogId, req.body)
     
-    if (blogIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Blog not found"
-      })
+    let existingBlog, updatedBlog
+
+    if (isMongoConnected) {
+      // Find blog in MongoDB
+      if (blogId.match(/^[0-9a-fA-F]{24}$/)) {
+        existingBlog = await Blog.findById(blogId)
+      } else {
+        existingBlog = await Blog.findOne({ 
+          $or: [
+            { id: Number.parseInt(blogId) },
+            { id: blogId },
+            { id: blogId.toString() }
+          ]
+        })
+      }
+      
+      if (!existingBlog) {
+        return res.status(404).json({
+          success: false,
+          error: "Blog not found"
+        })
+      }
+
+      // Generate slug from title if title is being updated
+      const generateSlug = (title) => {
+        return title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Replace multiple hyphens with single
+          .trim('-') // Remove leading/trailing hyphens
+      }
+
+      // Handle both 'status' and 'published' fields for backward compatibility
+      let published = existingBlog.published;
+      if (req.body.status) {
+        published = req.body.status === 'published';
+      } else if (req.body.published !== undefined) {
+        published = (req.body.published === 'true' || req.body.published === true);
+      }
+
+      // Parse updated data from request body
+      const updatedData = {
+        title: req.body.title || existingBlog.title,
+        content: req.body.content || existingBlog.content,
+        author: req.body.author || existingBlog.author,
+        excerpt: req.body.excerpt || existingBlog.excerpt,
+        category: req.body.category || existingBlog.category,
+        tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : req.body.tags) : (existingBlog.tags || []),
+        published: published,
+        featured: req.body.featured !== undefined ? (req.body.featured === 'true' || req.body.featured === true) : existingBlog.featured,
+        slug: req.body.title ? generateSlug(req.body.title) : existingBlog.slug,
+        image: req.file ? `/uploads/${req.file.filename}` : existingBlog.image
+      }
+
+      updatedBlog = await Blog.findByIdAndUpdate(existingBlog._id, updatedData, { new: true })
+      console.log("✅ Blog updated successfully in MongoDB:", updatedBlog.title)
+    } else {
+      // Fallback to file-based storage
+      const blogs = loadData(BLOGS_FILE)
+      const blogIndex = blogs.findIndex(b => b.id === parseInt(blogId))
+      
+      if (blogIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Blog not found"
+        })
+      }
+      
+      existingBlog = blogs[blogIndex]
+      
+      // Handle both 'status' and 'published' fields for backward compatibility
+      let status = existingBlog.status || (existingBlog.published ? 'published' : 'draft');
+      if (req.body.status) {
+        status = req.body.status;
+      } else if (req.body.published !== undefined) {
+        status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft';
+      }
+      
+      const updatedData = {
+        ...existingBlog,
+        title: req.body.title || existingBlog.title,
+        content: req.body.content || existingBlog.content,
+        author: req.body.author || existingBlog.author,
+        excerpt: req.body.excerpt || existingBlog.excerpt,
+        category: req.body.category || existingBlog.category,
+        tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : req.body.tags) : (existingBlog.tags || []),
+        status: status,
+        image: req.file ? `/uploads/${req.file.filename}` : existingBlog.image,
+        updatedAt: new Date().toISOString()
+      }
+      
+      // Update the blog in the array
+      blogs[blogIndex] = updatedData
+      saveData(BLOGS_FILE, blogs)
+      updatedBlog = updatedData
+      console.log("✅ Blog updated successfully in file:", updatedBlog.title)
     }
-    
-    const existingBlog = blogPosts[blogIndex]
-    
-    // Handle both 'status' and 'published' fields for backward compatibility
-    let status = existingBlog.status || (existingBlog.published ? 'published' : 'draft');
-    if (req.body.status) {
-      status = req.body.status;
-    } else if (req.body.published !== undefined) {
-      status = (req.body.published === 'true' || req.body.published === true) ? 'published' : 'draft';
-    }
-    
-    const updatedBlog = {
-      ...existingBlog,
-      title: req.body.title || existingBlog.title,
-      content: req.body.content || existingBlog.content,
-      author: req.body.author || existingBlog.author,
-      excerpt: req.body.excerpt || existingBlog.excerpt,
-      category: req.body.category || existingBlog.category,
-      tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map(t => t.trim()).filter(t => t) : req.body.tags) : (existingBlog.tags || []),
-      status: status,
-      image: req.file ? `/uploads/${req.file.filename}` : existingBlog.image,
-      updatedAt: new Date().toISOString()
-    }
-    
-    blogPosts[blogIndex] = updatedBlog
-    saveData(BLOGS_FILE, blogPosts)
-    
-    console.log("✅ Blog updated successfully:", updatedBlog.title)
     
     res.json({
       success: true,
@@ -1482,28 +1607,57 @@ app.put("/api/blogs/:id", upload.single('image'), (req, res) => {
 })
 
 // DELETE blog
-app.delete("/api/blogs/:id", (req, res) => {
+app.delete("/api/blogs/:id", async (req, res) => {
   try {
-    const blogId = parseInt(req.params.id)
-    const blogIndex = blogPosts.findIndex(b => b.id === blogId)
+    const blogId = req.params.id
+    console.log("🗑️ Deleting blog:", blogId)
     
-    if (blogIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Blog not found"
-      })
+    let deletedBlog
+
+    if (isMongoConnected) {
+      // Delete from MongoDB
+      if (blogId.match(/^[0-9a-fA-F]{24}$/)) {
+        deletedBlog = await Blog.findByIdAndDelete(blogId)
+      } else {
+        deletedBlog = await Blog.findOneAndDelete({ 
+          $or: [
+            { id: Number.parseInt(blogId) },
+            { id: blogId },
+            { id: blogId.toString() }
+          ]
+        })
+      }
+      
+      if (!deletedBlog) {
+        return res.status(404).json({
+          success: false,
+          error: "Blog not found"
+        })
+      }
+      
+      console.log("✅ Blog deleted successfully from MongoDB:", deletedBlog.title)
+    } else {
+      // Fallback to file-based storage
+      const blogs = loadData(BLOGS_FILE)
+      const blogIndex = blogs.findIndex(b => b.id === parseInt(blogId))
+      
+      if (blogIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Blog not found"
+        })
+      }
+      
+      deletedBlog = blogs[blogIndex]
+      blogs.splice(blogIndex, 1)
+      saveData(BLOGS_FILE, blogs)
+      console.log("✅ Blog deleted successfully from file:", deletedBlog.title)
     }
-    
-    const deletedBlog = blogPosts[blogIndex]
-    blogPosts.splice(blogIndex, 1)
-    saveData(BLOGS_FILE, blogPosts)
-    
-    console.log("🗑️ Blog deleted successfully:", deletedBlog.title)
     
     res.json({
       success: true,
       message: "Blog deleted successfully",
-      data: { id: blogId }
+      data: deletedBlog
     })
     
   } catch (error) {
@@ -1517,44 +1671,94 @@ app.delete("/api/blogs/:id", (req, res) => {
 })
 
 // PARTNERS API ROUTES (moved here to ensure CORS middleware is applied)
-app.get("/api/partners", (req, res) => {
+app.get("/api/partners", async (req, res) => {
   try {
+    let result
+
+    if (isMongoConnected) {
+      try {
+        result = await Partner.find({ active: true }).sort({ order: 1 })
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      result = loadData(PARTNERS_FILE)
+    }
+
     res.json({
       success: true,
-      data: partners,
-      count: partners.length,
+      data: result,
+      count: result.length,
     })
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch partners" })
+    console.error("❌ Error fetching partners:", error)
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch partners",
+      details: error.message
+    })
   }
 })
 
 // POST create new partner
-app.post("/api/partners", upload.single('logo'), (req, res) => {
+app.post("/api/partners", upload.single('logo'), async (req, res) => {
   try {
+    console.log("📝 Creating new partner:", req.body)
+    
     const parsedOrder = Number.parseInt(req.body.order)
     const isActive = req.body.active !== undefined ? (req.body.active === 'true' || req.body.active === true) : true
 
-    const newPartner = {
-      id: Date.now(),
+    const partnerData = {
       name: req.body.name,
       description: req.body.description,
       website: req.body.website,
       logo: req.file ? `/uploads/${req.file.filename}` : null,
-      order: Number.isNaN(parsedOrder) ? partners.length : parsedOrder,
-      active: isActive,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      order: Number.isNaN(parsedOrder) ? 0 : parsedOrder,
+      active: isActive
+    }
+    
+    // Validate required fields
+    if (!partnerData.name) {
+      return res.status(400).json({
+        success: false,
+        error: "Name is required"
+      })
+    }
+    
+    let savedPartner
+
+    if (isMongoConnected) {
+      try {
+        // Save to MongoDB
+        const partner = new Partner(partnerData)
+        savedPartner = await partner.save()
+        console.log("✅ Partner created successfully in MongoDB:", savedPartner.name)
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB save failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
     }
 
-    partners.push(newPartner)
-    saveData(PARTNERS_FILE, partners)
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      const partners = loadData(PARTNERS_FILE)
+      partnerData.id = Date.now()
+      partnerData.createdAt = new Date().toISOString()
+      partnerData.updatedAt = new Date().toISOString()
+      partnerData.order = Number.isNaN(parsedOrder) ? partners.length : parsedOrder
+      partners.push(partnerData)
+      saveData(PARTNERS_FILE, partners)
+      savedPartner = partnerData
+      console.log("✅ Partner created successfully in file:", savedPartner.name)
+    }
 
-    console.log("✅ Partner created successfully:", newPartner.name)
-
-    res.json({
+    res.status(201).json({
       success: true,
-      data: newPartner,
+      data: savedPartner,
       message: "Partner created successfully"
     })
   } catch (error) {
@@ -1568,39 +1772,85 @@ app.post("/api/partners", upload.single('logo'), (req, res) => {
 })
 
 // PUT update existing partner
-app.put("/api/partners/:id", upload.single('logo'), (req, res) => {
+app.put("/api/partners/:id", upload.single('logo'), async (req, res) => {
   try {
-    const partnerId = Number.parseInt(req.params.id)
-    const partnerIndex = partners.findIndex(p => p.id === partnerId)
+    const partnerId = req.params.id
+    console.log("📝 Updating partner:", partnerId, req.body)
+    
+    let existingPartner, updatedPartner
 
-    if (partnerIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Partner not found"
-      })
+    if (isMongoConnected) {
+      // Find partner in MongoDB
+      if (partnerId.match(/^[0-9a-fA-F]{24}$/)) {
+        existingPartner = await Partner.findById(partnerId)
+      } else {
+        existingPartner = await Partner.findOne({ 
+          $or: [
+            { id: Number.parseInt(partnerId) },
+            { id: partnerId },
+            { id: partnerId.toString() }
+          ]
+        })
+      }
+      
+      if (!existingPartner) {
+        return res.status(404).json({
+          success: false,
+          error: "Partner not found"
+        })
+      }
+
+      const parsedOrder = Number.parseInt(req.body.order)
+      const isActive = req.body.active !== undefined
+        ? (req.body.active === 'true' || req.body.active === true)
+        : existingPartner.active
+
+      // Parse updated data from request body
+      const updatedData = {
+        name: req.body.name || existingPartner.name,
+        description: req.body.description || existingPartner.description,
+        website: req.body.website || existingPartner.website,
+        logo: req.file ? `/uploads/${req.file.filename}` : existingPartner.logo,
+        order: Number.isNaN(parsedOrder) ? existingPartner.order : parsedOrder,
+        active: isActive
+      }
+
+      updatedPartner = await Partner.findByIdAndUpdate(existingPartner._id, updatedData, { new: true })
+      console.log("✅ Partner updated successfully in MongoDB:", updatedPartner.name)
+    } else {
+      // Fallback to file-based storage
+      const partners = loadData(PARTNERS_FILE)
+      const partnerIndex = partners.findIndex(p => p.id === Number.parseInt(partnerId))
+
+      if (partnerIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Partner not found"
+        })
+      }
+
+      existingPartner = partners[partnerIndex]
+      const parsedOrder = Number.parseInt(req.body.order)
+      const isActive = req.body.active !== undefined
+        ? (req.body.active === 'true' || req.body.active === true)
+        : existingPartner.active
+
+      const updatedData = {
+        ...existingPartner,
+        name: req.body.name || existingPartner.name,
+        description: req.body.description || existingPartner.description,
+        website: req.body.website || existingPartner.website,
+        logo: req.file ? `/uploads/${req.file.filename}` : existingPartner.logo,
+        order: Number.isNaN(parsedOrder) ? existingPartner.order : parsedOrder,
+        active: isActive,
+        updatedAt: new Date().toISOString()
+      }
+
+      partners[partnerIndex] = updatedData
+      saveData(PARTNERS_FILE, partners)
+      updatedPartner = updatedData
+      console.log("✅ Partner updated successfully in file:", updatedPartner.name)
     }
-
-    const existingPartner = partners[partnerIndex]
-    const parsedOrder = Number.parseInt(req.body.order)
-    const isActive = req.body.active !== undefined
-      ? (req.body.active === 'true' || req.body.active === true)
-      : existingPartner.active
-
-    const updatedPartner = {
-      ...existingPartner,
-      name: req.body.name || existingPartner.name,
-      description: req.body.description || existingPartner.description,
-      website: req.body.website || existingPartner.website,
-      logo: req.file ? `/uploads/${req.file.filename}` : existingPartner.logo,
-      order: Number.isNaN(parsedOrder) ? existingPartner.order : parsedOrder,
-      active: isActive,
-      updatedAt: new Date().toISOString()
-    }
-
-    partners[partnerIndex] = updatedPartner
-    saveData(PARTNERS_FILE, partners)
-
-    console.log("✅ Partner updated successfully:", updatedPartner.name)
 
     res.json({
       success: true,
@@ -1618,28 +1868,57 @@ app.put("/api/partners/:id", upload.single('logo'), (req, res) => {
 })
 
 // DELETE partner
-app.delete("/api/partners/:id", (req, res) => {
+app.delete("/api/partners/:id", async (req, res) => {
   try {
-    const partnerId = Number.parseInt(req.params.id)
-    const partnerIndex = partners.findIndex(p => p.id === partnerId)
+    const partnerId = req.params.id
+    console.log("🗑️ Deleting partner:", partnerId)
+    
+    let deletedPartner
 
-    if (partnerIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Partner not found"
-      })
+    if (isMongoConnected) {
+      // Delete from MongoDB
+      if (partnerId.match(/^[0-9a-fA-F]{24}$/)) {
+        deletedPartner = await Partner.findByIdAndDelete(partnerId)
+      } else {
+        deletedPartner = await Partner.findOneAndDelete({ 
+          $or: [
+            { id: Number.parseInt(partnerId) },
+            { id: partnerId },
+            { id: partnerId.toString() }
+          ]
+        })
+      }
+      
+      if (!deletedPartner) {
+        return res.status(404).json({
+          success: false,
+          error: "Partner not found"
+        })
+      }
+      
+      console.log("✅ Partner deleted successfully from MongoDB:", deletedPartner.name)
+    } else {
+      // Fallback to file-based storage
+      const partners = loadData(PARTNERS_FILE)
+      const partnerIndex = partners.findIndex(p => p.id === Number.parseInt(partnerId))
+
+      if (partnerIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Partner not found"
+        })
+      }
+
+      deletedPartner = partners[partnerIndex]
+      partners.splice(partnerIndex, 1)
+      saveData(PARTNERS_FILE, partners)
+      console.log("✅ Partner deleted successfully from file:", deletedPartner.name)
     }
-
-    const deletedPartner = partners[partnerIndex]
-    partners.splice(partnerIndex, 1)
-    saveData(PARTNERS_FILE, partners)
-
-    console.log("🗑️ Partner deleted successfully:", deletedPartner.name)
 
     res.json({
       success: true,
       message: "Partner deleted successfully",
-      data: { id: partnerId }
+      data: deletedPartner
     })
   } catch (error) {
     console.error("❌ Error deleting partner:", error)
@@ -1651,41 +1930,95 @@ app.delete("/api/partners/:id", (req, res) => {
   }
 })
 
-// Your existing clients logic
-app.get("/api/clients", (req, res) => {
+// GET all clients
+app.get("/api/clients", async (req, res) => {
   try {
+    let result
+
+    if (isMongoConnected) {
+      try {
+        result = await Client.find({ active: true }).sort({ order: 1 })
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      result = loadData(CLIENTS_FILE)
+    }
+
     res.json({
       success: true,
-      data: clients,
-      count: clients.length,
+      data: result,
+      count: result.length,
     })
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch clients" })
+    console.error("❌ Error fetching clients:", error)
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch clients",
+      details: error.message
+    })
   }
 })
 
 // POST create new client
-app.post("/api/clients", upload.single('logo'), (req, res) => {
+app.post("/api/clients", upload.single('logo'), async (req, res) => {
   try {
-    const newClient = {
-      id: Date.now(),
+    console.log("📝 Creating new client:", req.body)
+    
+    const parsedOrder = Number.parseInt(req.body.order)
+    const isActive = req.body.active !== undefined ? (req.body.active === 'true' || req.body.active === true) : true
+
+    const clientData = {
       name: req.body.name,
       description: req.body.description,
       website: req.body.website,
-      contact: req.body.contact,
       logo: req.file ? `/uploads/${req.file.filename}` : null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      order: Number.isNaN(parsedOrder) ? 0 : parsedOrder,
+      active: isActive
     }
     
-    clients.push(newClient)
-    saveData(CLIENTS_FILE, clients)
+    // Validate required fields
+    if (!clientData.name) {
+      return res.status(400).json({
+        success: false,
+        error: "Name is required"
+      })
+    }
     
-    console.log("✅ Client created successfully:", newClient.name)
+    let savedClient
+
+    if (isMongoConnected) {
+      try {
+        // Save to MongoDB
+        const client = new Client(clientData)
+        savedClient = await client.save()
+        console.log("✅ Client created successfully in MongoDB:", savedClient.name)
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB save failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      const clients = loadData(CLIENTS_FILE)
+      clientData.id = Date.now()
+      clientData.createdAt = new Date().toISOString()
+      clientData.updatedAt = new Date().toISOString()
+      clientData.order = Number.isNaN(parsedOrder) ? clients.length : parsedOrder
+      clients.push(clientData)
+      saveData(CLIENTS_FILE, clients)
+      savedClient = clientData
+      console.log("✅ Client created successfully in file:", savedClient.name)
+    }
     
-    res.json({
+    res.status(201).json({
       success: true,
-      data: newClient,
+      data: savedClient,
       message: "Client created successfully"
     })
     
@@ -1700,34 +2033,80 @@ app.post("/api/clients", upload.single('logo'), (req, res) => {
 })
 
 // PUT update existing client
-app.put("/api/clients/:id", upload.single('logo'), (req, res) => {
+app.put("/api/clients/:id", upload.single('logo'), async (req, res) => {
   try {
-    const clientId = parseInt(req.params.id)
-    const clientIndex = clients.findIndex(c => c.id === clientId)
+    const clientId = req.params.id
+    console.log("📝 Updating client:", clientId, req.body)
     
-    if (clientIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Client not found"
-      })
+    let existingClient, updatedClient
+
+    if (isMongoConnected) {
+      // Find client in MongoDB
+      if (clientId.match(/^[0-9a-fA-F]{24}$/)) {
+        existingClient = await Client.findById(clientId)
+      } else {
+        existingClient = await Client.findOne({ 
+          $or: [
+            { id: Number.parseInt(clientId) },
+            { id: clientId },
+            { id: clientId.toString() }
+          ]
+        })
+      }
+      
+      if (!existingClient) {
+        return res.status(404).json({
+          success: false,
+          error: "Client not found"
+        })
+      }
+
+      const parsedOrder = Number.parseInt(req.body.order)
+      const isActive = req.body.active !== undefined
+        ? (req.body.active === 'true' || req.body.active === true)
+        : existingClient.active
+
+      // Parse updated data from request body
+      const updatedData = {
+        name: req.body.name || existingClient.name,
+        description: req.body.description || existingClient.description,
+        website: req.body.website || existingClient.website,
+        logo: req.file ? `/uploads/${req.file.filename}` : existingClient.logo,
+        order: Number.isNaN(parsedOrder) ? existingClient.order : parsedOrder,
+        active: isActive
+      }
+
+      updatedClient = await Client.findByIdAndUpdate(existingClient._id, updatedData, { new: true })
+      console.log("✅ Client updated successfully in MongoDB:", updatedClient.name)
+    } else {
+      // Fallback to file-based storage
+      const clients = loadData(CLIENTS_FILE)
+      const clientIndex = clients.findIndex(c => c.id === parseInt(clientId))
+      
+      if (clientIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Client not found"
+        })
+      }
+      
+      existingClient = clients[clientIndex]
+      
+      const updatedData = {
+        ...existingClient,
+        name: req.body.name || existingClient.name,
+        description: req.body.description || existingClient.description,
+        website: req.body.website || existingClient.website,
+        contact: req.body.contact || existingClient.contact,
+        logo: req.file ? `/uploads/${req.file.filename}` : existingClient.logo,
+        updatedAt: new Date().toISOString()
+      }
+      
+      clients[clientIndex] = updatedData
+      saveData(CLIENTS_FILE, clients)
+      updatedClient = updatedData
+      console.log("✅ Client updated successfully in file:", updatedClient.name)
     }
-    
-    const existingClient = clients[clientIndex]
-    
-    const updatedClient = {
-      ...existingClient,
-      name: req.body.name || existingClient.name,
-      description: req.body.description || existingClient.description,
-      website: req.body.website || existingClient.website,
-      contact: req.body.contact || existingClient.contact,
-      logo: req.file ? `/uploads/${req.file.filename}` : existingClient.logo,
-      updatedAt: new Date().toISOString()
-    }
-    
-    clients[clientIndex] = updatedClient
-    saveData(CLIENTS_FILE, clients)
-    
-    console.log("✅ Client updated successfully:", updatedClient.name)
     
     res.json({
       success: true,
@@ -1746,28 +2125,57 @@ app.put("/api/clients/:id", upload.single('logo'), (req, res) => {
 })
 
 // DELETE client
-app.delete("/api/clients/:id", (req, res) => {
+app.delete("/api/clients/:id", async (req, res) => {
   try {
-    const clientId = parseInt(req.params.id)
-    const clientIndex = clients.findIndex(c => c.id === clientId)
+    const clientId = req.params.id
+    console.log("🗑️ Deleting client:", clientId)
     
-    if (clientIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Client not found"
-      })
+    let deletedClient
+
+    if (isMongoConnected) {
+      // Delete from MongoDB
+      if (clientId.match(/^[0-9a-fA-F]{24}$/)) {
+        deletedClient = await Client.findByIdAndDelete(clientId)
+      } else {
+        deletedClient = await Client.findOneAndDelete({ 
+          $or: [
+            { id: Number.parseInt(clientId) },
+            { id: clientId },
+            { id: clientId.toString() }
+          ]
+        })
+      }
+      
+      if (!deletedClient) {
+        return res.status(404).json({
+          success: false,
+          error: "Client not found"
+        })
+      }
+      
+      console.log("✅ Client deleted successfully from MongoDB:", deletedClient.name)
+    } else {
+      // Fallback to file-based storage
+      const clients = loadData(CLIENTS_FILE)
+      const clientIndex = clients.findIndex(c => c.id === parseInt(clientId))
+      
+      if (clientIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Client not found"
+        })
+      }
+      
+      deletedClient = clients[clientIndex]
+      clients.splice(clientIndex, 1)
+      saveData(CLIENTS_FILE, clients)
+      console.log("✅ Client deleted successfully from file:", deletedClient.name)
     }
-    
-    const deletedClient = clients[clientIndex]
-    clients.splice(clientIndex, 1)
-    saveData(CLIENTS_FILE, clients)
-    
-    console.log("🗑️ Client deleted successfully:", deletedClient.name)
     
     res.json({
       success: true,
       message: "Client deleted successfully",
-      data: { id: clientId }
+      data: deletedClient
     })
     
   } catch (error) {
@@ -1780,43 +2188,98 @@ app.delete("/api/clients/:id", (req, res) => {
   }
 })
 
-// Your existing team members logic
-app.get("/api/team-members", (req, res) => {
+// GET all team members
+app.get("/api/team-members", async (req, res) => {
   try {
+    let result
+
+    if (isMongoConnected) {
+      try {
+        result = await TeamMember.find({ active: true }).sort({ order: 1 })
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      result = loadData(TEAM_MEMBERS_FILE)
+    }
+
     res.json({
       success: true,
-      data: teamMembers,
-      count: teamMembers.length,
+      data: result,
+      count: result.length,
     })
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch team members" })
+    console.error("❌ Error fetching team members:", error)
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch team members",
+      details: error.message
+    })
   }
 })
 
 // POST create new team member
-app.post("/api/team-members", upload.single('image'), (req, res) => {
+app.post("/api/team-members", upload.single('image'), async (req, res) => {
   try {
-    const newMember = {
-      id: Date.now(),
+    console.log("📝 Creating new team member:", req.body)
+    
+    const parsedOrder = Number.parseInt(req.body.order)
+    const isActive = req.body.active !== undefined ? (req.body.active === 'true' || req.body.active === true) : true
+
+    const memberData = {
       name: req.body.name,
-      title: req.body.title,
       position: req.body.position,
       bio: req.body.bio,
       email: req.body.email,
       phone: req.body.phone,
+      linkedin: req.body.linkedin,
       image: req.file ? `/uploads/${req.file.filename}` : null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      order: Number.isNaN(parsedOrder) ? 0 : parsedOrder,
+      active: isActive
     }
     
-    teamMembers.push(newMember)
-    saveData(TEAM_MEMBERS_FILE, teamMembers)
+    // Validate required fields
+    if (!memberData.name || !memberData.position || !memberData.bio) {
+      return res.status(400).json({
+        success: false,
+        error: "Name, position, and bio are required"
+      })
+    }
     
-    console.log("✅ Team member created successfully:", newMember.name)
+    let savedMember
+
+    if (isMongoConnected) {
+      try {
+        // Save to MongoDB
+        const member = new TeamMember(memberData)
+        savedMember = await member.save()
+        console.log("✅ Team member created successfully in MongoDB:", savedMember.name)
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB save failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      const teamMembers = loadData(TEAM_MEMBERS_FILE)
+      memberData.id = Date.now()
+      memberData.createdAt = new Date().toISOString()
+      memberData.updatedAt = new Date().toISOString()
+      memberData.order = Number.isNaN(parsedOrder) ? teamMembers.length : parsedOrder
+      teamMembers.push(memberData)
+      saveData(TEAM_MEMBERS_FILE, teamMembers)
+      savedMember = memberData
+      console.log("✅ Team member created successfully in file:", savedMember.name)
+    }
     
-    res.json({
+    res.status(201).json({
       success: true,
-      data: newMember,
+      data: savedMember,
       message: "Team member created successfully"
     })
     
@@ -1831,36 +2294,85 @@ app.post("/api/team-members", upload.single('image'), (req, res) => {
 })
 
 // PUT update existing team member
-app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
+app.put("/api/team-members/:id", upload.single('image'), async (req, res) => {
   try {
-    const memberId = parseInt(req.params.id)
-    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
+    const memberId = req.params.id
+    console.log("📝 Updating team member:", memberId, req.body)
     
-    if (memberIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Team member not found"
-      })
+    let existingMember, updatedMember
+
+    if (isMongoConnected) {
+      // Find member in MongoDB
+      if (memberId.match(/^[0-9a-fA-F]{24}$/)) {
+        existingMember = await TeamMember.findById(memberId)
+      } else {
+        existingMember = await TeamMember.findOne({ 
+          $or: [
+            { id: Number.parseInt(memberId) },
+            { id: memberId },
+            { id: memberId.toString() }
+          ]
+        })
+      }
+      
+      if (!existingMember) {
+        return res.status(404).json({
+          success: false,
+          error: "Team member not found"
+        })
+      }
+
+      const parsedOrder = Number.parseInt(req.body.order)
+      const isActive = req.body.active !== undefined
+        ? (req.body.active === 'true' || req.body.active === true)
+        : existingMember.active
+
+      // Parse updated data from request body
+      const updatedData = {
+        name: req.body.name || existingMember.name,
+        position: req.body.position || existingMember.position,
+        bio: req.body.bio || existingMember.bio,
+        email: req.body.email || existingMember.email,
+        phone: req.body.phone || existingMember.phone,
+        linkedin: req.body.linkedin || existingMember.linkedin,
+        image: req.file ? `/uploads/${req.file.filename}` : existingMember.image,
+        order: Number.isNaN(parsedOrder) ? existingMember.order : parsedOrder,
+        active: isActive
+      }
+
+      updatedMember = await TeamMember.findByIdAndUpdate(existingMember._id, updatedData, { new: true })
+      console.log("✅ Team member updated successfully in MongoDB:", updatedMember.name)
+    } else {
+      // Fallback to file-based storage
+      const teamMembers = loadData(TEAM_MEMBERS_FILE)
+      const memberIndex = teamMembers.findIndex(m => m.id === parseInt(memberId))
+      
+      if (memberIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Team member not found"
+        })
+      }
+      
+      existingMember = teamMembers[memberIndex]
+      
+      const updatedData = {
+        ...existingMember,
+        name: req.body.name || existingMember.name,
+        title: req.body.title || existingMember.title,
+        position: req.body.position || existingMember.position,
+        bio: req.body.bio || existingMember.bio,
+        email: req.body.email || existingMember.email,
+        phone: req.body.phone || existingMember.phone,
+        image: req.file ? `/uploads/${req.file.filename}` : existingMember.image,
+        updatedAt: new Date().toISOString()
+      }
+      
+      teamMembers[memberIndex] = updatedData
+      saveData(TEAM_MEMBERS_FILE, teamMembers)
+      updatedMember = updatedData
+      console.log("✅ Team member updated successfully in file:", updatedMember.name)
     }
-    
-    const existingMember = teamMembers[memberIndex]
-    
-    const updatedMember = {
-      ...existingMember,
-      name: req.body.name || existingMember.name,
-      title: req.body.title || existingMember.title,
-      position: req.body.position || existingMember.position,
-      bio: req.body.bio || existingMember.bio,
-      email: req.body.email || existingMember.email,
-      phone: req.body.phone || existingMember.phone,
-      image: req.file ? `/uploads/${req.file.filename}` : existingMember.image,
-      updatedAt: new Date().toISOString()
-    }
-    
-    teamMembers[memberIndex] = updatedMember
-    saveData(TEAM_MEMBERS_FILE, teamMembers)
-    
-    console.log("✅ Team member updated successfully:", updatedMember.name)
     
     res.json({
       success: true,
@@ -1879,28 +2391,57 @@ app.put("/api/team-members/:id", upload.single('image'), (req, res) => {
 })
 
 // DELETE team member
-app.delete("/api/team-members/:id", (req, res) => {
+app.delete("/api/team-members/:id", async (req, res) => {
   try {
-    const memberId = parseInt(req.params.id)
-    const memberIndex = teamMembers.findIndex(m => m.id === memberId)
+    const memberId = req.params.id
+    console.log("🗑️ Deleting team member:", memberId)
     
-    if (memberIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Team member not found"
-      })
+    let deletedMember
+
+    if (isMongoConnected) {
+      // Delete from MongoDB
+      if (memberId.match(/^[0-9a-fA-F]{24}$/)) {
+        deletedMember = await TeamMember.findByIdAndDelete(memberId)
+      } else {
+        deletedMember = await TeamMember.findOneAndDelete({ 
+          $or: [
+            { id: Number.parseInt(memberId) },
+            { id: memberId },
+            { id: memberId.toString() }
+          ]
+        })
+      }
+      
+      if (!deletedMember) {
+        return res.status(404).json({
+          success: false,
+          error: "Team member not found"
+        })
+      }
+      
+      console.log("✅ Team member deleted successfully from MongoDB:", deletedMember.name)
+    } else {
+      // Fallback to file-based storage
+      const teamMembers = loadData(TEAM_MEMBERS_FILE)
+      const memberIndex = teamMembers.findIndex(m => m.id === parseInt(memberId))
+      
+      if (memberIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Team member not found"
+        })
+      }
+      
+      deletedMember = teamMembers[memberIndex]
+      teamMembers.splice(memberIndex, 1)
+      saveData(TEAM_MEMBERS_FILE, teamMembers)
+      console.log("✅ Team member deleted successfully from file:", deletedMember.name)
     }
-    
-    const deletedMember = teamMembers[memberIndex]
-    teamMembers.splice(memberIndex, 1)
-    saveData(TEAM_MEMBERS_FILE, teamMembers)
-    
-    console.log("🗑️ Team member deleted successfully:", deletedMember.name)
     
     res.json({
       success: true,
       message: "Team member deleted successfully",
-      data: { id: memberId }
+      data: deletedMember
     })
     
   } catch (error) {
@@ -1946,35 +2487,55 @@ app.post("/api/media/upload", upload.array('images', 10), (req, res) => {
 // POST contact form submission
 app.post("/api/contact", async (req, res) => {
   try {
-    const newContact = {
-      id: Date.now(),
+    const contactData = {
       name: req.body.name,
       email: req.body.email,
       phone: req.body.phone,
       subject: req.body.subject,
       message: req.body.message,
-      status: "new",
-      createdAt: new Date().toISOString()
+      status: "new"
     }
     
-    contacts.push(newContact)
-    saveData(CONTACTS_FILE, contacts)
+    let savedContact
+
+    if (isMongoConnected) {
+      try {
+        // Save to MongoDB
+        const contact = new Contact(contactData)
+        savedContact = await contact.save()
+        console.log("✅ Contact created successfully in MongoDB:", savedContact.name)
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB save failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      const contacts = loadData(CONTACTS_FILE)
+      contactData.id = Date.now()
+      contactData.createdAt = new Date().toISOString()
+      contacts.push(contactData)
+      saveData(CONTACTS_FILE, contacts)
+      savedContact = contactData
+      console.log("✅ Contact created successfully in file:", savedContact.name)
+    }
     
     // Send email notification
     try {
       const mailOptions = {
         from: process.env.EMAIL_USER || 'noreply@namasarchitecture.com',
         to: CONTACT_EMAIL,
-        subject: `New Contact Form Submission from ${newContact.name}`,
+        subject: `New Contact Form Submission from ${savedContact.name}`,
         html: `
           <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${newContact.name}</p>
-          <p><strong>Email:</strong> ${newContact.email}</p>
-          <p><strong>Phone:</strong> ${newContact.phone || 'Not provided'}</p>
-          <p><strong>Subject:</strong> ${newContact.subject || 'General Inquiry'}</p>
+          <p><strong>Name:</strong> ${savedContact.name}</p>
+          <p><strong>Email:</strong> ${savedContact.email}</p>
+          <p><strong>Phone:</strong> ${savedContact.phone || 'Not provided'}</p>
+          <p><strong>Subject:</strong> ${savedContact.subject || 'General Inquiry'}</p>
           <p><strong>Message:</strong></p>
-          <p>${newContact.message.replace(/\n/g, '<br>')}</p>
-          <p><strong>Submitted:</strong> ${new Date(newContact.createdAt).toLocaleString()}</p>
+          <p>${savedContact.message.replace(/\n/g, '<br>')}</p>
+          <p><strong>Submitted:</strong> ${new Date(savedContact.createdAt || savedContact.createdAt).toLocaleString()}</p>
           <hr>
           <p><em>This message was sent from the Namas Architecture website contact form.</em></p>
         `
@@ -1985,7 +2546,7 @@ app.post("/api/contact", async (req, res) => {
       console.log('📧 Subject:', mailOptions.subject)
       
       const info = await transporter.sendMail(mailOptions)
-      console.log("✅ Contact form submitted and email sent successfully:", newContact.name)
+      console.log("✅ Contact form submitted and email sent successfully:", savedContact.name)
       console.log("📧 Email info:", info.messageId)
     } catch (emailError) {
       console.error("❌ Error sending email notification:", emailError.message)
@@ -2001,7 +2562,7 @@ app.post("/api/contact", async (req, res) => {
     res.json({
       success: true,
       message: "Contact form submitted successfully",
-      data: newContact
+      data: savedContact
     })
     
   } catch (error) {
@@ -2068,47 +2629,110 @@ app.post("/api/test-email", async (req, res) => {
 })
 
 // GET contacts (for admin)
-app.get("/api/contacts", (req, res) => {
+app.get("/api/contacts", async (req, res) => {
   try {
+    let result
+
+    if (isMongoConnected) {
+      try {
+        result = await Contact.find({}).sort({ createdAt: -1 })
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      result = loadData(CONTACTS_FILE)
+    }
+
     res.json({
       success: true,
-      data: contacts,
-      count: contacts.length
+      data: result,
+      count: result.length
     })
   } catch (error) {
     console.error("❌ Error fetching contacts:", error)
     res.status(500).json({
       success: false,
-      error: "Failed to fetch contacts"
+      error: "Failed to fetch contacts",
+      details: error.message
     })
   }
 })
 
 // PUT update contact status
-app.put("/api/contacts/:id", (req, res) => {
+app.put("/api/contacts/:id", async (req, res) => {
   try {
-    const contactId = parseInt(req.params.id)
-    const contactIndex = contacts.findIndex(c => c.id === contactId)
+    const contactId = req.params.id
+    console.log("📝 Updating contact:", contactId, req.body)
     
-    if (contactIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: "Contact not found"
-      })
+    let updatedContact
+
+    if (isMongoConnected) {
+      // Find and update contact in MongoDB
+      if (contactId.match(/^[0-9a-fA-F]{24}$/)) {
+        updatedContact = await Contact.findByIdAndUpdate(
+          contactId,
+          { 
+            status: req.body.status,
+            updatedAt: new Date()
+          },
+          { new: true }
+        )
+      } else {
+        updatedContact = await Contact.findOneAndUpdate(
+          { 
+            $or: [
+              { id: Number.parseInt(contactId) },
+              { id: contactId },
+              { id: contactId.toString() }
+            ]
+          },
+          { 
+            status: req.body.status,
+            updatedAt: new Date()
+          },
+          { new: true }
+        )
+      }
+      
+      if (!updatedContact) {
+        return res.status(404).json({
+          success: false,
+          error: "Contact not found"
+        })
+      }
+      
+      console.log("✅ Contact updated successfully in MongoDB:", updatedContact.name)
+    } else {
+      // Fallback to file-based storage
+      const contacts = loadData(CONTACTS_FILE)
+      const contactIndex = contacts.findIndex(c => c.id === parseInt(contactId))
+      
+      if (contactIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          error: "Contact not found"
+        })
+      }
+      
+      contacts[contactIndex] = {
+        ...contacts[contactIndex],
+        status: req.body.status || contacts[contactIndex].status,
+        updatedAt: new Date().toISOString()
+      }
+      
+      saveData(CONTACTS_FILE, contacts)
+      updatedContact = contacts[contactIndex]
+      console.log("✅ Contact updated successfully in file:", updatedContact.name)
     }
-    
-    contacts[contactIndex] = {
-      ...contacts[contactIndex],
-      status: req.body.status || contacts[contactIndex].status,
-      updatedAt: new Date().toISOString()
-    }
-    
-    saveData(CONTACTS_FILE, contacts)
     
     res.json({
       success: true,
       message: "Contact updated successfully",
-      data: contacts[contactIndex]
+      data: updatedContact
     })
     
   } catch (error) {
@@ -2122,7 +2746,7 @@ app.put("/api/contacts/:id", (req, res) => {
 })
 
 // POST search functionality
-app.post("/api/search", (req, res) => {
+app.post("/api/search", async (req, res) => {
   try {
     const { query, type } = req.body
     
@@ -2136,27 +2760,67 @@ app.post("/api/search", (req, res) => {
     let results = []
     const searchQuery = query.toLowerCase()
     
-    // Search in projects
-    if (!type || type === 'projects') {
-      const projectResults = projects.filter(project => 
-        project.title?.toLowerCase().includes(searchQuery) ||
-        project.description?.toLowerCase().includes(searchQuery) ||
-        project.category?.toLowerCase().includes(searchQuery) ||
-        project.location?.toLowerCase().includes(searchQuery)
-      ).map(project => ({ ...project, type: 'project' }))
-      
-      results = results.concat(projectResults)
+    if (isMongoConnected) {
+      try {
+        // Search in projects using MongoDB
+        if (!type || type === 'projects') {
+          const projectResults = await Project.find({
+            $or: [
+              { title: { $regex: searchQuery, $options: 'i' } },
+              { description: { $regex: searchQuery, $options: 'i' } },
+              { category: { $regex: searchQuery, $options: 'i' } },
+              { location: { $regex: searchQuery, $options: 'i' } }
+            ]
+          }).sort({ createdAt: -1 })
+          
+          results = results.concat(projectResults.map(project => ({ ...project.toObject(), type: 'project' })))
+        }
+        
+        // Search in blogs using MongoDB
+        if (!type || type === 'blogs') {
+          const blogResults = await Blog.find({
+            published: true,
+            $or: [
+              { title: { $regex: searchQuery, $options: 'i' } },
+              { content: { $regex: searchQuery, $options: 'i' } },
+              { excerpt: { $regex: searchQuery, $options: 'i' } }
+            ]
+          }).sort({ createdAt: -1 })
+          
+          results = results.concat(blogResults.map(blog => ({ ...blog.toObject(), type: 'blog' })))
+        }
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB search failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
     }
-    
-    // Search in blogs
-    if (!type || type === 'blogs') {
-      const blogResults = blogPosts.filter(blog => 
-        blog.title?.toLowerCase().includes(searchQuery) ||
-        blog.content?.toLowerCase().includes(searchQuery) ||
-        blog.excerpt?.toLowerCase().includes(searchQuery)
-      ).map(blog => ({ ...blog, type: 'blog' }))
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      // Search in projects
+      if (!type || type === 'projects') {
+        const projects = loadData(PROJECTS_FILE)
+        const projectResults = projects.filter(project => 
+          project.title?.toLowerCase().includes(searchQuery) ||
+          project.description?.toLowerCase().includes(searchQuery) ||
+          project.category?.toLowerCase().includes(searchQuery) ||
+          project.location?.toLowerCase().includes(searchQuery)
+        ).map(project => ({ ...project, type: 'project' }))
+        
+        results = results.concat(projectResults)
+      }
       
-      results = results.concat(blogResults)
+      // Search in blogs
+      if (!type || type === 'blogs') {
+        const blogPosts = loadData(BLOGS_FILE)
+        const blogResults = blogPosts.filter(blog => 
+          blog.title?.toLowerCase().includes(searchQuery) ||
+          blog.content?.toLowerCase().includes(searchQuery) ||
+          blog.excerpt?.toLowerCase().includes(searchQuery)
+        ).map(blog => ({ ...blog, type: 'blog' }))
+        
+        results = results.concat(blogResults)
+      }
     }
     
     console.log(`🔍 Search performed for "${query}", found ${results.length} results`)
