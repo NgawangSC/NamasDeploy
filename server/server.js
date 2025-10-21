@@ -342,6 +342,14 @@ app.get("/api/config", (req, res) => {
       allowedOrigins,
       usingExternalDataDir: !DATA_DIR.includes(__dirname),
       usingExternalUploadsDir: !UPLOADS_DIR.includes(__dirname),
+      mongoConnected: isMongoConnected,
+      mongoConnectionState: require('mongoose').connection.readyState,
+      mongoConnectionStates: {
+        0: 'disconnected',
+        1: 'connected', 
+        2: 'connecting',
+        3: 'disconnecting'
+      }
     },
   })
 })

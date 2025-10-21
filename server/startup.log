@@ -1,0 +1,80 @@
+🔗 Attempting to connect to MongoDB...
+📡 Connection string: mongodb+srv://***:***@namasbhutan.yu98vtk.mongodb.net/namas_architecture?retryWrites=true&w=majority&appName=NamasBhutan
+Runtime configuration:
+  PORT: 3002
+  DATA_DIR: /workspace/server/persistent-data/data (internal)
+  UPLOADS_DIR: /workspace/server/persistent-data/uploads (internal)
+  ALLOWED_ORIGINS: [
+  'https://www.namasbhutan.com',
+  'https://namasbhutan.com',
+  'http://localhost:3000'
+]
+📁 Loading data from files...
+✅ Data loaded from files
+(node:10035) [MONGOOSE] Warning: Duplicate schema index on {"slug":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🚀 NAMAS Architecture API Server running on port 3002
+🌍 Environment: production
+🌐 CORS enabled for: https://www.namasbhutan.com, https://namasbhutan.com, http://localhost:3000
+📡 Server URL: http://0.0.0.0:3002
+📊 Loaded: 1 projects, 2 blogs, 0 clients, 0 partners, 3 team members, 0 contacts
+📧 Verifying email configuration...
+✅ Email server connection verified successfully
+✅ MongoDB Connected: ac-ck4hmar-shard-00-00.yu98vtk.mongodb.net
+📊 Database: namas_architecture
+✅ MongoDB initialized successfully
+📥 POST /api/team-members from 127.0.0.1 (Origin: none)
+📝 Creating new team member: [Object: null prototype] {
+  name: 'Bob Wilson',
+  position: 'Senior Engineer',
+  bio: 'Structural engineer with 15+ years experience in high-rise construction',
+  email: 'bob@example.com',
+  phone: '+1555987654',
+  order: '4',
+  active: 'true'
+}
+✅ Team member created successfully in MongoDB: Bob Wilson
+📥 POST /api/blogs from 127.0.0.1 (Origin: none)
+📝 Creating new blog: [Object: null prototype] {
+  title: 'MongoDB Integration Success',
+  content: 'This blog post confirms that MongoDB integration is working properly for all entities',
+  excerpt: 'MongoDB integration working',
+  author: 'System Admin',
+  category: 'Technical',
+  published: 'true'
+}
+✅ Blog created successfully in MongoDB: MongoDB Integration Success
+📥 POST /api/partners from 127.0.0.1 (Origin: none)
+📝 Creating new partner: [Object: null prototype] {
+  name: 'MongoDB Test Partner',
+  description: 'A test partner to verify MongoDB integration',
+  website: 'https://example.com',
+  order: '1',
+  active: 'true'
+}
+✅ Partner created successfully in MongoDB: MongoDB Test Partner
+📥 POST /api/clients from 127.0.0.1 (Origin: none)
+📝 Creating new client: [Object: null prototype] {
+  name: 'MongoDB Test Client',
+  description: 'A test client to verify MongoDB integration',
+  website: 'https://client.example.com',
+  order: '1',
+  active: 'true'
+}
+✅ Client created successfully in MongoDB: MongoDB Test Client
+📥 POST /api/projects from 127.0.0.1 (Origin: none)
+📝 Creating new project: [Object: null prototype] {
+  title: 'MongoDB Test Project',
+  description: 'A test project to verify MongoDB integration is working for all entities',
+  category: 'Architecture',
+  location: 'Test City',
+  year: '2024',
+  status: 'In Progress',
+  featured: 'true'
+}
+✅ Project created successfully in MongoDB: MongoDB Test Project
+📥 GET /api/team-members from 127.0.0.1 (Origin: none)
+📥 GET /api/blogs from 127.0.0.1 (Origin: none)
+📥 GET /api/partners from 127.0.0.1 (Origin: none)
+📥 GET /api/clients from 127.0.0.1 (Origin: none)
+📥 GET /api/projects from 127.0.0.1 (Origin: none)

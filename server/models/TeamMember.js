@@ -17,7 +17,7 @@ const teamMemberSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: true
+    required: false
   },
   email: {
     type: String,

@@ -8,7 +8,7 @@ const clientSchema = new mongoose.Schema({
   },
   logo: {
     type: String,
-    required: true
+    required: false
   },
   description: {
     type: String,
