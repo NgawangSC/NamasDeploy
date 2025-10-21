@@ -524,16 +524,26 @@ app.get("/api/projects", async (req, res) => {
 
     if (isMongoConnected) {
       try {
+        let mongoProjects
         if (limit > 0) {
-          result = await Project.find({})
+          mongoProjects = await Project.find({})
             .sort({ createdAt: -1 })
             .skip(startIndex)
             .limit(limit)
           totalCount = await Project.countDocuments({})
         } else {
-          result = await Project.find({}).sort({ createdAt: -1 })
-          totalCount = result.length
+          mongoProjects = await Project.find({}).sort({ createdAt: -1 })
+          totalCount = mongoProjects.length
         }
+        
+        // Transform MongoDB documents to include 'id' field for frontend compatibility
+        result = mongoProjects.map(project => {
+          const projectObj = project.toObject()
+          return {
+            ...projectObj,
+            id: projectObj._id.toString() // Add id field from _id
+          }
+        })
       } catch (dbErr) {
         console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
         isMongoConnected = false
@@ -580,9 +590,18 @@ app.get("/api/projects/featured", async (req, res) => {
 
     if (isMongoConnected) {
       try {
-        featuredProjects = await Project.find({ featured: true })
+        const mongoProjects = await Project.find({ featured: true })
           .sort({ createdAt: -1 })
           .limit(8)
+        
+        // Transform MongoDB documents to include 'id' field for frontend compatibility
+        featuredProjects = mongoProjects.map(project => {
+          const projectObj = project.toObject()
+          return {
+            ...projectObj,
+            id: projectObj._id.toString() // Add id field from _id
+          }
+        })
       } catch (dbErr) {
         console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
         isMongoConnected = false
@@ -648,9 +667,19 @@ app.get("/api/projects/:id", async (req, res) => {
       })
     }
     
+    // Transform MongoDB document to include 'id' field for frontend compatibility
+    let responseProject = project
+    if (isMongoConnected && project.toObject) {
+      const projectObj = project.toObject()
+      responseProject = {
+        ...projectObj,
+        id: projectObj._id.toString() // Add id field from _id
+      }
+    }
+    
     res.json({
       success: true,
-      data: project
+      data: responseProject
     })
     
   } catch (error) {
