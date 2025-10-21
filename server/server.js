@@ -2232,8 +2232,8 @@ app.post("/api/team-members", upload.single('image'), async (req, res) => {
 
     const memberData = {
       name: req.body.name,
-      position: req.body.position,
-      bio: req.body.bio,
+      position: req.body.position || req.body.title, // Accept both position and title
+      bio: req.body.bio || `${req.body.title || req.body.position} with expertise in architecture and design.`, // Generate bio if missing
       email: req.body.email,
       phone: req.body.phone,
       linkedin: req.body.linkedin,
@@ -2243,10 +2243,10 @@ app.post("/api/team-members", upload.single('image'), async (req, res) => {
     }
     
     // Validate required fields
-    if (!memberData.name || !memberData.position || !memberData.bio) {
+    if (!memberData.name || !memberData.position) {
       return res.status(400).json({
         success: false,
-        error: "Name, position, and bio are required"
+        error: "Name and position are required"
       })
     }
     
@@ -2330,8 +2330,8 @@ app.put("/api/team-members/:id", upload.single('image'), async (req, res) => {
       // Parse updated data from request body
       const updatedData = {
         name: req.body.name || existingMember.name,
-        position: req.body.position || existingMember.position,
-        bio: req.body.bio || existingMember.bio,
+        position: req.body.position || req.body.title || existingMember.position,
+        bio: req.body.bio || existingMember.bio || `${req.body.title || req.body.position || existingMember.position} with expertise in architecture and design.`,
         email: req.body.email || existingMember.email,
         phone: req.body.phone || existingMember.phone,
         linkedin: req.body.linkedin || existingMember.linkedin,
@@ -2360,8 +2360,8 @@ app.put("/api/team-members/:id", upload.single('image'), async (req, res) => {
         ...existingMember,
         name: req.body.name || existingMember.name,
         title: req.body.title || existingMember.title,
-        position: req.body.position || existingMember.position,
-        bio: req.body.bio || existingMember.bio,
+        position: req.body.position || req.body.title || existingMember.position,
+        bio: req.body.bio || existingMember.bio || `${req.body.title || req.body.position || existingMember.position} with expertise in architecture and design.`,
         email: req.body.email || existingMember.email,
         phone: req.body.phone || existingMember.phone,
         image: req.file ? `/uploads/${req.file.filename}` : existingMember.image,
