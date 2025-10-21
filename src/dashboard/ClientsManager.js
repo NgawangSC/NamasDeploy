@@ -38,7 +38,7 @@ const ClientsManager = () => {
 
     try {
       if (editingClient) {
-        await updateClient(editingClient.id, formData)
+        await updateClient(editingClient.id || editingClient._id, formData)
       } else {
         await addClient(formData)
       }
@@ -228,7 +228,7 @@ const ClientsManager = () => {
             {clientRows.map((row, rowIndex) => (
               <div key={rowIndex} className="clients-row">
                 {row.map((client) => (
-                  <div key={client.id} className="client-card">
+                  <div key={client.id || client._id} className="client-card">
                     <div className="client-logo">
                       <img 
                         src={getImageUrl(client.logo) || "/images/placeholder-logo.png"} 
@@ -266,7 +266,7 @@ const ClientsManager = () => {
                         Edit
                       </button>
                       <button 
-                        onClick={() => handleDelete(client.id)} 
+                        onClick={() => handleDelete(client.id || client._id)} 
                         className="delete-btn"
                       >
                         Delete

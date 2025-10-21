@@ -455,7 +455,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        blogs: prev.blogs.map(b => b.id === id ? updatedBlog : b)
+        blogs: prev.blogs.map(b => (b.id === id || b._id === id) ? updatedBlog : b)
       }));
       
       // Clear image cache to ensure fresh image URLs
@@ -511,7 +511,7 @@ export const DataProvider = ({ children }) => {
       removeStoredImage(id);
       
       setData(prev => {
-        const updatedBlogs = prev.blogs.filter(b => b.id !== id);
+        const updatedBlogs = prev.blogs.filter(b => b.id !== id && b._id !== id);
         // Save to localStorage for persistence
         localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
         return {
@@ -527,7 +527,7 @@ export const DataProvider = ({ children }) => {
       removeStoredImage(id);
       
       setData(prev => {
-        const updatedBlogs = prev.blogs.filter(b => b.id !== id);
+        const updatedBlogs = prev.blogs.filter(b => b.id !== id && b._id !== id);
         // Save to localStorage for persistence
         localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
         return {
@@ -562,7 +562,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        clients: prev.clients.map(c => c.id === id ? updatedClient : c)
+        clients: prev.clients.map(c => (c.id === id || c._id === id) ? updatedClient : c)
       }));
       
       return updatedClient;
@@ -578,7 +578,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        clients: prev.clients.filter(c => c.id !== id)
+        clients: prev.clients.filter(c => c.id !== id && c._id !== id)
       }));
     } catch (err) {
       console.error('Error deleting client:', err);
@@ -608,7 +608,7 @@ export const DataProvider = ({ children }) => {
       const updatedPartner = response.data;
       setData(prev => ({
         ...prev,
-        partners: prev.partners.map(p => p.id === id ? updatedPartner : p)
+        partners: prev.partners.map(p => (p.id === id || p._id === id) ? updatedPartner : p)
       }));
       return updatedPartner;
     } catch (err) {
@@ -622,7 +622,7 @@ export const DataProvider = ({ children }) => {
       await ApiService.deletePartner(id);
       setData(prev => ({
         ...prev,
-        partners: prev.partners.filter(p => p.id !== id)
+        partners: prev.partners.filter(p => p.id !== id && p._id !== id)
       }));
     } catch (err) {
       console.error('Error deleting partner:', err);
@@ -654,7 +654,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        teamMembers: prev.teamMembers.map(m => m.id === id ? updatedMember : m)
+        teamMembers: prev.teamMembers.map(m => (m.id === id || m._id === id) ? updatedMember : m)
       }));
       
       return updatedMember;
@@ -670,7 +670,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        teamMembers: prev.teamMembers.filter(m => m.id !== id)
+        teamMembers: prev.teamMembers.filter(m => m.id !== id && m._id !== id)
       }));
     } catch (err) {
       console.error('Error deleting team member:', err);

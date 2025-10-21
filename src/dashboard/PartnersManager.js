@@ -35,7 +35,7 @@ const PartnersManager = () => {
     e.preventDefault()
     try {
       if (editingPartner) {
-        await updatePartner(editingPartner.id, formData)
+        await updatePartner(editingPartner.id || editingPartner._id, formData)
       } else {
         await addPartner(formData)
       }
@@ -128,7 +128,7 @@ const PartnersManager = () => {
         ) : (
           <div className="partners-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {sortedPartners.map((partner) => (
-              <div key={partner.id} className="partner-card">
+              <div key={partner.id || partner._id} className="partner-card">
                 <div className="partner-logo">
                   <img src={getImageUrl(partner.logo) || "/images/placeholder-logo.png"} alt={partner.name} onError={(e) => { e.target.src = "/images/placeholder-logo.png" }} />
                 </div>
@@ -141,7 +141,7 @@ const PartnersManager = () => {
                 </div>
                 <div className="partner-actions">
                   <button onClick={() => handleEdit(partner)} className="edit-btn">Edit</button>
-                  <button onClick={() => handleDelete(partner.id)} className="delete-btn">Delete</button>
+                  <button onClick={() => handleDelete(partner.id || partner._id)} className="delete-btn">Delete</button>
                 </div>
               </div>
             ))}
