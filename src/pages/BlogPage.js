@@ -48,7 +48,7 @@ const BlogPage = () => {
           ) : (
             <div className="blog-grid">
               {blogs
-                .filter(blog => blog.status === 'published') // Only show published blogs
+                .filter(blog => blog.published === true) // Only show published blogs
                 .map((post) => (
                   <article key={post.id} className="blog-card">
                     <div className="blog-card-image">
