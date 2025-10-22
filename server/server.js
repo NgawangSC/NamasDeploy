@@ -1394,7 +1394,7 @@ app.put("/api/projects/:id/cover", async (req, res) => {
   }
 })
 
-// GET all blogs
+// GET all blogs (public - only published)
 app.get("/api/blogs", async (req, res) => {
   try {
     let result
@@ -1402,6 +1402,40 @@ app.get("/api/blogs", async (req, res) => {
     if (isMongoConnected) {
       try {
         result = await Blog.find({ published: true }).sort({ createdAt: -1 })
+      } catch (dbErr) {
+        console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
+        isMongoConnected = false
+      }
+    }
+
+    if (!isMongoConnected) {
+      // Fallback to file-based storage
+      result = loadData(BLOGS_FILE).filter(blog => blog.published === true)
+    }
+
+    res.json({
+      success: true,
+      data: result,
+      count: result.length,
+    })
+  } catch (error) {
+    console.error("❌ Error fetching blogs:", error)
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch blogs",
+      details: error.message
+    })
+  }
+})
+
+// GET all blogs for admin/dashboard (includes drafts)
+app.get("/api/admin/blogs", async (req, res) => {
+  try {
+    let result
+
+    if (isMongoConnected) {
+      try {
+        result = await Blog.find({}).sort({ createdAt: -1 })
       } catch (dbErr) {
         console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
         isMongoConnected = false
@@ -1419,10 +1453,10 @@ app.get("/api/blogs", async (req, res) => {
       count: result.length,
     })
   } catch (error) {
-    console.error("❌ Error fetching blogs:", error)
+    console.error("❌ Error fetching admin blogs:", error)
     res.status(500).json({ 
       success: false,
-      error: "Failed to fetch blogs",
+      error: "Failed to fetch admin blogs",
       details: error.message
     })
   }

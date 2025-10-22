@@ -259,6 +259,10 @@ class ApiService {
     return this.request("/blogs")
   }
 
+  static async getAdminBlogs() {
+    return this.request("/admin/blogs")
+  }
+
   static async createBlog(blogData, imageFile = null) {
     if (imageFile) {
       // Use FormData for file upload
