@@ -5,7 +5,7 @@ import { getImageUrl, getProjectImage } from "../utils/imageUtils"
 import "./DashboardHome.css"
 
 const DashboardHome = () => {
-  const { projects, blogs, clients, partners, teamMembers, fetchClients, fetchBlogs, fetchTeamMembers, fetchPartners } = useData()
+  const { projects, blogs, clients, partners, teamMembers, fetchClients, fetchAdminBlogs, fetchTeamMembers, fetchPartners } = useData()
 
   // Add default empty arrays to prevent undefined errors
   const safeProjects = projects || []
@@ -81,12 +81,12 @@ const DashboardHome = () => {
       fetchPartners()
     }
     if (blogs.length === 0) {
-      fetchBlogs()
+      fetchAdminBlogs()
     }
     if (teamMembers.length === 0) {
       fetchTeamMembers()
     }
-  }, [clients.length, partners.length, blogs.length, teamMembers.length, fetchClients, fetchPartners, fetchBlogs, fetchTeamMembers])
+  }, [clients.length, partners.length, blogs.length, teamMembers.length, fetchClients, fetchPartners, fetchAdminBlogs, fetchTeamMembers])
 
   return (
     <div className="dashboard-home">

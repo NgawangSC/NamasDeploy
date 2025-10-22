@@ -158,8 +158,24 @@ export const DataProvider = ({ children }) => {
       const response = await ApiService.getBlogs();
       const apiBlogs = response.data || [];
       
+      // Validate and fix blog data (similar to projects)
+      const validatedBlogs = apiBlogs.map((blog, index) => {
+        // Ensure each blog has an ID
+        if (!blog.id && !blog._id) {
+          console.warn('Blog missing ID, assigning temporary ID:', blog.title || `Blog ${index + 1}`)
+          blog.id = `temp_blog_${Date.now()}_${index}`
+        }
+        
+        // Use _id as id if id is missing (MongoDB compatibility)
+        if (!blog.id && blog._id) {
+          blog.id = blog._id
+        }
+        
+        return blog
+      })
+      
       // Restore stored images for blogs that have them
-      const blogsWithRestoredImages = apiBlogs.map(blog => {
+      const blogsWithRestoredImages = validatedBlogs.map(blog => {
         const storedImage = getStoredImage(blog.id);
         if (storedImage) {
           return { ...blog, image: storedImage };
@@ -178,7 +194,105 @@ export const DataProvider = ({ children }) => {
       // If API fails, try to load locally stored blogs from a previous session
       try {
         const localBlogs = JSON.parse(localStorage.getItem('localBlogs') || '[]');
-        const blogsWithRestoredImages = localBlogs.map(blog => {
+        
+        // Validate and fix local blog data
+        const validatedLocalBlogs = localBlogs.map((blog, index) => {
+          // Ensure each blog has an ID
+          if (!blog.id && !blog._id) {
+            console.warn('Local blog missing ID, assigning temporary ID:', blog.title || `Blog ${index + 1}`)
+            blog.id = `temp_local_blog_${Date.now()}_${index}`
+          }
+          
+          // Use _id as id if id is missing (MongoDB compatibility)
+          if (!blog.id && blog._id) {
+            blog.id = blog._id
+          }
+          
+          return blog
+        })
+        
+        const blogsWithRestoredImages = validatedLocalBlogs.map(blog => {
+          const storedImage = getStoredImage(blog.id);
+          if (storedImage) {
+            return { ...blog, image: storedImage };
+          }
+          return blog;
+        });
+        
+        setData(prev => ({
+          ...prev,
+          blogs: blogsWithRestoredImages
+        }));
+      } catch (localError) {
+        console.error('Error loading local blogs:', localError);
+      }
+    } finally {
+      setLoading(prev => ({ ...prev, blogs: false }));
+    }
+  }, []);
+
+  const fetchAdminBlogs = useCallback(async () => {
+    try {
+      setLoading(prev => ({ ...prev, blogs: true }));
+      setError(prev => ({ ...prev, blogs: null }));
+      
+      const response = await ApiService.getAdminBlogs();
+      const apiBlogs = response.data || [];
+      
+      // Validate and fix blog data (similar to projects)
+      const validatedBlogs = apiBlogs.map((blog, index) => {
+        // Ensure each blog has an ID
+        if (!blog.id && !blog._id) {
+          console.warn('Blog missing ID, assigning temporary ID:', blog.title || `Blog ${index + 1}`)
+          blog.id = `temp_blog_${Date.now()}_${index}`
+        }
+        
+        // Use _id as id if id is missing (MongoDB compatibility)
+        if (!blog.id && blog._id) {
+          blog.id = blog._id
+        }
+        
+        return blog
+      })
+      
+      // Restore stored images for blogs that have them
+      const blogsWithRestoredImages = validatedBlogs.map(blog => {
+        const storedImage = getStoredImage(blog.id);
+        if (storedImage) {
+          return { ...blog, image: storedImage };
+        }
+        return blog;
+      });
+      
+      setData(prev => ({
+        ...prev,
+        blogs: blogsWithRestoredImages
+      }));
+    } catch (err) {
+      console.error('Error fetching admin blogs:', err);
+      setError(prev => ({ ...prev, blogs: err.message }));
+      
+      // If API fails, try to load locally stored blogs from a previous session
+      try {
+        const localBlogs = JSON.parse(localStorage.getItem('localBlogs') || '[]');
+        
+        // Validate and fix local blog data
+        const validatedLocalBlogs = localBlogs.map((blog, index) => {
+          // Ensure each blog has an ID
+          if (!blog.id && !blog._id) {
+            console.warn('Local blog missing ID, assigning temporary ID:', blog.title || `Blog ${index + 1}`)
+            blog.id = `temp_local_blog_${Date.now()}_${index}`
+          }
+          
+          // Use _id as id if id is missing (MongoDB compatibility)
+          if (!blog.id && blog._id) {
+            blog.id = blog._id
+          }
+          
+          return blog
+        })
+        
+        const blogsWithRestoredImages = validatedLocalBlogs.map(blog => {
           const storedImage = getStoredImage(blog.id);
           if (storedImage) {
             return { ...blog, image: storedImage };
@@ -491,7 +605,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        blogs: prev.blogs.map(b => b.id === id ? updatedBlog : b)
+        blogs: prev.blogs.map(b => (b.id === id || b._id === id) ? updatedBlog : b)
       }));
       
       // Clear image cache to ensure fresh image URLs
@@ -526,7 +640,7 @@ export const DataProvider = ({ children }) => {
       };
       
       setData(prev => {
-        const updatedBlogs = prev.blogs.map(b => b.id === id ? { ...b, ...updatedBlog } : b);
+        const updatedBlogs = prev.blogs.map(b => (b.id === id || b._id === id) ? { ...b, ...updatedBlog } : b);
         // Save to localStorage for persistence
         localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
         return {
@@ -547,7 +661,7 @@ export const DataProvider = ({ children }) => {
       removeStoredImage(id);
       
       setData(prev => {
-        const updatedBlogs = prev.blogs.filter(b => b.id !== id);
+        const updatedBlogs = prev.blogs.filter(b => b.id !== id && b._id !== id);
         // Save to localStorage for persistence
         localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
         return {
@@ -555,6 +669,13 @@ export const DataProvider = ({ children }) => {
           blogs: updatedBlogs
         };
       });
+      
+      // Refresh the blog list to ensure consistency
+      // Use a small delay to allow server to process the deletion
+      setTimeout(() => {
+        fetchAdminBlogs();
+      }, 500);
+      
     } catch (err) {
       console.error('Error deleting blog (falling back to local storage):', err);
       
@@ -563,7 +684,7 @@ export const DataProvider = ({ children }) => {
       removeStoredImage(id);
       
       setData(prev => {
-        const updatedBlogs = prev.blogs.filter(b => b.id !== id);
+        const updatedBlogs = prev.blogs.filter(b => b.id !== id && b._id !== id);
         // Save to localStorage for persistence
         localStorage.setItem('localBlogs', JSON.stringify(updatedBlogs));
         return {
@@ -773,6 +894,7 @@ export const DataProvider = ({ children }) => {
     fetchProjects,
     fetchFeaturedProjects,
     fetchBlogs,
+    fetchAdminBlogs,
     fetchClients,
     fetchPartners,
     fetchTeamMembers,

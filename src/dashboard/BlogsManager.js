@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useData } from "../contexts/DataContext"
 import { getImageUrl } from "../utils/imageUtils"
 import ViewFilter from "../components/ViewFilter"
@@ -8,7 +8,7 @@ import BlogImageUpload from "../components/BlogImageUpload"
 import "./BlogsManager.css"
 
 const BlogsManager = () => {
-  const { blogs, addBlog, updateBlog, deleteBlog } = useData()
+  const { blogs, addBlog, updateBlog, deleteBlog, fetchAdminBlogs } = useData()
   const [showForm, setShowForm] = useState(false)
   const [editingBlog, setEditingBlog] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
@@ -28,6 +28,11 @@ const BlogsManager = () => {
     status: "published",
     image: "",
   })
+
+  // Fetch admin blogs when component mounts
+  useEffect(() => {
+    fetchAdminBlogs()
+  }, [fetchAdminBlogs])
 
   // Extract unique categories from blogs
   const categories = useMemo(() => {
@@ -381,3 +386,4 @@ const BlogsManager = () => {
 }
 
 export default BlogsManager
+d
