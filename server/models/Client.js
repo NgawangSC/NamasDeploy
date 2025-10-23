@@ -8,7 +8,7 @@ const clientSchema = new mongoose.Schema({
   },
   logo: {
     type: String,
-    required: true
+    required: false
   },
   description: {
     type: String,
@@ -17,6 +17,16 @@ const clientSchema = new mongoose.Schema({
   website: {
     type: String,
     trim: true
+  },
+  category: {
+    type: String,
+    enum: ["General", "Government", "Corporate", "Banking", "Real Estate", "Healthcare", "Education"],
+    default: "General"
+  },
+  status: {
+    type: String,
+    enum: ["Active", "Inactive", "Pending"],
+    default: "Active"
   },
   order: {
     type: Number,
