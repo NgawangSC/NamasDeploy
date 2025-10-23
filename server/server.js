@@ -2039,6 +2039,8 @@ app.post("/api/clients", upload.single('logo'), async (req, res) => {
       name: req.body.name,
       description: req.body.description,
       website: req.body.website,
+      category: req.body.category || "General",
+      status: req.body.status || "Active",
       logo: req.file ? `/uploads/${req.file.filename}` : null,
       order: Number.isNaN(parsedOrder) ? 0 : parsedOrder,
       active: isActive
@@ -2134,6 +2136,8 @@ app.put("/api/clients/:id", upload.single('logo'), async (req, res) => {
         name: req.body.name || existingClient.name,
         description: req.body.description || existingClient.description,
         website: req.body.website || existingClient.website,
+        category: req.body.category || existingClient.category || "General",
+        status: req.body.status || existingClient.status || "Active",
         logo: req.file ? `/uploads/${req.file.filename}` : existingClient.logo,
         order: Number.isNaN(parsedOrder) ? existingClient.order : parsedOrder,
         active: isActive
@@ -2160,7 +2164,8 @@ app.put("/api/clients/:id", upload.single('logo'), async (req, res) => {
         name: req.body.name || existingClient.name,
         description: req.body.description || existingClient.description,
         website: req.body.website || existingClient.website,
-        contact: req.body.contact || existingClient.contact,
+        category: req.body.category || existingClient.category || "General",
+        status: req.body.status || existingClient.status || "Active",
         logo: req.file ? `/uploads/${req.file.filename}` : existingClient.logo,
         updatedAt: new Date().toISOString()
       }

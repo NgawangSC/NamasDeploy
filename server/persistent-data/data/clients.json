@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "name": "Test Client for Dashboard",
+    "description": "This client is for testing the dashboard edit/delete functionality",
+    "website": "https://example.com",
+    "logo": null,
+    "order": 0,
+    "active": true,
+    "id": 1761238471711,
+    "createdAt": "2025-10-23T16:54:31.712Z",
+    "updatedAt": "2025-10-23T16:54:31.712Z"
+  }
+]
