@@ -178,7 +178,7 @@ const DashboardHome = () => {
           <div className="recent-items">
               {recentClients.length > 0 ? (
               recentClients.map((client) => (
-                <div key={client.id} className="recent-item">
+                <div key={client.id || client._id} className="recent-item">
                   <img src={getImageUrl(client.logo) || "/placeholder.svg"} alt={client.name || "Client"} />
                   <div className="item-info">
                     <h4>{client.name || "Unnamed Client"}</h4>

@@ -320,9 +320,27 @@ export const DataProvider = ({ children }) => {
       const response = await ApiService.getClients();
       const apiClients = response.data || [];
       
+      // Validate and fix client data
+      const validatedClients = apiClients.map((client, index) => {
+        // Ensure each client has an ID
+        if (!client.id && !client._id) {
+          console.warn('Client missing ID, assigning temporary ID:', client.name || `Client ${index + 1}`)
+          client.id = `temp_${Date.now()}_${index}`
+        }
+        
+        // Use _id as id if id is missing (MongoDB compatibility)
+        if (!client.id && client._id) {
+          client.id = client._id
+        }
+        
+        return client
+      })
+      
+      console.log('DataContext: Loaded and validated clients:', validatedClients.length)
+      
       setData(prev => ({
         ...prev,
-        clients: apiClients
+        clients: validatedClients
       }));
     } catch (err) {
       console.error('Error fetching clients:', err);
@@ -700,6 +718,11 @@ export const DataProvider = ({ children }) => {
       const response = await ApiService.createClient(client);
       const newClient = response.data;
       
+      // Ensure the new client has an id field for frontend compatibility
+      if (!newClient.id && newClient._id) {
+        newClient.id = newClient._id;
+      }
+      
       setData(prev => ({
         ...prev,
         clients: [...prev.clients, newClient]
@@ -717,9 +740,14 @@ export const DataProvider = ({ children }) => {
       const response = await ApiService.updateClient(id, updates);
       const updatedClient = response.data;
       
+      // Ensure the updated client has an id field for frontend compatibility
+      if (!updatedClient.id && updatedClient._id) {
+        updatedClient.id = updatedClient._id;
+      }
+      
       setData(prev => ({
         ...prev,
-        clients: prev.clients.map(c => c.id === id ? updatedClient : c)
+        clients: prev.clients.map(c => (c.id === id || c._id === id) ? updatedClient : c)
       }));
       
       return updatedClient;
@@ -735,7 +763,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        clients: prev.clients.filter(c => c.id !== id)
+        clients: prev.clients.filter(c => c.id !== id && c._id !== id)
       }));
     } catch (err) {
       console.error('Error deleting client:', err);
