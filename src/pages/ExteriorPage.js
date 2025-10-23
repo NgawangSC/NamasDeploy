@@ -308,7 +308,7 @@ function HomePage() {
                   {clients
                     .slice(currentClientSlide * 3, (currentClientSlide + 1) * 3)
                     .map((client) => (
-                      <div key={client.id} className="client-card">
+                      <div key={client.id || client._id} className="client-card">
                         <div className="client-logo">
                           <img 
                             src={getImageUrl(client.logo)} 
@@ -324,7 +324,7 @@ function HomePage() {
                 </div>
                 <div className="clients-grid-responsive">
                   {clients.slice(currentClientSlide, currentClientSlide + 1).map((client) => (
-                    <div key={client.id} className="client-card">
+                    <div key={client.id || client._id} className="client-card">
                       <div className="client-logo">
                         <img 
                           src={getImageUrl(client.logo)} 
