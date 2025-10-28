@@ -793,7 +793,7 @@ export const DataProvider = ({ children }) => {
       const updatedPartner = response.data;
       setData(prev => ({
         ...prev,
-        partners: prev.partners.map(p => p.id === id ? updatedPartner : p)
+        partners: prev.partners.map(p => (p.id === id || p._id === id) ? updatedPartner : p)
       }));
       return updatedPartner;
     } catch (err) {
@@ -807,7 +807,7 @@ export const DataProvider = ({ children }) => {
       await ApiService.deletePartner(id);
       setData(prev => ({
         ...prev,
-        partners: prev.partners.filter(p => p.id !== id)
+        partners: prev.partners.filter(p => p.id !== id && p._id !== id)
       }));
     } catch (err) {
       console.error('Error deleting partner:', err);
@@ -839,7 +839,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        teamMembers: prev.teamMembers.map(m => m.id === id ? updatedMember : m)
+        teamMembers: prev.teamMembers.map(m => (m.id === id || m._id === id) ? updatedMember : m)
       }));
       
       return updatedMember;
@@ -855,7 +855,7 @@ export const DataProvider = ({ children }) => {
       
       setData(prev => ({
         ...prev,
-        teamMembers: prev.teamMembers.filter(m => m.id !== id)
+        teamMembers: prev.teamMembers.filter(m => m.id !== id && m._id !== id)
       }));
     } catch (err) {
       console.error('Error deleting team member:', err);

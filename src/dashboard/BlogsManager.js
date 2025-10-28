@@ -112,7 +112,7 @@ const BlogsManager = () => {
 
     try {
       if (editingBlog) {
-        await updateBlog(editingBlog.id, blogData, selectedImage)
+        await updateBlog(editingBlog.id || editingBlog._id, blogData, selectedImage)
       } else {
         await addBlog(blogData, selectedImage)
       }
@@ -187,7 +187,7 @@ const BlogsManager = () => {
           <span className={`status ${blog.status}`}>{blog.status}</span>
           <div className="blog-actions">
             <button onClick={() => handleEdit(blog)} className="edit-btn">Edit</button>
-            <button onClick={() => handleDelete(blog.id)} className="delete-btn">Delete</button>
+            <button onClick={() => handleDelete(blog.id || blog._id)} className="delete-btn">Delete</button>
           </div>
         </div>
       </div>
@@ -221,7 +221,7 @@ const BlogsManager = () => {
           <button onClick={() => handleEdit(blog)} className="edit-btn">
             Edit
           </button>
-          <button onClick={() => handleDelete(blog.id)} className="delete-btn">
+          <button onClick={() => handleDelete(blog.id || blog._id)} className="delete-btn">
             Delete
           </button>
         </div>
@@ -347,13 +347,13 @@ const BlogsManager = () => {
         {viewMode === 'list' ? (
           <div className="blogs-list">
             {filteredBlogs.map((blog) => (
-              <BlogListView key={blog.id} blog={blog} />
+              <BlogListView key={blog.id || blog._id} blog={blog} />
             ))}
           </div>
         ) : (
           <div className="blogs-grid">
             {filteredBlogs.map((blog) => (
-              <BlogDetailView key={blog.id} blog={blog} />
+              <BlogDetailView key={blog.id || blog._id} blog={blog} />
             ))}
           </div>
         )}

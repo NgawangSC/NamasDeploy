@@ -38,7 +38,7 @@ const ClientsManager = () => {
 
     try {
       if (editingClient) {
-        await updateClient(editingClient.id, formData)
+        await updateClient(editingClient.id || editingClient._id, formData)
       } else {
         await addClient(formData)
       }

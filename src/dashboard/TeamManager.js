@@ -101,7 +101,7 @@ const TeamManager = () => {
       
       let response;
       if (editingMember) {
-        response = await API.updateTeamMember(editingMember.id, formData);
+        response = await API.updateTeamMember(editingMember.id || editingMember._id, formData);
         setMessage('Team member updated successfully');
       } else {
         response = await API.createTeamMember(formData);
@@ -254,7 +254,7 @@ const TeamManager = () => {
           
           <div className="team-grid">
             {teamMembers.map((member) => (
-              <div key={member.id} className="team-member-card">
+              <div key={member.id || member._id} className="team-member-card">
                 <div className="team-member-image">
                   <TeamMemberImage 
                     src={API.getImageUrl(member.image)}
@@ -270,7 +270,7 @@ const TeamManager = () => {
                   <button onClick={() => handleEdit(member)} className="btn-edit">
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(member.id)} className="btn-delete">
+                  <button onClick={() => handleDelete(member.id || member._id)} className="btn-delete">
                     Delete
                   </button>
                 </div>
