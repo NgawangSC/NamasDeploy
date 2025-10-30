@@ -1,163 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import API from '../services/api';
-import MiniLoadingAnimation from '../components/MiniLoadingAnimation';
-import './TeamManager.css';
+"use client"
+
+import { useState, useEffect } from "react"
+import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
+import "./TeamManager.css"
 
 // Component for handling image loading
-const TeamMemberImage = ({ src, alt, onImageLoad }) => {
-  const [imageSrc, setImageSrc] = useState('/images/founder-pic.png');
-  const [imageLoaded, setImageLoaded] = useState(false);
+const TeamMemberImage = ({ src, alt }) => {
+  const [imageSrc, setImageSrc] = useState("/images/founder-pic.png")
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
-    console.log('TeamMemberImage src:', src);
-    if (src && src !== '/images/founder-pic.png') {
-      const img = new Image();
+    if (src && src !== "/images/founder-pic.png") {
+      const img = new Image()
       img.onload = () => {
-        console.log('Image loaded successfully:', src);
-        setImageSrc(src);
-        setImageLoaded(true);
-        if (onImageLoad) onImageLoad();
-      };
+        setImageSrc(src)
+        setImageLoaded(true)
+      }
       img.onerror = () => {
-        console.log('Image failed to load:', src);
-        setImageSrc('/images/founder-pic.png');
-        setImageLoaded(true);
-      };
-      img.src = src;
+        setImageSrc("/images/founder-pic.png")
+        setImageLoaded(true)
+      }
+      img.src = src
     } else {
-      setImageLoaded(true);
+      setImageLoaded(true)
     }
-  }, [src, onImageLoad]);
+  }, [src])
 
   return (
-    <img 
-      src={imageSrc}
+    <img
+      src={imageSrc || "/placeholder.svg"}
       alt={alt}
-      style={{ 
-        opacity: imageLoaded ? '1' : '0.7',
-        transition: 'opacity 0.3s ease'
+      style={{
+        opacity: imageLoaded ? "1" : "0.7",
+        transition: "opacity 0.3s ease",
       }}
     />
-  );
-};
+  )
+}
 
 const TeamManager = () => {
-  const [teamMembers, setTeamMembers] = useState([]);
+  const { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember } = useData()
   const [formData, setFormData] = useState({
-    name: '',
-    title: '',
-    position: '',
-    image: null
-  });
-  const [editingMember, setEditingMember] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    fetchTeamMembers();
-  }, []);
-
-  const fetchTeamMembers = async () => {
-    try {
-      setLoading(true);
-      const response = await API.getTeamMembers();
-      setTeamMembers(response.data || []);
-    } catch (error) {
-      console.error('Error fetching team members:', error);
-      setMessage('Error loading team members');
-    } finally {
-      setLoading(false);
-    }
-  };
+    name: "",
+    title: "",
+    position: "",
+    image: null,
+  })
+  const [editingMember, setEditingMember] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState("")
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+    const { name, value } = e.target
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }));
-  };
+      [name]: value,
+    }))
+  }
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setFormData(prev => ({
+    const file = e.target.files[0]
+    setFormData((prev) => ({
       ...prev,
-      image: file
-    }));
-  };
+      image: file,
+    }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     if (!formData.name || !formData.title || !formData.position) {
-      setMessage('Please fill in all required fields');
-      return;
+      setMessage("Please fill in all required fields")
+      return
     }
 
     try {
-      setLoading(true);
-      
-      console.log('Submitting form data:', formData);
-      
-      let response;
+      setLoading(true)
+
       if (editingMember) {
-        response = await API.updateTeamMember(editingMember.id, formData);
-        setMessage('Team member updated successfully');
+        await updateTeamMember(editingMember.id || editingMember._id, formData)
+        setMessage("Team member updated successfully")
       } else {
-        response = await API.createTeamMember(formData);
-        setMessage('Team member created successfully');
+        await addTeamMember(formData)
+        setMessage("Team member created successfully")
       }
-      
-      console.log('API response:', response);
-      
-      resetForm();
-      fetchTeamMembers();
+
+      resetForm()
     } catch (error) {
-      console.error('Error saving team member:', error);
-      setMessage(`Error saving team member: ${error.message}`);
+      console.error("Error saving team member:", error)
+      setMessage(`Error saving team member: ${error.message}`)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleEdit = (member) => {
-    setEditingMember(member);
+    setEditingMember(member)
     setFormData({
       name: member.name,
-      title: member.title || member.position, // fallback to position if title doesn't exist
+      title: member.title || member.position,
       position: member.position,
-      image: null
-    });
-  };
+      image: null,
+    })
+  }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this team member?')) {
-      return;
+  const handleDelete = async (memberId) => {
+    if (!window.confirm("Are you sure you want to delete this team member?")) {
+      return
     }
 
     try {
-      setLoading(true);
-      await API.deleteTeamMember(id);
-      setMessage('Team member deleted successfully');
-      fetchTeamMembers();
+      setLoading(true)
+      await deleteTeamMember(memberId)
+      setMessage("Team member deleted successfully")
     } catch (error) {
-      console.error('Error deleting team member:', error);
-      setMessage('Error deleting team member');
+      console.error("Error deleting team member:", error)
+      setMessage("Error deleting team member")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      title: '',
-      position: '',
-      image: null
-    });
-    setEditingMember(null);
-    setMessage('');
-  };
+      name: "",
+      title: "",
+      position: "",
+      image: null,
+    })
+    setEditingMember(null)
+    setMessage("")
+  }
 
   return (
     <div className="team-manager">
@@ -166,26 +140,15 @@ const TeamManager = () => {
         <p>Manage your team members</p>
       </div>
 
-      {message && (
-        <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
-          {message}
-        </div>
-      )}
+      {message && <div className={`message ${message.includes("Error") ? "error" : "success"}`}>{message}</div>}
 
       <div className="team-manager-content">
         <div className="team-form-section">
-          <h2>{editingMember ? 'Edit Team Member' : 'Add New Team Member'}</h2>
+          <h2>{editingMember ? "Edit Team Member" : "Add New Team Member"}</h2>
           <form onSubmit={handleSubmit} className="team-form">
             <div className="form-group">
               <label htmlFor="name">Name *</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
+              <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required />
             </div>
 
             <div className="form-group">
@@ -214,21 +177,14 @@ const TeamManager = () => {
               />
             </div>
 
-
             <div className="form-group">
               <label htmlFor="image">Profile Image</label>
-              <input
-                type="file"
-                id="image"
-                name="image"
-                onChange={handleImageChange}
-                accept="image/*"
-              />
+              <input type="file" id="image" name="image" onChange={handleImageChange} accept="image/*" />
             </div>
 
             <div className="form-actions">
               <button type="submit" disabled={loading} className="btn-primary">
-                {loading ? 'Saving...' : (editingMember ? 'Update Member' : 'Add Member')}
+                {loading ? "Saving..." : editingMember ? "Update Member" : "Add Member"}
               </button>
               {editingMember && (
                 <button type="button" onClick={resetForm} className="btn-secondary">
@@ -241,25 +197,12 @@ const TeamManager = () => {
 
         <div className="team-list-section">
           <h2>Current Team Members</h2>
-          {loading && (
-            <div className="loading">
-              <MiniLoadingAnimation 
-                size="small" 
-                text="Loading..." 
-                variant="dots-only"
-                className="mini-loading-inline"
-              />
-            </div>
-          )}
-          
+
           <div className="team-grid">
             {teamMembers.map((member) => (
-              <div key={member.id} className="team-member-card">
+              <div key={member.id || member._id} className="team-member-card">
                 <div className="team-member-image">
-                  <TeamMemberImage 
-                    src={API.getImageUrl(member.image)}
-                    alt={member.name}
-                  />
+                  <TeamMemberImage src={getImageUrl(member.image)} alt={member.name} />
                 </div>
                 <div className="team-member-info">
                   <h4 className="team-member-name">{member.name}</h4>
@@ -270,7 +213,7 @@ const TeamManager = () => {
                   <button onClick={() => handleEdit(member)} className="btn-edit">
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(member.id)} className="btn-delete">
+                  <button onClick={() => handleDelete(member.id || member._id)} className="btn-delete">
                     Delete
                   </button>
                 </div>
@@ -286,7 +229,7 @@ const TeamManager = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TeamManager;
+export default TeamManager
