@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useData } from "../contexts/DataContext"
-import { getImageUrl } from "../utils/imageUtils"
+import { useData } from "@/contexts/DataContext"
+import { getImageUrl } from "@/utils/imageUtils"
 import "./PartnersManager.css"
 
 const PartnersManager = () => {
@@ -35,14 +35,14 @@ const PartnersManager = () => {
     e.preventDefault()
     try {
       if (editingPartner) {
-        await updatePartner(editingPartner.id, formData)
+        await updatePartner(editingPartner.id || editingPartner._id, formData)
       } else {
         await addPartner(formData)
       }
       resetForm()
     } catch (error) {
-      console.error('Error saving partner:', error)
-      alert('Error saving partner: ' + error.message)
+      console.error("Error saving partner:", error)
+      alert("Error saving partner: " + error.message)
     }
   }
 
@@ -68,8 +68,8 @@ const PartnersManager = () => {
       try {
         await deletePartner(partnerId)
       } catch (error) {
-        console.error('Error deleting partner:', error)
-        alert('Error deleting partner: ' + error.message)
+        console.error("Error deleting partner:", error)
+        alert("Error deleting partner: " + error.message)
       }
     }
   }
@@ -84,7 +84,9 @@ const PartnersManager = () => {
     <div className="partners-manager">
       <div className="partners-header">
         <h2>Partners Management</h2>
-        <button onClick={() => setShowForm(true)} className="add-btn">Add New Partner</button>
+        <button onClick={() => setShowForm(true)} className="add-btn">
+          Add New Partner
+        </button>
       </div>
 
       {showForm && (
@@ -99,12 +101,25 @@ const PartnersManager = () => {
 
               <div className="form-group">
                 <label htmlFor="description">Description</label>
-                <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows="3" />
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="3"
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="website">Website</label>
-                <input type="url" id="website" name="website" value={formData.website} onChange={handleInputChange} placeholder="https://example.com" />
+                <input
+                  type="url"
+                  id="website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com"
+                />
               </div>
 
               <div className="form-group">
@@ -114,8 +129,12 @@ const PartnersManager = () => {
               </div>
 
               <div className="form-actions">
-                <button type="button" onClick={resetForm} className="cancel-btn">Cancel</button>
-                <button type="submit" className="submit-btn">{editingPartner ? "Update Partner" : "Add Partner"}</button>
+                <button type="button" onClick={resetForm} className="cancel-btn">
+                  Cancel
+                </button>
+                <button type="submit" className="submit-btn">
+                  {editingPartner ? "Update Partner" : "Add Partner"}
+                </button>
               </div>
             </form>
           </div>
@@ -124,24 +143,43 @@ const PartnersManager = () => {
 
       <div className="partners-list">
         {sortedPartners.length === 0 ? (
-          <div className="no-partners"><p>No partners found. Add your first partner to get started!</p></div>
+          <div className="no-partners">
+            <p>No partners found. Add your first partner to get started!</p>
+          </div>
         ) : (
-          <div className="partners-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="partners-container" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {sortedPartners.map((partner) => (
-              <div key={partner.id} className="partner-card">
+              <div key={partner.id || partner._id} className="partner-card">
                 <div className="partner-logo">
-                  <img src={getImageUrl(partner.logo) || "/images/placeholder-logo.png"} alt={partner.name} onError={(e) => { e.target.src = "/images/placeholder-logo.png" }} />
+                  <img
+                    src={getImageUrl(partner.logo) || "/images/placeholder-logo.jpg"}
+                    alt={partner.name}
+                    onError={(e) => {
+                      e.target.src = "/images/placeholder-logo.jpg"
+                    }}
+                  />
                 </div>
                 <div className="partner-info">
                   <h4 style={{ margin: 0 }}>{partner.name}</h4>
-                  {partner.description && <p style={{ margin: '6px 0', color: '#374151' }}>{partner.description}</p>}
+                  {partner.description && <p style={{ margin: "6px 0", color: "#374151" }}>{partner.description}</p>}
                   {partner.website && (
-                    <a href={partner.website} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none' }}>Visit Website</a>
+                    <a
+                      href={partner.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#3b82f6", textDecoration: "none" }}
+                    >
+                      Visit Website
+                    </a>
                   )}
                 </div>
                 <div className="partner-actions">
-                  <button onClick={() => handleEdit(partner)} className="edit-btn">Edit</button>
-                  <button onClick={() => handleDelete(partner.id)} className="delete-btn">Delete</button>
+                  <button onClick={() => handleEdit(partner)} className="edit-btn">
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete(partner.id || partner._id)} className="delete-btn">
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
