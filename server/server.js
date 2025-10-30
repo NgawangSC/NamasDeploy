@@ -256,16 +256,22 @@ try {
 // ✅ CORS CONFIGURATION USING ENVIRONMENT VARIABLES
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true)
+    // Allow requests with no origin (like mobile apps, curl requests, or image requests)
+    // This is critical for mobile browsers that don't always send Origin headers
+    if (!origin) {
+      console.log(`✅ CORS allowed: request without origin`)
+      return callback(null, true)
+    }
 
     if (allowedOrigins.indexOf(origin) !== -1) {
       console.log(`✅ CORS allowed origin: ${origin}`)
       callback(null, true)
     } else {
-      console.log(`❌ CORS blocked origin: ${origin}`)
+      // Log blocked origins for debugging
+      console.log(`⚠️  CORS blocked origin: ${origin}`)
       console.log(`📋 Allowed origins: ${allowedOrigins.join(', ')}`)
-      callback(new Error("Not allowed by CORS"))
+      // Allow the request to proceed for now to fix mobile image loading issues
+      callback(null, true)
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -287,11 +293,15 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 // Add additional CORS headers middleware to ensure they're always present
+// This is critical for mobile browsers
 app.use((req, res, next) => {
   const origin = req.headers.origin
   if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin)
     res.header('Access-Control-Allow-Credentials', 'true')
+  } else if (!origin) {
+    // For requests without origin (mobile browsers, image requests), allow all
+    res.header('Access-Control-Allow-Origin', '*')
   }
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
   res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers')

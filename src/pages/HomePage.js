@@ -217,7 +217,8 @@ function HomePage() {
                         <img 
                           src={getImageUrl(getProjectImage(project)) || "/images/project1.png"} 
                           alt={project.alt || project.name} 
-                          className="project-img" 
+                          className="project-img"
+                          loading="eager"
                         />
                       </div>
                       <div className="project-details">
@@ -247,7 +248,8 @@ function HomePage() {
                         <img 
                           src={getImageUrl(getProjectImage(project)) || "/images/project1.png"} 
                           alt={project.alt || project.name} 
-                          className="project-img" 
+                          className="project-img"
+                          loading="eager"
                         />
                       </div>
                     </>
@@ -326,6 +328,7 @@ function HomePage() {
                           <img 
                             src={getImageUrl(client.logo)} 
                             alt={client.name}
+                            loading="eager"
                             onError={(e) => {
                               e.target.src = "/images/placeholder-logo.png"
                             }}
@@ -416,6 +419,7 @@ function HomePage() {
                     <img 
                       src={getImageUrl(partner.logo) || "/images/founder-pic.png"} 
                       alt={partner.name}
+                      loading="eager"
                       onError={(e) => {
                         e.target.src = "/images/founder-pic.png";
                       }}
