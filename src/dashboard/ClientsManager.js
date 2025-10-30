@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useData } from "@/contexts/DataContext"
-import { getImageUrl } from "@/utils/imageUtils"
+import { useData } from "../contexts/DataContext"
+import { getImageUrl } from "../utils/imageUtils"
 import "./ClientsManager.css"
 
 const ClientsManager = () => {
