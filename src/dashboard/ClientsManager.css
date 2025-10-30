@@ -190,7 +190,7 @@
   flex-direction: column;
   gap: 1rem;
   transition: box-shadow 0.2s;
-  color: #fff; /* text white */
+  color: #000000; /* text white */
 }
 
 .client-card:hover {
