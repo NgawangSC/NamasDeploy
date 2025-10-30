@@ -553,3 +553,47 @@
     min-width: 80px;
   }
 }
+
+/* Added Edit & Delete Button Styles */
+.client-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.edit-btn,
+.delete-btn {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.edit-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.delete-btn {
+  background-color: var(--color-destructive);
+  color: white;
+}
+
+.delete-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
