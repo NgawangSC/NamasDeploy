@@ -197,25 +197,35 @@ const HeroBannerSelfContained = () => {
     <section className="hero-banner">
       
       <div className="hero-slider">
-        {featuredProjects.map((project, index) => (
-          <div
-            key={project.id}
-            className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-            style={{
-              backgroundImage: `url(${getImageUrl(getProjectImage(project)) || '/images/placeholder.png'})`
-            }}
-            onClick={() => handleProjectClick(project)}
-          >
-            <div className="hero-overlay" />
-            <div className="hero-content">
-              <div className="hero-text">
-                <h1 className="hero-title">{project.title}</h1>
-                <div className="hero-actions">
+        {featuredProjects.map((project, index) => {
+          const imageUrl = getImageUrl(getProjectImage(project)) || '/images/placeholder.png';
+          return (
+            <div
+              key={project.id}
+              className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
+              style={{
+                backgroundImage: `url(${imageUrl})`
+              }}
+              onClick={() => handleProjectClick(project)}
+            >
+              {/* Hidden image for preloading on mobile devices */}
+              <img 
+                src={imageUrl} 
+                alt={project.title}
+                style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+                loading="eager"
+              />
+              <div className="hero-overlay" />
+              <div className="hero-content">
+                <div className="hero-text">
+                  <h1 className="hero-title">{project.title}</h1>
+                  <div className="hero-actions">
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
 
         {/* Navigation arrows */}
         {featuredProjects.length > 1 && (
