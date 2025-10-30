@@ -100,6 +100,9 @@ console.log("  PORT:", PORT)
 console.log("  DATA_DIR:", DATA_DIR, DATA_DIR.includes(__dirname) ? "(internal)" : "(external)")
 console.log("  UPLOADS_DIR:", UPLOADS_DIR, UPLOADS_DIR.includes(__dirname) ? "(internal)" : "(external)")
 console.log("  ALLOWED_ORIGINS:", allowedOrigins)
+console.log("  Environment ALLOWED_ORIGINS:", process.env.ALLOWED_ORIGINS)
+console.log("  Environment CORS_ORIGIN:", process.env.CORS_ORIGIN)
+console.log("  Environment CORS_ORIGINS:", process.env.CORS_ORIGINS)
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -299,8 +302,8 @@ app.use((req, res, next) => {
   if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin)
     res.header('Access-Control-Allow-Credentials', 'true')
-  } else if (!origin) {
-    // For requests without origin (mobile browsers, image requests), allow all
+  } else {
+    // For requests without origin OR unknown origins (mobile browsers, image requests), allow all
     res.header('Access-Control-Allow-Origin', '*')
   }
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
