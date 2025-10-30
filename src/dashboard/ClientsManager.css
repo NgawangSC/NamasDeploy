@@ -182,19 +182,29 @@
 
 /* Client Card */
 .client-card {
-  background-color: #000; /* black background */
-  border: 1px solid #333;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   transition: box-shadow 0.2s;
-  color: #000000; /* text white */
+
+  /* Text inside card is black */
+  color: #000;
+}
+
+.client-card h4,
+.client-card p,
+.client-card a,
+.client-card .status,
+.client-card .category {
+  color: #000; /* ensures all text inside is black */
 }
 
 .client-card:hover {
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .client-logo {
@@ -203,7 +213,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #111; /* slightly lighter black */
+  background-color: var(--color-muted);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
@@ -221,15 +231,7 @@
   gap: 0.5rem;
 }
 
-.client-info h4 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
-}
-
 .client-description {
-  color: #ccc;
   font-size: 0.875rem;
   line-height: 1.5;
   margin: 0;
@@ -258,7 +260,7 @@
 }
 
 .category {
-  background-color: #374151;
+  background-color: var(--color-secondary);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: var(--radius-sm);
@@ -284,7 +286,7 @@
   gap: 0.75rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--color-border);
 }
 
 .edit-btn,
@@ -303,8 +305,8 @@
 }
 
 .edit-btn {
-  background-color: #3b82f6;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
 }
 
 .edit-btn:hover {
@@ -313,7 +315,7 @@
 }
 
 .delete-btn {
-  background-color: #dc2626;
+  background-color: var(--color-destructive);
   color: white;
 }
 
