@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useData } from "../contexts/DataContext"
-import { getImageUrl } from "../utils/imageUtils"
+import { useData } from "@/contexts/DataContext"
+import { getImageUrl } from "@/utils/imageUtils"
 import "./ClientsManager.css"
 
 const ClientsManager = () => {
@@ -44,8 +44,8 @@ const ClientsManager = () => {
       }
       resetForm()
     } catch (error) {
-      console.error('Error saving client:', error)
-      alert('Error saving client: ' + error.message)
+      console.error("Error saving client:", error)
+      alert("Error saving client: " + error.message)
     }
   }
 
@@ -80,8 +80,8 @@ const ClientsManager = () => {
       try {
         await deleteClient(clientId)
       } catch (error) {
-        console.error('Error deleting client:', error)
-        alert('Error deleting client: ' + error.message)
+        console.error("Error deleting client:", error)
+        alert("Error deleting client: " + error.message)
       }
     }
   }
@@ -111,10 +111,7 @@ const ClientsManager = () => {
     <div className="clients-manager">
       <div className="manager-header">
         <h2>Clients Management</h2>
-        <button 
-          onClick={() => setShowForm(true)} 
-          className="add-btn"
-        >
+        <button onClick={() => setShowForm(true)} className="add-btn">
           Add New Client
         </button>
       </div>
@@ -126,14 +123,7 @@ const ClientsManager = () => {
             <form onSubmit={handleSubmit} className="client-form">
               <div className="form-group">
                 <label htmlFor="name">Client Name *</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
+                <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required />
               </div>
 
               <div className="form-group">
@@ -149,135 +139,75 @@ const ClientsManager = () => {
 
               <div className="form-group">
                 <label htmlFor="website">Website</label>
-                <input
-                  type="url"
-                  id="website"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com"
-                />
+                <input type="url" id="website" name="website" value={formData.website} onChange={handleInputChange} />
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="category">Category</label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                  >
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Additional form fields can be added here */}
 
-                <div className="form-group">
-                  <label htmlFor="status">Status</label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                  >
-                    {statuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="form-group">
+                <label htmlFor="category">Category</label>
+                <select id="category" name="category" value={formData.category} onChange={handleInputChange}>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="logo">Client Logo</label>
-                <input
-                  type="file"
-                  id="logo"
-                  name="logo"
-                  onChange={handleFileChange}
-                  accept="image/*"
-                />
-                <small>Upload a logo image for the client</small>
+                <label htmlFor="status">Status</label>
+                <select id="status" name="status" value={formData.status} onChange={handleInputChange}>
+                  {statuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="form-actions">
-                <button type="button" onClick={resetForm} className="cancel-btn">
-                  Cancel
-                </button>
-                <button type="submit" className="submit-btn">
-                  {editingClient ? "Update Client" : "Add Client"}
-                </button>
+              <div className="form-group">
+                <label htmlFor="logo">Logo</label>
+                <input type="file" id="logo" name="logo" onChange={handleFileChange} />
               </div>
+
+              <button type="submit" className="submit-btn">
+                {editingClient ? "Save Changes" : "Add Client"}
+              </button>
             </form>
           </div>
         </div>
       )}
 
       <div className="clients-list">
-        {sortedClients.length === 0 ? (
-          <div className="no-clients">
-            <p>No clients found. Add your first client to get started!</p>
-          </div>
-        ) : (
-          <div className="clients-container">
-            {clientRows.map((row, rowIndex) => (
-              <div key={rowIndex} className="clients-row">
-                {row.map((client) => (
-                  <div key={client.id || client._id} className="client-card">
-                    <div className="client-logo">
-                      <img 
-                        src={getImageUrl(client.logo) || "/images/placeholder-logo.png"} 
-                        alt={client.name}
-                        onError={(e) => {
-                          e.target.src = "/images/placeholder-logo.png"
-                        }}
-                      />
-                    </div>
-                    <div className="client-info">
-                      <h4>{client.name}</h4>
-                      <p className="client-description">{client.description}</p>
-                      <div className="client-meta">
-                        <span className={`status ${client.status?.toLowerCase()}`}>
-                          {client.status}
-                        </span>
-                        <span className="category">{client.category}</span>
-                      </div>
-                      {client.website && (
-                        <a 
-                          href={client.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="client-website"
-                        >
-                          Visit Website
-                        </a>
-                      )}
-                    </div>
-                    <div className="client-actions">
-                      <button 
-                        onClick={() => handleEdit(client)} 
-                        className="edit-btn"
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(client.id || client._id)} 
-                        className="delete-btn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+        {clientRows.map((row, rowIndex) => (
+          <div key={rowIndex} className="client-row">
+            {row.map((client) => (
+              <div key={client.id} className="client-card">
+                <div className="client-logo">
+                  {client.logo && <img src={getImageUrl(client.logo) || "/placeholder.svg"} alt={client.name} />}
+                </div>
+                <div className="client-info">
+                  <h4>{client.name}</h4>
+                  <p>{client.description}</p>
+                  <a href={client.website} target="_blank" rel="noopener noreferrer">
+                    {client.website}
+                  </a>
+                  <p>Category: {client.category}</p>
+                  <p>Status: {client.status}</p>
+                </div>
+                <div className="client-actions">
+                  <button onClick={() => handleEdit(client)} className="edit-btn">
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete(client.id)} className="delete-btn">
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        )}
+        ))}
       </div>
     </div>
   )
