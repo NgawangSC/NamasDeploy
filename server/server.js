@@ -46,7 +46,49 @@ const allowedOrigins = (() => {
   return ["https://www.namasbhutan.com", "https://namasbhutan.com", "http://localhost:3000"]
 })()
 
-// Remove the defensive CORS headers middleware - it was causing conflicts
+// Configure CORS options
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or server-to-server requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS allowing origin: ${origin}`);
+      callback(null, true);
+    } else {
+      console.log(`⚠️ CORS unknown origin: ${origin}`);
+      console.log(`   Allowed origins:`, allowedOrigins);
+      // Allow the request anyway for now (to prevent blocking)
+      // TODO: In production, you might want to be more strict
+      callback(null, true);
+    }
+  },
+  credentials: true, // When credentials is true, origin cannot be '*', must be specific
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'X-HTTP-Method-Override',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
+  preflightContinue: false, // Don't pass the OPTIONS request to the next handler
+  maxAge: 86400 // 24 hours - how long to cache preflight response
+};
+
+// Apply CORS middleware globally BEFORE other middleware
+// This must be first to handle all CORS requests including preflight OPTIONS
+app.use(cors(corsOptions));
 
 // Prefer external volume at /data when available unless explicitly overridden
 const DEFAULT_BASE_DIR = (() => {
@@ -270,44 +312,28 @@ try {
   console.warn("Could not seed external DATA_DIR:", seedErr.message)
 }
 
-// Add additional CORS headers middleware to ensure they're always present
-// This is critical for mobile browsers
-app.use((req, res, next) => {
-  const origin = req.headers.origin
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin)
-    res.header('Access-Control-Allow-Credentials', 'true')
-  } else {
-    // For requests without origin OR unknown origins (mobile browsers, image requests), allow all
-    res.header('Access-Control-Allow-Origin', '*')
-  }
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers')
-  next()
-})
-
-// Add request logging middleware EARLY
+// Add request logging middleware EARLY (after CORS)
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.url} from ${req.ip} (Origin: ${req.headers.origin || 'none'})`)
   next()
 })
 
+// Note: OPTIONS preflight requests are handled by the cors() middleware above
+// No need for explicit OPTIONS handler unless cors() middleware fails
+// The cors() middleware automatically handles OPTIONS requests with preflightContinue: false
+
 // Then apply other middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Serve uploaded files with proper CORS headers
-app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR, {
+// Serve uploaded files with proper CORS headers and caching
+// CORS is already handled globally, but we add cache headers here
+app.use("/uploads", express.static(UPLOADS_DIR, {
   setHeaders: (res, path, stat) => {
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    // CORS headers are already set by the global cors() middleware
     res.set('Cache-Control', 'public, max-age=31536000'); // 1 year cache
   }
 }))
-
-// Add explicit preflight handler
-app.options("*", cors(corsOptions))
 
 // TEST ROUTE - Add this EARLY
 app.get("/test", (req, res) => {
@@ -319,15 +345,31 @@ app.get("/test", (req, res) => {
   })
 })
 
+// CORS TEST ROUTE - for diagnostics
+app.get("/api/cors-test", (req, res) => {
+  const origin = req.headers.origin;
+  res.json({
+    success: true,
+    message: "CORS test endpoint",
+    data: {
+      origin: origin || 'none',
+      allowedOrigins: allowedOrigins,
+      originAllowed: origin ? allowedOrigins.includes(origin) : 'no origin',
+      timestamp: new Date().toISOString()
+    }
+  });
+});
+
 // CONFIG ROUTE - for diagnostics
 app.get("/api/config", (req, res) => {
   res.json({
     success: true,
     data: {
       port: PORT,
+      allowedOrigins: allowedOrigins,
+      corsEnabled: true,
       dataDir: DATA_DIR,
       uploadsDir: UPLOADS_DIR,
-      allowedOrigins,
       usingExternalDataDir: !DATA_DIR.includes(__dirname),
       usingExternalUploadsDir: !UPLOADS_DIR.includes(__dirname),
     },
