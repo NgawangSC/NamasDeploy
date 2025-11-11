@@ -28,9 +28,6 @@ const initializeMongoDB = async () => {
   }
 }
 
-// Initialize MongoDB on startup
-initializeMongoDB()
-
 // Get allowed origins from environment variables
 const allowedOrigins = (() => {
   const candidates = [
@@ -150,24 +147,44 @@ let clients = []
 let contacts = []
 let partners = []
 
+// Import mongoose for connection state checking
+const mongoose = require('mongoose')
+
+// Helper function to check if MongoDB is actually connected
+const checkMongoConnection = () => {
+  if (!isMongoConnected) return false
+  try {
+    // readyState: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    return mongoose.connection && mongoose.connection.readyState === 1
+  } catch (error) {
+    return false
+  }
+}
+
 // Function to load data from MongoDB or fallback to files
 const loadDataFromSource = async () => {
-  if (isMongoConnected) {
+  // Always try to load from files first as a baseline
+  loadDataFromFiles()
+  
+  // Then try to load from MongoDB if connected
+  if (checkMongoConnection()) {
     try {
       console.log('📊 Loading data from MongoDB...')
-      teamMembers = await TeamMember.find({}).sort({ order: 1 })
-      projects = await Project.find({}).sort({ createdAt: -1 })
-      blogPosts = await Blog.find({ published: true }).sort({ createdAt: -1 })
-      clients = await Client.find({ active: true }).sort({ order: 1 })
-      partners = await Partner.find({ active: true }).sort({ order: 1 })
-      contacts = await Contact.find({}).sort({ createdAt: -1 })
+      teamMembers = await TeamMember.find({}).sort({ order: 1 }).lean()
+      projects = await Project.find({}).sort({ createdAt: -1 }).lean()
+      blogPosts = await Blog.find({ published: true }).sort({ createdAt: -1 }).lean()
+      clients = await Client.find({ active: true }).sort({ order: 1 }).lean()
+      partners = await Partner.find({ active: true }).sort({ order: 1 }).lean()
+      contacts = await Contact.find({}).sort({ createdAt: -1 }).lean()
       console.log('✅ Data loaded from MongoDB')
     } catch (error) {
-      console.error('❌ Error loading from MongoDB, falling back to files:', error)
-      loadDataFromFiles()
+      console.error('❌ Error loading from MongoDB, using file-based storage:', error.message)
+      isMongoConnected = false
+      // Data already loaded from files, so we're good
     }
   } else {
-    loadDataFromFiles()
+    console.log('⚠️ MongoDB not connected, using file-based storage')
+    isMongoConnected = false
   }
 }
 
@@ -182,8 +199,7 @@ const loadDataFromFiles = () => {
   console.log('✅ Data loaded from files')
 }
 
-// Initialize data loading
-loadDataFromSource()
+// Initialize data loading - will be called after MongoDB initialization
 
 // Migration: Fix existing projects without cover images
 function migrateProjectCoverImages() {
@@ -253,47 +269,6 @@ try {
 } catch (seedErr) {
   console.warn("Could not seed external DATA_DIR:", seedErr.message)
 }
-
-// Setup uploads (already initialized above); keep for clarity but no-op now
-
-// ✅ CORS CONFIGURATION USING ENVIRONMENT VARIABLES
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl requests, or image requests)
-    // This is critical for mobile browsers that don't always send Origin headers
-    if (!origin) {
-      console.log(`✅ CORS allowed: request without origin`)
-      return callback(null, true)
-    }
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      console.log(`✅ CORS allowed origin: ${origin}`)
-      callback(null, true)
-    } else {
-      // Log blocked origins for debugging
-      console.log(`⚠️  CORS blocked origin: ${origin}`)
-      console.log(`📋 Allowed origins: ${allowedOrigins.join(', ')}`)
-      // Allow the request to proceed for now to fix mobile image loading issues
-      callback(null, true)
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "Accept",
-    "Origin",
-    "Access-Control-Request-Method",
-    "Access-Control-Request-Headers",
-  ],
-  credentials: true,
-  optionsSuccessStatus: 200,
-  preflightContinue: false,
-}
-
-// Apply CORS middleware FIRST
-app.use(cors(corsOptions))
 
 // Add additional CORS headers middleware to ensure they're always present
 // This is critical for mobile browsers
@@ -535,7 +510,7 @@ app.get("/api/projects", async (req, res) => {
 
     let result, totalCount
 
-    if (isMongoConnected) {
+    if (checkMongoConnection()) {
       try {
         let mongoProjects
         if (limit > 0) {
@@ -543,27 +518,28 @@ app.get("/api/projects", async (req, res) => {
             .sort({ createdAt: -1 })
             .skip(startIndex)
             .limit(limit)
+            .lean()
           totalCount = await Project.countDocuments({})
         } else {
-          mongoProjects = await Project.find({}).sort({ createdAt: -1 })
+          mongoProjects = await Project.find({}).sort({ createdAt: -1 }).lean()
           totalCount = mongoProjects.length
         }
         
         // Transform MongoDB documents to include 'id' field for frontend compatibility
         result = mongoProjects.map(project => {
-          const projectObj = project.toObject()
           return {
-            ...projectObj,
-            id: projectObj._id.toString() // Add id field from _id
+            ...project,
+            id: project._id.toString() // Add id field from _id
           }
         })
       } catch (dbErr) {
         console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
         isMongoConnected = false
+        // Fall through to file-based storage
       }
     }
 
-    if (!isMongoConnected) {
+    if (!checkMongoConnection()) {
       // Fallback to file-based storage
       const projects = loadData(PROJECTS_FILE)
       if (limit > 0) {
@@ -601,27 +577,28 @@ app.get("/api/projects/featured", async (req, res) => {
   try {
     let featuredProjects
 
-    if (isMongoConnected) {
+    if (checkMongoConnection()) {
       try {
         const mongoProjects = await Project.find({ featured: true })
           .sort({ createdAt: -1 })
           .limit(8)
+          .lean()
         
         // Transform MongoDB documents to include 'id' field for frontend compatibility
         featuredProjects = mongoProjects.map(project => {
-          const projectObj = project.toObject()
           return {
-            ...projectObj,
-            id: projectObj._id.toString() // Add id field from _id
+            ...project,
+            id: project._id.toString() // Add id field from _id
           }
         })
       } catch (dbErr) {
         console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
         isMongoConnected = false
+        // Fall through to file-based storage
       }
     }
 
-    if (!isMongoConnected) {
+    if (!checkMongoConnection()) {
       // Fallback to file-based storage
       const projects = loadData(PROJECTS_FILE)
       featuredProjects = projects.filter((project) => project.featured === true).slice(0, 8)
@@ -2011,16 +1988,22 @@ app.get("/api/clients", async (req, res) => {
   try {
     let result
 
-    if (isMongoConnected) {
+    if (checkMongoConnection()) {
       try {
-        result = await Client.find({ active: true }).sort({ order: 1 })
+        result = await Client.find({ active: true }).sort({ order: 1 }).lean()
+        // Transform MongoDB documents to include 'id' field for frontend compatibility
+        result = result.map(client => ({
+          ...client,
+          id: client._id.toString()
+        }))
       } catch (dbErr) {
         console.warn('⚠️ MongoDB query failed, falling back to files:', dbErr.message)
         isMongoConnected = false
+        // Fall through to file-based storage
       }
     }
 
-    if (!isMongoConnected) {
+    if (!checkMongoConnection()) {
       // Fallback to file-based storage
       result = loadData(CLIENTS_FILE)
     }
@@ -2985,17 +2968,56 @@ app.use("*", (req, res) => {
   })
 })
 
-// Start server
-app.listen(PORT, "0.0.0.0", async () => {
-  console.log(`🚀 NAMAS Architecture API Server running on port ${PORT}`)
-  console.log(`🌍 Environment: ${process.env.NODE_ENV}`)
-  console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
-  console.log(`📡 Server URL: http://0.0.0.0:${PORT}`)
-  console.log(
-    `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${partners.length} partners, ${teamMembers.length} team members, ${contacts.length} contacts`,
-  )
-  
-  // Verify email connection
-  console.log('📧 Verifying email configuration...')
-  await verifyEmailConnection()
-})
+// Start server - wrapped in async function to ensure MongoDB and data are ready
+const startServer = async () => {
+  try {
+    // Step 1: Initialize MongoDB connection (wait for it to complete)
+    console.log('🔗 Initializing MongoDB connection...')
+    await initializeMongoDB()
+    
+    // Step 2: Load data from MongoDB or files (wait for it to complete)
+    console.log('📊 Loading initial data...')
+    await loadDataFromSource()
+    
+    // Step 3: Run migration for projects
+    migrateProjectCoverImages()
+    
+    // Step 4: Start the server
+    app.listen(PORT, "0.0.0.0", async () => {
+      console.log(`🚀 NAMAS Architecture API Server running on port ${PORT}`)
+      console.log(`🌍 Environment: ${process.env.NODE_ENV}`)
+      console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
+      console.log(`📡 Server URL: http://0.0.0.0:${PORT}`)
+      console.log(
+        `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${partners.length} partners, ${teamMembers.length} team members, ${contacts.length} contacts`,
+      )
+      
+      // Verify email connection (non-blocking)
+      console.log('📧 Verifying email configuration...')
+      verifyEmailConnection().catch(err => {
+        console.error('⚠️ Email verification failed (non-critical):', err.message)
+      })
+    })
+  } catch (error) {
+    console.error('❌ Failed to start server:', error)
+    console.error('Stack:', error.stack)
+    // Load data from files as fallback even if MongoDB fails
+    console.log('📁 Attempting to load data from files as fallback...')
+    loadDataFromFiles()
+    migrateProjectCoverImages()
+    
+    // Start server anyway with file-based storage
+    app.listen(PORT, "0.0.0.0", async () => {
+      console.log(`🚀 NAMAS Architecture API Server running on port ${PORT} (file-based mode)`)
+      console.log(`🌍 Environment: ${process.env.NODE_ENV}`)
+      console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
+      console.log(`📡 Server URL: http://0.0.0.0:${PORT}`)
+      console.log(
+        `📊 Loaded: ${projects.length} projects, ${blogPosts.length} blogs, ${clients.length} clients, ${partners.length} partners, ${teamMembers.length} team members, ${contacts.length} contacts`,
+      )
+    })
+  }
+}
+
+// Start the server
+startServer()

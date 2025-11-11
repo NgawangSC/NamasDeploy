@@ -2,9 +2,26 @@
 Options -MultiViews
 RewriteEngine On
 
-# Proxy uploaded images to Railway backend
+# Proxy uploaded images to Railway backend using PHP proxy script
+# This works around Apache SSLProxyEngine limitations on cPanel
 RewriteCond %{REQUEST_URI} ^/uploads/(.*)$
-RewriteRule ^uploads/(.*)$ https://namasdeploy-production.up.railway.app/uploads/$1 [P,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^uploads/(.*)$ proxy-uploads.php?path=$1 [L,QSA]
+
+# Alternative: Direct Apache proxy (requires mod_proxy and mod_ssl with SSLProxyEngine enabled)
+# If your hosting provider enables SSLProxyEngine, you can uncomment this and comment out the PHP proxy above
+# <IfModule mod_ssl.c>
+#     <IfModule mod_proxy.c>
+#         SSLProxyEngine On
+#         SSLProxyVerify none
+#         SSLProxyCheckPeerCN off
+#         SSLProxyCheckPeerName off
+#         ProxyPreserveHost On
+#         ProxyRequests Off
+#         RewriteCond %{REQUEST_URI} ^/uploads/(.*)$
+#         RewriteRule ^uploads/(.*)$ https://namasdeploy-production.up.railway.app/uploads/$1 [P,L]
+#     </IfModule>
+# </IfModule>
 
 # Handle all other routes for React Router
 RewriteCond %{REQUEST_FILENAME} !-f

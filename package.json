@@ -23,7 +23,7 @@
   "scripts": {
     "start": "cross-env NODE_OPTIONS=--no-deprecation react-scripts start",
     "build": "react-scripts build",
-    "build:production": "env-cmd -f .env.production react-scripts build && cp public/.htaccess build/.htaccess",
+    "build:production": "env-cmd -f .env.production react-scripts build && cp public/.htaccess build/.htaccess && cp public/proxy-uploads.php build/proxy-uploads.php",
     "build:cpanel": "npm run build:production && npm run optimize:cpanel",
     "optimize:cpanel": "echo 'Build completed for cPanel deployment. Upload the build folder contents to your cPanel public_html directory.'",
     "eject": "react-scripts eject"
