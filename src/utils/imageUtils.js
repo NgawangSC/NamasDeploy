@@ -54,17 +54,25 @@ function constructImageUrl(imagePath, bustCache = false) {
   else if (imagePath.startsWith('/images/') || imagePath.startsWith('/placeholder')) {
     fullUrl = imagePath;
   }
-  // For uploaded images, prepend the server base URL
-  else {
-    // In production, ensure we're using the correct server URL
-    const serverUrl = SERVER_BASE_URL;
+  // For uploaded images (/uploads/*), check if we should use relative URLs (production) or absolute (development)
+  else if (imagePath.startsWith('/uploads')) {
+    // Check if we're running in development (localhost) or production
+    const isDevelopment = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     
-    // Handle case where imagePath already starts with /uploads
-    if (imagePath.startsWith('/uploads')) {
-      fullUrl = `${serverUrl}${imagePath}`;
+    if (isDevelopment) {
+      // Development: Use absolute URL pointing to dev server
+      fullUrl = `${SERVER_BASE_URL}${imagePath}`;
     } else {
-      fullUrl = `${serverUrl}/uploads/${imagePath}`;
+      // Production: Keep as relative URL so .htaccess proxy can handle it
+      // The .htaccess file will proxy /uploads/* requests to Railway
+      fullUrl = imagePath;
     }
+  }
+  // For uploaded images without /uploads prefix
+  else {
+    const serverUrl = SERVER_BASE_URL;
+    fullUrl = `${serverUrl}/uploads/${imagePath}`;
   }
   
   // Add cache-busting parameter if requested (but not for blob or data URLs)
