@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Modern Architecture in Bhutan",
+    "excerpt": "Exploring the blend of traditional and contemporary architectural styles in Bhutan's evolving landscape.",
+    "content": "<p>Bhutan's architecture is undergoing a fascinating transformation as traditional building methods meet modern design principles. This evolution reflects the country's commitment to preserving cultural heritage while embracing contemporary functionality.</p><p>In this article, we explore how modern architects in Bhutan are creating innovative structures that honor the past while serving present-day needs. From sustainable building materials to energy-efficient designs, the future of Bhutanese architecture is both exciting and respectful of tradition.</p>",
+    "author": "NAMAS Team",
+    "date": "2024-10-15",
+    "category": "Architecture",
+    "image": "/images/blog1.jpg",
+    "published": true,
+    "readTime": "5 min read",
+    "createdAt": "2024-10-15T10:00:00.000Z",
+    "updatedAt": "2024-10-15T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "title": "Sustainable Building Practices",
+    "excerpt": "How NAMAS incorporates eco-friendly materials and methods in construction projects across Bhutan.",
+    "content": "<p>Sustainability is at the heart of modern construction practices. At NAMAS, we believe in building structures that not only serve their purpose but also contribute positively to the environment.</p><p>Our approach includes using locally sourced materials, implementing energy-efficient systems, and designing buildings that work in harmony with their natural surroundings. This philosophy ensures that our projects have minimal environmental impact while maximizing functionality and aesthetic appeal.</p>",
+    "author": "NAMAS Team",
+    "date": "2024-10-10",
+    "category": "Sustainability",
+    "image": "/images/blog1.jpg",
+    "published": true,
+    "readTime": "7 min read",
+    "createdAt": "2024-10-10T10:00:00.000Z",
+    "updatedAt": "2024-10-10T10:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "title": "Interior Design Trends 2024",
+    "excerpt": "Discover the latest interior design trends that are shaping homes and commercial spaces in Bhutan.",
+    "content": "<p>Interior design trends for 2024 emphasize comfort, functionality, and connection to nature. In Bhutan, these global trends are being adapted to reflect local culture and preferences.</p><p>From biophilic design elements that bring the outdoors inside to minimalist approaches that celebrate clean lines and open spaces, this year's trends offer something for every taste and lifestyle. We explore how these trends can be incorporated into both residential and commercial projects.</p>",
+    "author": "NAMAS Team",
+    "date": "2024-10-05",
+    "category": "Interior Design",
+    "image": "/images/blog1.jpg",
+    "published": true,
+    "readTime": "6 min read",
+    "createdAt": "2024-10-05T10:00:00.000Z",
+    "updatedAt": "2024-10-05T10:00:00.000Z"
+  }
+]
